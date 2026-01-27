@@ -1,23 +1,25 @@
-import { Geist, Geist_Mono } from 'next/font/google'
+import { DM_Sans, Outfit } from 'next/font/google'
 
 import type { Metadata } from 'next'
 
 import Providers from '@/components/providers'
 import '../index.css'
 
-const geistSans = Geist({
-  variable: '--font-geist-sans',
+const dmSans = DM_Sans({
+  variable: '--font-sans',
   subsets: ['latin'],
+  display: 'swap',
 })
 
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
+const outfit = Outfit({
+  variable: '--font-display',
   subsets: ['latin'],
+  display: 'swap',
 })
 
 export const metadata: Metadata = {
-  title: 'app-petlar',
-  description: 'app-petlar',
+  title: 'PetLar - Sistema de Adoção',
+  description: 'Encontre seu novo melhor amigo. Sistema de gestão de adoção de gatos.',
 }
 
 export default function RootLayout({
@@ -26,13 +28,9 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <Providers>
-          <div className="grid h-svh grid-rows-[auto_1fr]">{children}</div>
-        </Providers>
+    <html lang="pt-BR" suppressHydrationWarning>
+      <body className={`${dmSans.variable} ${outfit.variable} antialiased`}>
+        <Providers>{children}</Providers>
       </body>
     </html>
   )
