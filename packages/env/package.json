@@ -7,6 +7,12 @@
     "./server": "./src/server.ts",
     "./web": "./src/web.ts"
   },
+  "scripts": {
+    "lint": "eslint . --max-warnings 0",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
   "dependencies": {
     "@t3-oss/env-core": "^0.13.1",
     "@t3-oss/env-nextjs": "^0.13.1",
