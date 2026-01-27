@@ -1,0 +1,27 @@
+{
+  "name": "@app-petlar/api",
+  "type": "module",
+  "exports": {
+    ".": {
+      "default": "./src/index.ts"
+    },
+    "./*": {
+      "default": "./src/*.ts"
+    }
+  },
+  "scripts": {},
+  "dependencies": {
+    "@app-petlar/auth": "workspace:*",
+    "@app-petlar/db": "workspace:*",
+    "@app-petlar/env": "workspace:*",
+    "@trpc/client": "catalog:",
+    "@trpc/server": "catalog:",
+    "dotenv": "catalog:",
+    "next": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@app-petlar/config": "workspace:*",
+    "typescript": "catalog:"
+  }
+}
