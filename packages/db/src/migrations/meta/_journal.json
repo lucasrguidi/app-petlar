@@ -6,7 +6,14 @@
       "idx": 0,
       "version": "6",
       "when": 1769539951892,
-      "tag": "0000_wise_dreaming_celestial",
+      "tag": "0000_initial-auth-and-orgs",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1769657449104,
+      "tag": "0001_add-cats-tables",
       "breakpoints": true
     }
   ]

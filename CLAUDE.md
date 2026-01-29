@@ -45,7 +45,7 @@ pnpm check-types            # Type check all packages
 # Database (run from root)
 pnpm db:local               # Start local Turso database (local.db)
 pnpm db:push                # Push schema changes to database
-pnpm db:generate            # Generate migrations from schema
+pnpm db:generate --name X   # Generate migrations (always use descriptive name)
 pnpm db:migrate             # Run migrations
 pnpm db:studio              # Open Drizzle Studio
 ```
@@ -106,7 +106,8 @@ export const appRouter = router({
 
 Database workflow:
 1. Define/update schema in `packages/db/src/schema/`
-2. Run `pnpm db:generate` to create migrations
+2. Run `pnpm db:generate --name <migration-name>` to create migrations
+   - **Always use a descriptive name** that reflects what was changed (e.g., `--name add-cats-table`, `--name add-status-to-users`)
 3. Run `pnpm db:push` to apply to database
 4. Use `pnpm db:studio` to inspect data
 
@@ -201,7 +202,7 @@ Each package extends these base configs in their local config files.
 2. Start dev server: `pnpm dev:web`
 3. For schema changes:
    - Update schema in `packages/db/src/schema/`
-   - Generate migration: `pnpm db:generate`
+   - Generate migration: `pnpm db:generate --name <descriptive-name>`
    - Apply changes: `pnpm db:push`
 4. For new API endpoints:
    - Add to `packages/api/src/routers/index.ts`
