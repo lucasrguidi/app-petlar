@@ -127,9 +127,44 @@ Client-side auth (web app): `apps/web/src/lib/auth-client.ts`
 - **Port**: 3001 (configured in package.json)
 - **tRPC Client**: Configured in `apps/web/src/utils/trpc.ts`
 - **React Query**: Integrated with tRPC for data fetching
-- **UI Components**: Located in `apps/web/src/components/`
-  - shadcn/ui components in `ui/` subfolder
 - **Styling**: Tailwind CSS v4 with custom configuration
+
+### Component Organization
+
+Components follow a co-location pattern:
+
+```
+apps/web/src/
+├── app/
+│   ├── login/
+│   │   ├── _components/       # Page-specific components
+│   │   │   └── sign-in-form.tsx
+│   │   └── page.tsx
+│   ├── admin/
+│   │   ├── _components/       # Admin-specific components
+│   │   └── page.tsx
+│   └── layout.tsx
+├── components/
+│   ├── ui/                    # shadcn/ui base components
+│   │   ├── button.tsx
+│   │   ├── card.tsx
+│   │   ├── form.tsx
+│   │   └── ...
+│   ├── providers.tsx          # Global providers
+│   └── theme-provider.tsx     # Theme configuration
+└── lib/
+    └── utils.ts
+```
+
+**Guidelines:**
+- **`_components/`**: Page-specific components that are only used within that route. The underscore prefix prevents Next.js from treating it as a route segment.
+- **`components/ui/`**: Reusable shadcn/ui base components (Button, Card, Input, etc.)
+- **`components/`**: Shared components used across multiple pages (providers, layouts, etc.)
+
+When creating new components:
+1. If it's only used in one page → place in `app/[page]/_components/`
+2. If it's a base UI primitive → place in `components/ui/`
+3. If it's shared across pages → place in `components/`
 
 ### Environment Variables
 
