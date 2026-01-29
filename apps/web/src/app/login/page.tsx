@@ -1,4 +1,4 @@
-import { Cat, Heart, Home, Sparkles } from 'lucide-react'
+import { Cat, Heart, Home } from 'lucide-react'
 import { Suspense } from 'react'
 
 import { SignInForm } from './_components/sign-in-form'
