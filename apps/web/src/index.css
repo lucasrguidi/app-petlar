@@ -1,6 +1,5 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
-@import 'shadcn/tailwind.css';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -8,148 +7,115 @@
   PetLar Design System
 
   Paleta Principal:
-  - Fundo: #AEC7E2 (azul céu suave - acolhedor)
+  - Fundo: #AEC7E2 (azul ceu suave - acolhedor)
   - Texto: #783201 (marrom escuro - terra)
-  - Primário: #E35915 (laranja vibrante - energia)
+  - Primario: #E35915 (laranja vibrante - energia)
   - Branco: #FFFFFF (cards, contraste)
 */
 
-:root {
-  /* Cores PetLar - Tema Claro */
-  --background: oklch(0.82 0.04 230); /* #AEC7E2 - azul céu */
-  --foreground: oklch(0.35 0.12 50); /* #783201 - marrom terra */
-
-  --card: oklch(1 0 0); /* #FFFFFF */
-  --card-foreground: oklch(0.35 0.12 50); /* #783201 */
-
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.35 0.12 50);
-
-  --primary: oklch(0.58 0.18 40); /* #E35915 - laranja vibrante */
-  --primary-foreground: oklch(1 0 0); /* #FFFFFF */
-
-  --secondary: oklch(0.92 0.02 230); /* azul mais claro */
-  --secondary-foreground: oklch(0.35 0.12 50);
-
-  --muted: oklch(0.88 0.03 230);
-  --muted-foreground: oklch(0.50 0.08 50);
-
-  --accent: oklch(0.70 0.15 40); /* laranja suave */
-  --accent-foreground: oklch(1 0 0);
-
-  --destructive: oklch(0.58 0.22 27);
-
-  --border: oklch(0.75 0.04 230);
-  --input: oklch(0.90 0.02 230);
-  --ring: oklch(0.58 0.18 40); /* laranja para focus */
-
-  /* Charts */
-  --chart-1: oklch(0.58 0.18 40);
-  --chart-2: oklch(0.65 0.15 45);
-  --chart-3: oklch(0.72 0.12 50);
-  --chart-4: oklch(0.35 0.12 50);
-  --chart-5: oklch(0.82 0.04 230);
-
-  --radius: 0.75rem;
-
-  /* Sidebar */
-  --sidebar: oklch(1 0 0);
-  --sidebar-foreground: oklch(0.35 0.12 50);
-  --sidebar-primary: oklch(0.58 0.18 40);
-  --sidebar-primary-foreground: oklch(1 0 0);
-  --sidebar-accent: oklch(0.95 0.02 230);
-  --sidebar-accent-foreground: oklch(0.35 0.12 50);
-  --sidebar-border: oklch(0.88 0.03 230);
-  --sidebar-ring: oklch(0.58 0.18 40);
-}
-
-.dark {
-  /* Tema escuro - adaptado para PetLar */
-  --background: oklch(0.20 0.04 50);
-  --foreground: oklch(0.95 0.02 230);
-
-  --card: oklch(0.25 0.04 50);
-  --card-foreground: oklch(0.95 0.02 230);
-
-  --popover: oklch(0.25 0.04 50);
-  --popover-foreground: oklch(0.95 0.02 230);
-
-  --primary: oklch(0.65 0.18 40);
-  --primary-foreground: oklch(0.15 0.04 50);
-
-  --secondary: oklch(0.30 0.04 50);
-  --secondary-foreground: oklch(0.95 0.02 230);
-
-  --muted: oklch(0.30 0.04 50);
-  --muted-foreground: oklch(0.70 0.03 230);
-
-  --accent: oklch(0.40 0.08 40);
-  --accent-foreground: oklch(0.95 0.02 230);
-
-  --destructive: oklch(0.704 0.191 22.216);
-
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.65 0.18 40);
-
-  --chart-1: oklch(0.65 0.18 40);
-  --chart-2: oklch(0.72 0.15 45);
-  --chart-3: oklch(0.78 0.12 50);
-  --chart-4: oklch(0.82 0.04 230);
-  --chart-5: oklch(0.60 0.08 50);
-
-  --sidebar: oklch(0.25 0.04 50);
-  --sidebar-foreground: oklch(0.95 0.02 230);
-  --sidebar-primary: oklch(0.65 0.18 40);
-  --sidebar-primary-foreground: oklch(0.15 0.04 50);
-  --sidebar-accent: oklch(0.30 0.04 50);
-  --sidebar-accent-foreground: oklch(0.95 0.02 230);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.65 0.18 40);
-}
-
 @theme inline {
+  /* Fonts */
   --font-sans: 'DM Sans Variable', 'DM Sans', system-ui, sans-serif;
   --font-display: 'Outfit Variable', 'Outfit', system-ui, sans-serif;
 
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar: var(--sidebar);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
-  --color-chart-1: var(--chart-1);
-  --color-ring: var(--ring);
-  --color-input: var(--input);
-  --color-border: var(--border);
-  --color-destructive: var(--destructive);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-accent: var(--accent);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-muted: var(--muted);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-secondary: var(--secondary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-primary: var(--primary);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-popover: var(--popover);
-  --color-card-foreground: var(--card-foreground);
-  --color-card: var(--card);
-  --color-foreground: var(--foreground);
-  --color-background: var(--background);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-  --radius-2xl: calc(var(--radius) + 8px);
-  --radius-3xl: calc(var(--radius) + 12px);
-  --radius-4xl: calc(var(--radius) + 16px);
+  /* Radius */
+  --radius-sm: 0.5rem;
+  --radius-md: 0.625rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.25rem;
+  --radius-3xl: 1.5rem;
+  --radius-4xl: 1.75rem;
+
+  /* PetLar Colors - Light Theme */
+  --color-background: #aec7e2; /* azul ceu */
+  --color-foreground: #783201; /* marrom terra */
+
+  --color-card: #ffffff;
+  --color-card-foreground: #783201;
+
+  --color-popover: #ffffff;
+  --color-popover-foreground: #783201;
+
+  --color-primary: #e35915; /* laranja vibrante */
+  --color-primary-foreground: #ffffff;
+
+  --color-secondary: #d4e3f3; /* azul mais claro */
+  --color-secondary-foreground: #783201;
+
+  --color-muted: #c5d8ee;
+  --color-muted-foreground: #8b5a2b;
+
+  --color-accent: #f07b3d; /* laranja suave */
+  --color-accent-foreground: #ffffff;
+
+  --color-destructive: #dc2626;
+
+  --color-border: #9ab4d1;
+  --color-input: #e8f0f8;
+  --color-ring: #e35915; /* laranja para focus */
+
+  /* Charts */
+  --color-chart-1: #e35915;
+  --color-chart-2: #f07b3d;
+  --color-chart-3: #ffa366;
+  --color-chart-4: #783201;
+  --color-chart-5: #aec7e2;
+
+  /* Sidebar */
+  --color-sidebar: #ffffff;
+  --color-sidebar-foreground: #783201;
+  --color-sidebar-primary: #e35915;
+  --color-sidebar-primary-foreground: #ffffff;
+  --color-sidebar-accent: #f5f9fc;
+  --color-sidebar-accent-foreground: #783201;
+  --color-sidebar-border: #c5d8ee;
+  --color-sidebar-ring: #e35915;
+}
+
+/* Dark theme override */
+.dark {
+  --color-background: #1c1410;
+  --color-foreground: #e8f0f8;
+
+  --color-card: #2a1f1a;
+  --color-card-foreground: #e8f0f8;
+
+  --color-popover: #2a1f1a;
+  --color-popover-foreground: #e8f0f8;
+
+  --color-primary: #f07b3d;
+  --color-primary-foreground: #1c1410;
+
+  --color-secondary: #362a24;
+  --color-secondary-foreground: #e8f0f8;
+
+  --color-muted: #362a24;
+  --color-muted-foreground: #b8c9dc;
+
+  --color-accent: #4a3830;
+  --color-accent-foreground: #e8f0f8;
+
+  --color-destructive: #f87171;
+
+  --color-border: rgba(255, 255, 255, 0.1);
+  --color-input: rgba(255, 255, 255, 0.15);
+  --color-ring: #f07b3d;
+
+  --color-chart-1: #f07b3d;
+  --color-chart-2: #ffa366;
+  --color-chart-3: #ffb380;
+  --color-chart-4: #aec7e2;
+  --color-chart-5: #8b5a2b;
+
+  --color-sidebar: #2a1f1a;
+  --color-sidebar-foreground: #e8f0f8;
+  --color-sidebar-primary: #f07b3d;
+  --color-sidebar-primary-foreground: #1c1410;
+  --color-sidebar-accent: #362a24;
+  --color-sidebar-accent-foreground: #e8f0f8;
+  --color-sidebar-border: rgba(255, 255, 255, 0.1);
+  --color-sidebar-ring: #f07b3d;
 }
 
 @layer base {
@@ -160,11 +126,11 @@
     @apply bg-background text-foreground font-sans antialiased;
   }
   html {
-    @apply font-sans scroll-smooth;
+    @apply scroll-smooth font-sans;
   }
 }
 
-/* Animações personalizadas */
+/* Custom animations */
 @keyframes fade-in-up {
   from {
     opacity: 0;
@@ -177,7 +143,8 @@
 }
 
 @keyframes float {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0);
   }
   50% {
@@ -186,7 +153,8 @@
 }
 
 @keyframes pulse-soft {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {
@@ -206,9 +174,19 @@
   animation: pulse-soft 2s ease-in-out infinite;
 }
 
-/* Delay utilities para stagger */
-.animation-delay-100 { animation-delay: 100ms; }
-.animation-delay-200 { animation-delay: 200ms; }
-.animation-delay-300 { animation-delay: 300ms; }
-.animation-delay-400 { animation-delay: 400ms; }
-.animation-delay-500 { animation-delay: 500ms; }
+/* Delay utilities for stagger */
+.animation-delay-100 {
+  animation-delay: 100ms;
+}
+.animation-delay-200 {
+  animation-delay: 200ms;
+}
+.animation-delay-300 {
+  animation-delay: 300ms;
+}
+.animation-delay-400 {
+  animation-delay: 400ms;
+}
+.animation-delay-500 {
+  animation-delay: 500ms;
+}

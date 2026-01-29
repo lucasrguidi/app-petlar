@@ -19,7 +19,8 @@ const outfit = Outfit({
 
 export const metadata: Metadata = {
   title: 'PetLar - Sistema de Adoção',
-  description: 'Encontre seu novo melhor amigo. Sistema de gestão de adoção de gatos.',
+  description:
+    'Encontre seu novo melhor amigo. Sistema de gestão de adoção de gatos.',
 }
 
 export default function RootLayout({
