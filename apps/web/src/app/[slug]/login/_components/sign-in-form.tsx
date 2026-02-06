@@ -2,7 +2,6 @@
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Eye, EyeOff, Loader2, Lock, Mail } from 'lucide-react'
-import { useSearchParams } from 'next/navigation'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
@@ -21,19 +20,21 @@ import { Input } from '@/components/ui/input'
 import { authClient } from '@/lib/auth-client'
 
 const signInSchema = z.object({
-  email: z.string().min(1, 'E-mail e obrigatorio').email('E-mail invalido'),
+  email: z.string().min(1, 'E-mail é obrigatório').email('E-mail inválido'),
   password: z
     .string()
-    .min(1, 'Senha e obrigatoria')
-    .min(6, 'Senha deve ter no minimo 6 caracteres'),
+    .min(1, 'Senha é obrigatória')
+    .min(6, 'Senha deve ter no mínimo 6 caracteres'),
 })
 
 type SignInFormValues = z.infer<typeof signInSchema>
 
-export function SignInForm() {
-  const searchParams = useSearchParams()
-  const callbackUrl = searchParams.get('callbackUrl') || '/admin'
+interface SignInFormProps {
+  orgId: string
+  orgSlug: string
+}
 
+export function SignInForm({ orgId, orgSlug }: SignInFormProps) {
   const [showPassword, setShowPassword] = useState(false)
 
   const form = useForm<SignInFormValues>({
@@ -48,7 +49,7 @@ export function SignInForm() {
 
   async function onSubmit(data: SignInFormValues) {
     try {
-      const { error } = await authClient.signIn.email({
+      const { data: session, error } = await authClient.signIn.email({
         email: data.email,
         password: data.password,
       })
@@ -58,8 +59,32 @@ export function SignInForm() {
         return
       }
 
+      // Verificar se o usuário pertence à org correta
+      if (!session?.user) {
+        toast.error('Erro ao obter dados do usuário')
+        return
+      }
+
+      // Buscar dados do usuário atualizado (com orgId)
+      const { data: userData } = await authClient.getSession()
+      const userOrgId = (userData?.user as { orgId?: string })?.orgId
+
+      if (!userOrgId) {
+        // Usuário não pertence a nenhuma org
+        await authClient.signOut()
+        toast.error('Usuário não pertence a nenhuma organização')
+        return
+      }
+
+      if (userOrgId !== orgId) {
+        // Usuário pertence a outra org
+        await authClient.signOut()
+        toast.error('Você não tem acesso a esta organização')
+        return
+      }
+
       toast.success('Login realizado com sucesso!')
-      window.location.href = callbackUrl
+      window.location.href = `/${orgSlug}/admin`
     } catch {
       toast.error('Erro ao fazer login. Tente novamente.')
     }

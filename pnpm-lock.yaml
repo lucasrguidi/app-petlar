@@ -93,6 +93,9 @@ importers:
       '@app-petlar/auth':
         specifier: workspace:*
         version: link:../../packages/auth
+      '@app-petlar/db':
+        specifier: workspace:*
+        version: link:../../packages/db
       '@app-petlar/env':
         specifier: workspace:*
         version: link:../../packages/env
@@ -147,6 +150,9 @@ importers:
       dotenv:
         specifier: 'catalog:'
         version: 17.2.3
+      drizzle-orm:
+        specifier: ^0.45.1
+        version: 0.45.1(@libsql/client@0.15.15)(kysely@0.28.10)
       libsql:
         specifier: 'catalog:'
         version: 0.5.22

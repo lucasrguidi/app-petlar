@@ -9,6 +9,8 @@ type User = {
   name: string
   email: string
   image?: string | null
+  orgId?: string | null
+  role?: string | null
 }
 
 type Session = {

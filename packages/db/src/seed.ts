@@ -1,5 +1,6 @@
 import { createClient } from "@libsql/client";
 import dotenv from "dotenv";
+import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/libsql";
 import { Scrypt } from "oslo/password";
 
@@ -45,7 +46,16 @@ async function seed() {
   });
 
   if (existingUser) {
-    console.log(`⏭️  Usuário já existe: admin@petlar.com`);
+    // Atualizar orgId se não estiver definido
+    if (!existingUser.orgId) {
+      await db
+        .update(schema.user)
+        .set({ orgId: orgId, role: "admin" })
+        .where(eq(schema.user.id, existingUser.id));
+      console.log(`✅ Usuário atualizado com orgId: admin@petlar.com`);
+    } else {
+      console.log(`⏭️  Usuário já existe: admin@petlar.com`);
+    }
   } else {
     // Criar usuário de teste
     const userId = crypto.randomUUID();
@@ -60,6 +70,8 @@ async function seed() {
       name: "Admin PetLar",
       email: "admin@petlar.com",
       emailVerified: true,
+      orgId: orgId,
+      role: "admin",
     });
 
     await db.insert(schema.account).values({

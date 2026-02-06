@@ -42,12 +42,18 @@ const listFiltersSchema = z.object({
   limit: z.number().int().min(1).max(50).default(10),
 });
 
-// Helper para obter orgId do usuário
-// TODO: Atualizar quando sistema de org membership estiver implementado
-function getOrgId(_userId: string): string {
-  // Por enquanto, usar um orgId padrão ou buscar do contexto
-  // Isso será atualizado quando o sistema de memberships estiver pronto
-  return "default-org";
+/**
+ * Obtém o orgId do usuário da sessão
+ * Lança erro se o usuário não pertencer a nenhuma org
+ */
+function requireOrgId(user: { orgId?: string | null }): string {
+  if (!user.orgId) {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "Usuário não pertence a nenhuma organização",
+    });
+  }
+  return user.orgId;
 }
 
 export const catsRouter = router({
@@ -56,7 +62,7 @@ export const catsRouter = router({
    */
   list: protectedProcedure.input(listFiltersSchema).query(async ({ ctx, input }) => {
     const { status, sex, fiv, felv, castrated, search, page, limit } = input;
-    const orgId = getOrgId(ctx.session.user.id);
+    const orgId = requireOrgId(ctx.session.user);
     const offset = (page - 1) * limit;
 
     // Construir condições de filtro
@@ -145,7 +151,7 @@ export const catsRouter = router({
   getById: protectedProcedure
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
-      const orgId = getOrgId(ctx.session.user.id);
+      const orgId = requireOrgId(ctx.session.user);
 
       const [cat] = await db
         .select()
@@ -186,7 +192,7 @@ export const catsRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const orgId = getOrgId(ctx.session.user.id);
+      const orgId = requireOrgId(ctx.session.user);
       const catId = nanoid();
 
       await db.transaction(async (tx) => {
@@ -226,7 +232,7 @@ export const catsRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const orgId = getOrgId(ctx.session.user.id);
+      const orgId = requireOrgId(ctx.session.user);
 
       // Verificar se gato existe e pertence à org
       const [existingCat] = await db
@@ -275,7 +281,7 @@ export const catsRouter = router({
   delete: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      const orgId = getOrgId(ctx.session.user.id);
+      const orgId = requireOrgId(ctx.session.user);
 
       // Verificar se gato existe e pertence à org
       const [existingCat] = await db
@@ -301,7 +307,7 @@ export const catsRouter = router({
   duplicate: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      const orgId = getOrgId(ctx.session.user.id);
+      const orgId = requireOrgId(ctx.session.user);
 
       // Buscar gato original
       const [originalCat] = await db
@@ -354,7 +360,7 @@ export const catsRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const orgId = getOrgId(ctx.session.user.id);
+      const orgId = requireOrgId(ctx.session.user);
 
       // Buscar gato atual
       const [existingCat] = await db

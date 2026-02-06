@@ -15,6 +15,13 @@
       "when": 1769657449104,
       "tag": "0001_add-cats-tables",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1770402782157,
+      "tag": "0002_add-org-to-user",
+      "breakpoints": true
     }
   ]
 }
