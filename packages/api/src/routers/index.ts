@@ -1,4 +1,6 @@
 import { protectedProcedure, publicProcedure, router } from "../index";
+
+import { catsRouter } from "./cats";
 import { uploadRouter } from "./upload";
 
 export const appRouter = router({
@@ -12,5 +14,6 @@ export const appRouter = router({
     };
   }),
   upload: uploadRouter,
+  cats: catsRouter,
 });
 export type AppRouter = typeof appRouter;
