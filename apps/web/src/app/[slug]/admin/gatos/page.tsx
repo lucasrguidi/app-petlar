@@ -1,4 +1,5 @@
 import { Plus } from 'lucide-react'
+import Link from 'next/link'
 import { Suspense } from 'react'
 
 import { CatsLoadingSkeleton } from './_components/cats-loading-skeleton'
@@ -39,10 +40,10 @@ export default async function GatosPage({
           </p>
         </div>
         <Button asChild className="hidden gap-2 rounded-lg sm:flex">
-          <a href={`/${slug}/admin/gatos/novo`}>
+          <Link href={`/${slug}/admin/gatos/novo`}>
             <Plus className="h-4 w-4" />
             Novo Gato
-          </a>
+          </Link>
         </Button>
       </div>
 
@@ -52,12 +53,12 @@ export default async function GatosPage({
       </Suspense>
 
       {/* FAB Mobile */}
-      <a
+      <Link
         href={`/${slug}/admin/gatos/novo`}
         className="bg-primary text-primary-foreground shadow-primary/25 fixed right-6 bottom-6 z-50 flex h-14 w-14 items-center justify-center rounded-full shadow-lg transition-transform hover:scale-105 active:scale-95 sm:hidden"
       >
         <Plus className="h-6 w-6" />
-      </a>
+      </Link>
     </div>
   )
 }

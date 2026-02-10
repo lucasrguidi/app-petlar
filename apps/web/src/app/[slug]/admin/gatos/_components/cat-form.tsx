@@ -81,6 +81,7 @@ export function CatForm({ mode, initialData, catId }: CatFormProps) {
     trpc.cats.create.mutationOptions({
       onSuccess: () => {
         toast.success('Gato cadastrado com sucesso!')
+        queryClient.invalidateQueries({ queryKey: [['cats']] })
         router.push(`/${slug}/admin/gatos` as Route)
       },
       onError: (error) => {

@@ -213,16 +213,40 @@ Client-side auth (web app): `apps/web/src/lib/auth-client.ts`
 - **React Query**: Integrated with tRPC for data fetching
 - **Styling**: Tailwind CSS v4 with custom configuration
 
+### Internal Navigation: Always use `<Link>`
+
+**Never use `<a>` for internal navigation.** Always use Next.js `<Link>` from `next/link`.
+
+- `<a>` causes full page reload, destroying React state and React Query cache
+- `<Link>` does client-side navigation, preserving state and enabling prefetching
+
+```tsx
+// WRONG - causes full page reload
+<a href={`/${slug}/admin/gatos`}>Gatos</a>
+
+// CORRECT - client-side navigation
+import Link from 'next/link'
+<Link href={`/${slug}/admin/gatos`}>Gatos</Link>
+
+// With shadcn Button
+<Button asChild>
+  <Link href={`/${slug}/admin/gatos/novo`}>Novo Gato</Link>
+</Button>
+```
+
+Only use `<a>` for **external links** (https://, mailto:, tel:).
+
 ### URL Params in Client Components
 
 Use the `useOrgSlug()` hook instead of prop drilling:
 
 ```typescript
+import Link from 'next/link'
 import { useOrgSlug } from '@/hooks/use-org-slug'
 
 export function MyComponent() {
   const slug = useOrgSlug()
-  return <a href={`/${slug}/admin/gatos`}>Gatos</a>
+  return <Link href={`/${slug}/admin/gatos`}>Gatos</Link>
 }
 ```
 

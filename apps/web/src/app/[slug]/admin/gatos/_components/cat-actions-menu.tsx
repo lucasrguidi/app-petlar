@@ -12,6 +12,7 @@ import {
   Users,
 } from 'lucide-react'
 import { type Route } from 'next'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { toast } from 'sonner'
@@ -183,10 +184,10 @@ export function CatActionsMenu({ cat }: CatActionsMenuProps) {
       <DropdownMenuContent align="end" className="w-48 rounded-xl">
         {/* Navigation */}
         <DropdownMenuItem asChild>
-          <a href={`/${slug}/admin/gatos/${cat.id}/editar`}>
+          <Link href={`/${slug}/admin/gatos/${cat.id}/editar`}>
             <Pencil className="mr-2 h-4 w-4" />
             Editar
-          </a>
+          </Link>
         </DropdownMenuItem>
 
         <DropdownMenuItem onClick={handleDuplicate} disabled={isPending}>
@@ -200,10 +201,10 @@ export function CatActionsMenu({ cat }: CatActionsMenuProps) {
         </DropdownMenuItem>
 
         <DropdownMenuItem asChild>
-          <a href={`/${slug}/admin/gatos/${cat.id}/interessados`}>
+          <Link href={`/${slug}/admin/gatos/${cat.id}/interessados`}>
             <Users className="mr-2 h-4 w-4" />
             Ver interessados
-          </a>
+          </Link>
         </DropdownMenuItem>
 
         <DropdownMenuSeparator />

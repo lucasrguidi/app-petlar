@@ -11,6 +11,7 @@ import {
   Users,
   X,
 } from 'lucide-react'
+import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 
@@ -93,7 +94,7 @@ export function AdminSidebar({
     <div className="flex h-full flex-col">
       {/* Logo Header */}
       <div className="p-4">
-        <a
+        <Link
           href={`/${slug}/admin`}
           className="group hover:bg-primary/5 flex items-center gap-3 rounded-xl p-2 transition-colors"
         >
@@ -121,7 +122,7 @@ export function AdminSidebar({
             </p>
             <p className="text-muted-foreground text-xs">Painel Admin</p>
           </div>
-        </a>
+        </Link>
       </div>
 
       {/* Divider */}
@@ -137,7 +138,7 @@ export function AdminSidebar({
           const Icon = item.icon
 
           return (
-            <a
+            <Link
               key={item.href}
               href={item.href}
               onClick={() => setMobileOpen(false)}
@@ -177,7 +178,7 @@ export function AdminSidebar({
                     : 'group-hover:translate-x-0.5 group-hover:opacity-50'
                 )}
               />
-            </a>
+            </Link>
           )
         })}
       </nav>

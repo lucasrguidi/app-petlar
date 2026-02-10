@@ -1,6 +1,6 @@
 'use client'
 
-import { useQuery } from '@tanstack/react-query'
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
 
 import { CatsDataTable } from './cats-data-table'
 import { CatsEmptyState } from './cats-empty-state'
@@ -22,8 +22,8 @@ export function CatsList({
   onPageChange,
   onClearFilters,
 }: CatsListProps) {
-  const { data, isLoading, isError, refetch } = useQuery(
-    trpc.cats.list.queryOptions({
+  const { data, isLoading, isFetching, isError, refetch } = useQuery({
+    ...trpc.cats.list.queryOptions({
       status: filters.status as
         | 'available'
         | 'in_progress'
@@ -36,8 +36,10 @@ export function CatsList({
       search: filters.search || undefined,
       page: filters.page,
       limit: 15,
-    })
-  )
+    }),
+    // Keep previous data visible while fetching new data
+    placeholderData: keepPreviousData,
+  })
 
   // Check if there are any active filters
   const hasActiveFilters =
@@ -48,7 +50,8 @@ export function CatsList({
     filters.castrated ||
     filters.search
 
-  if (isLoading) {
+  // Only show skeleton on initial load (no cached data)
+  if (isLoading && !data) {
     return <CatsLoadingSkeleton />
   }
 
@@ -86,8 +89,12 @@ export function CatsList({
         {data.pagination.total !== 1 ? 's' : ''}
       </p>
 
-      {/* Data Table - scrollable area */}
-      <div className="min-h-0 flex-1">
+      {/* Data Table - scrollable area with subtle opacity on refetch */}
+      <div
+        className={`min-h-0 flex-1 transition-opacity duration-200 ${
+          isFetching ? 'pointer-events-none opacity-60' : ''
+        }`}
+      >
         <CatsDataTable cats={data.cats} />
       </div>
 

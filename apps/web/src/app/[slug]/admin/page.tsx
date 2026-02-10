@@ -7,6 +7,7 @@ import {
   TrendingUp,
   Users,
 } from 'lucide-react'
+import Link from 'next/link'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
@@ -173,7 +174,7 @@ export default async function AdminPage({ params }: AdminPageProps) {
           {quickLinks.map((link, index) => {
             const Icon = link.icon
             return (
-              <a
+              <Link
                 key={link.href}
                 href={link.href}
                 className="animate-fade-in-up group"
@@ -217,7 +218,7 @@ export default async function AdminPage({ params }: AdminPageProps) {
                     </div>
                   </CardContent>
                 </Card>
-              </a>
+              </Link>
             )
           })}
         </div>
@@ -233,13 +234,13 @@ export default async function AdminPage({ params }: AdminPageProps) {
             <CardTitle className="text-display text-lg font-semibold">
               Atividade Recente
             </CardTitle>
-            <a
+            <Link
               href={`/${slug}/admin/gatos`}
               className="text-primary hover:text-primary/80 flex items-center gap-1 text-sm font-medium transition-colors"
             >
               Ver tudo
               <ArrowRight className="h-3 w-3" />
-            </a>
+            </Link>
           </div>
         </CardHeader>
         <CardContent>

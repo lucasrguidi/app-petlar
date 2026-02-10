@@ -6,6 +6,14 @@ import { toast } from 'sonner'
 import type { AppRouter } from '@app-petlar/api/routers/index'
 
 export const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      // Data is fresh for 5 minutes - won't refetch on mount/focus
+      staleTime: 5 * 60 * 1000,
+      // Keep unused data in cache for 10 minutes
+      gcTime: 10 * 60 * 1000,
+    },
+  },
   queryCache: new QueryCache({
     onError: (error, query) => {
       toast.error(error.message, {

@@ -1,6 +1,7 @@
 'use client'
 
 import { Cat, Plus, Search } from 'lucide-react'
+import Link from 'next/link'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -54,10 +55,10 @@ export function CatsEmptyState({
           Comece cadastrando o primeiro gato disponível para adoção.
         </p>
         <Button asChild className="mt-4 gap-2 rounded-lg">
-          <a href={`/${slug}/admin/gatos/novo`}>
+          <Link href={`/${slug}/admin/gatos/novo`}>
             <Plus className="h-4 w-4" />
             Cadastrar primeiro gato
-          </a>
+          </Link>
         </Button>
       </CardContent>
     </Card>
