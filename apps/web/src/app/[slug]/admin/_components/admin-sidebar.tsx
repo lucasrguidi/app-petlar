@@ -240,8 +240,8 @@ export function AdminSidebar({
         <SidebarContent />
       </aside>
 
-      {/* Desktop Sidebar */}
-      <aside className="border-sidebar-border bg-sidebar hidden w-64 shrink-0 border-r md:block">
+      {/* Desktop Sidebar - fixed height with internal scroll */}
+      <aside className="border-sidebar-border bg-sidebar hidden h-screen w-64 shrink-0 border-r md:block">
         <SidebarContent />
       </aside>
     </>

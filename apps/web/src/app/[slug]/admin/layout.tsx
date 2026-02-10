@@ -60,7 +60,7 @@ export default async function AdminLayout({
   }
 
   return (
-    <div className="from-background via-muted/20 to-background relative flex min-h-screen bg-gradient-to-br">
+    <div className="from-background via-muted/20 to-background relative flex h-screen overflow-hidden bg-gradient-to-br">
       {/* Subtle background pattern */}
       <div
         className="pointer-events-none fixed inset-0 opacity-[0.015]"
@@ -69,7 +69,7 @@ export default async function AdminLayout({
         }}
       />
 
-      {/* Sidebar */}
+      {/* Sidebar - fixed height */}
       <AdminSidebar
         orgSlug={org.slug}
         orgName={org.name}
@@ -77,8 +77,8 @@ export default async function AdminLayout({
         userRole={user.role}
       />
 
-      {/* Main content area */}
-      <div className="flex flex-1 flex-col">
+      {/* Main content area - flex column with fixed header */}
+      <div className="flex min-w-0 flex-1 flex-col">
         <AdminHeader
           orgSlug={org.slug}
           user={{
@@ -89,8 +89,11 @@ export default async function AdminLayout({
           }}
         />
 
-        <main className="flex-1 overflow-auto p-4 md:p-6 lg:p-8">
-          <div className="mx-auto max-w-7xl">{children}</div>
+        {/* Content area - flex container for pages to fill */}
+        <main className="flex min-h-0 flex-1 flex-col p-4 md:p-6 lg:p-8">
+          <div className="mx-auto flex min-h-0 w-full max-w-7xl flex-1 flex-col">
+            {children}
+          </div>
         </main>
       </div>
     </div>

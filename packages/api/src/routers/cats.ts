@@ -40,6 +40,7 @@ const listFiltersSchema = z.object({
   search: z.string().optional(),
   page: z.number().int().min(1).default(1),
   limit: z.number().int().min(1).max(50).default(10),
+  includeAdopted: z.boolean().default(false),
 })
 
 /**
@@ -63,7 +64,17 @@ export const catsRouter = router({
   list: protectedProcedure
     .input(listFiltersSchema)
     .query(async ({ ctx, input }) => {
-      const { status, sex, fiv, felv, castrated, search, page, limit } = input
+      const {
+        status,
+        sex,
+        fiv,
+        felv,
+        castrated,
+        search,
+        page,
+        limit,
+        includeAdopted,
+      } = input
       const orgId = requireOrgId(ctx.session.user)
       const offset = (page - 1) * limit
 
@@ -72,6 +83,9 @@ export const catsRouter = router({
 
       if (status) {
         conditions.push(eq(cats.status, status))
+      } else if (!includeAdopted) {
+        // Exclude adopted cats by default unless explicitly requested
+        conditions.push(sql`${cats.status} != 'adopted'`)
       }
       if (sex) {
         conditions.push(eq(cats.sex, sex))
@@ -100,6 +114,9 @@ export const catsRouter = router({
           fiv: cats.fiv,
           felv: cats.felv,
           castrated: cats.castrated,
+          vaccinated: cats.vaccinated,
+          dewormed: cats.dewormed,
+          description: cats.description,
           status: cats.status,
           createdAt: cats.createdAt,
         })
@@ -396,7 +413,7 @@ export const catsRouter = router({
 
       // Validar transições válidas
       const validTransitions: Record<string, string[]> = {
-        available: ['in_progress'],
+        available: ['in_progress', 'adopted'],
         in_progress: ['available', 'adopted'],
       }
 

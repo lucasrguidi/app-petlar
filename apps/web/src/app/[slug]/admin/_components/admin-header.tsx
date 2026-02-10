@@ -10,7 +10,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
@@ -69,7 +68,7 @@ export function AdminHeader({ orgSlug, user }: AdminHeaderProps) {
   }
 
   return (
-    <header className="border-border/50 bg-card/95 sticky top-0 z-30 border-b backdrop-blur-md">
+    <header className="border-border/50 bg-card/95 z-30 shrink-0 border-b backdrop-blur-md">
       <div className="flex h-16 items-center justify-between px-4 md:px-6">
         {/* Left side - Spacer for mobile */}
         <div className="w-14 md:hidden" />
