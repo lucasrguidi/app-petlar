@@ -167,6 +167,86 @@ When creating new components:
 2. If it's a base UI primitive → place in `components/ui/`
 3. If it's shared across pages → place in `components/`
 
+### Server Actions
+
+#### Organization
+- Feature-specific actions → `_actions/` folder inside the page folder
+- Shared/reusable actions → `/actions/` at src root
+- Rule: used in 1 place = next to feature, used in 2+ places = root folder
+
+#### Standard Structure
+- File with `"use server"` directive at the top
+- Validate inputs with Zod
+- Standardized return type:
+  ```typescript
+  type ActionResponse<T> = {
+    success: boolean
+    data?: T
+    error?: string
+  }
+  ```
+- Always handle errors and return user-friendly messages
+- Revalidate paths when needed with `revalidatePath()`
+
+### shadcn/ui
+
+- **Always use shadcn/ui components when available** - never create custom components if shadcn already provides one
+- Use the shadcn MCP to check available components, read documentation, and install new components
+- Follow shadcn documentation for proper component usage
+- Customize only via Tailwind classes or extending the component
+
+### Design System
+
+**Documentação completa:** `/DESIGN-SYSTEM.md`
+
+O PetLar segue um design system documentado com foco em **acolhimento e amigabilidade**.
+
+#### Princípios
+- **Acolhedor**: Bordas arredondadas, cores suaves, sensação de lar
+- **Confiável**: Hierarquia clara, espaçamento generoso
+- **Amigável**: Micro-interações suaves, feedback visual
+- **Acessível**: Contraste WCAG AA, navegação por teclado
+
+#### Paleta
+- **Azul céu** (#AEC7E2): Fundo, acolhimento
+- **Marrom terra** (#783201): Texto, legibilidade
+- **Laranja vibrante** (#E35915): CTAs, energia
+
+#### Tipografia
+- **DM Sans**: Corpo de texto (font-sans)
+- **Outfit**: Headlines e títulos (font-display)
+
+#### Dois Contextos
+| Site Público | Painel Admin |
+|--------------|--------------|
+| Emocional, ilustrativo | Funcional, clean |
+| Elementos temáticos de gatos | Neutro profissional |
+| Cards `rounded-2xl` | Cards `rounded-xl` |
+| Animações expressivas | Transições sutis |
+
+#### Quick Reference
+```tsx
+// Título de página (admin)
+<h1 className="text-2xl font-bold tracking-tight"
+    style={{ fontFamily: 'var(--font-display)' }}>
+
+// Card padrão
+<Card className="rounded-xl shadow-sm">
+
+// Botão primário com efeito
+<Button className="shadow-lg shadow-primary/25 hover:shadow-primary/35
+                   transition-all hover:scale-[1.02] active:scale-[0.98]">
+
+// Input com ícone
+<div className="relative">
+  <Icon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+  <Input className="pl-10 h-11 rounded-lg" />
+</div>
+```
+
+- Mobile-first approach
+- Sempre consultar `/DESIGN-SYSTEM.md` para padrões detalhados
+
 ### Environment Variables
 
 Environment variables are validated using `@t3-oss/env-nextjs` in `packages/env/`:

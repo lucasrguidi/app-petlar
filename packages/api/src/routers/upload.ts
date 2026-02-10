@@ -1,23 +1,23 @@
-import { TRPCError } from "@trpc/server";
-import { z } from "zod";
+import { TRPCError } from '@trpc/server'
+import { z } from 'zod'
 
-import { protectedProcedure, router } from "../index";
+import { protectedProcedure, router } from '../index'
 import {
   deleteFile,
   generateFileKey,
   getKeyFromUrl,
   getPresignedUploadUrl,
   getPublicUrl,
-} from "../lib/r2";
+} from '../lib/r2'
 
 const ALLOWED_CONTENT_TYPES = [
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-  "image/gif",
-];
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'image/gif',
+]
 
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
 
 export const uploadRouter = router({
   /**
@@ -28,24 +28,26 @@ export const uploadRouter = router({
     .input(
       z.object({
         filename: z.string().min(1),
-        contentType: z.string().refine((type) => ALLOWED_CONTENT_TYPES.includes(type), {
-          message: `Content type must be one of: ${ALLOWED_CONTENT_TYPES.join(", ")}`,
-        }),
+        contentType: z
+          .string()
+          .refine((type) => ALLOWED_CONTENT_TYPES.includes(type), {
+            message: `Content type must be one of: ${ALLOWED_CONTENT_TYPES.join(', ')}`,
+          }),
         fileSize: z.number().max(MAX_FILE_SIZE, {
           message: `File size must be less than ${MAX_FILE_SIZE / 1024 / 1024}MB`,
         }),
       })
     )
     .mutation(async ({ input }) => {
-      const { filename, contentType } = input;
+      const { filename, contentType } = input
 
-      const key = generateFileKey(filename);
-      const presignedUrl = await getPresignedUploadUrl(key, contentType);
+      const key = generateFileKey(filename)
+      const presignedUrl = await getPresignedUploadUrl(key, contentType)
 
       return {
         presignedUrl,
         key,
-      };
+      }
     }),
 
   /**
@@ -58,13 +60,13 @@ export const uploadRouter = router({
       })
     )
     .mutation(({ input }) => {
-      const { key } = input;
-      const publicUrl = getPublicUrl(key);
+      const { key } = input
+      const publicUrl = getPublicUrl(key)
 
       return {
         publicUrl,
         key,
-      };
+      }
     }),
 
   /**
@@ -77,18 +79,18 @@ export const uploadRouter = router({
       })
     )
     .mutation(async ({ input }) => {
-      const { url } = input;
+      const { url } = input
 
-      const key = getKeyFromUrl(url);
+      const key = getKeyFromUrl(url)
       if (!key) {
         throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Invalid file URL",
-        });
+          code: 'BAD_REQUEST',
+          message: 'Invalid file URL',
+        })
       }
 
-      await deleteFile(key);
+      await deleteFile(key)
 
-      return { success: true };
+      return { success: true }
     }),
-});
+})

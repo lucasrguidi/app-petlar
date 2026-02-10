@@ -1,13 +1,13 @@
-import { db } from "@app-petlar/db";
-import * as schema from "@app-petlar/db/schema/auth";
-import { env } from "@app-petlar/env/server";
-import { betterAuth } from "better-auth";
-import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { nextCookies } from "better-auth/next-js";
+import { db } from '@app-petlar/db'
+import * as schema from '@app-petlar/db/schema/auth'
+import { env } from '@app-petlar/env/server'
+import { betterAuth } from 'better-auth'
+import { drizzleAdapter } from 'better-auth/adapters/drizzle'
+import { nextCookies } from 'better-auth/next-js'
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
-    provider: "sqlite",
+    provider: 'sqlite',
     schema: schema,
   }),
   trustedOrigins: [env.CORS_ORIGIN],
@@ -17,20 +17,20 @@ export const auth = betterAuth({
   user: {
     additionalFields: {
       orgId: {
-        type: "string",
+        type: 'string',
         required: false,
         input: true,
-        fieldName: "orgId",
+        fieldName: 'orgId',
       },
       role: {
-        type: "string",
+        type: 'string',
         required: false,
-        defaultValue: "volunteer",
-        fieldName: "role",
+        defaultValue: 'volunteer',
+        fieldName: 'role',
       },
     },
   },
   plugins: [nextCookies()],
-});
+})
 
-export type Auth = typeof auth;
+export type Auth = typeof auth

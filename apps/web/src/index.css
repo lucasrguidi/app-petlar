@@ -4,56 +4,93 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
-  PetLar Design System
+  ═══════════════════════════════════════════════════════════════════════════════
+  PETLAR DESIGN SYSTEM
+  ═══════════════════════════════════════════════════════════════════════════════
+
+  Filosofia: Acolhedor e amigável, transmitindo sensação de lar seguro
 
   Paleta Principal:
-  - Fundo: #AEC7E2 (azul ceu suave - acolhedor)
-  - Texto: #783201 (marrom escuro - terra)
-  - Primario: #E35915 (laranja vibrante - energia)
-  - Branco: #FFFFFF (cards, contraste)
+  - Fundo: #AEC7E2 (azul céu suave - acolhimento)
+  - Texto: #783201 (marrom terra - legibilidade)
+  - Primário: #E35915 (laranja vibrante - energia e CTAs)
+  - Branco: #FFFFFF (cards e superfícies elevadas)
+
+  Documentação completa: /DESIGN-SYSTEM.md
 */
 
 @theme inline {
-  /* Fonts */
+  /* ═══════════════════════════════════════════════════════════
+     TIPOGRAFIA
+     DM Sans: corpo de texto (legível, amigável)
+     Outfit: headlines e títulos (moderno, distinto)
+     ═══════════════════════════════════════════════════════════ */
+
   --font-sans: 'DM Sans Variable', 'DM Sans', system-ui, sans-serif;
   --font-display: 'Outfit Variable', 'Outfit', system-ui, sans-serif;
 
-  /* Radius */
-  --radius-sm: 0.5rem;
-  --radius-md: 0.625rem;
-  --radius-lg: 0.75rem;
-  --radius-xl: 1rem;
-  --radius-2xl: 1.25rem;
-  --radius-3xl: 1.5rem;
-  --radius-4xl: 1.75rem;
+  /* ═══════════════════════════════════════════════════════════
+     BORDER RADIUS
+     Bordas generosas transmitem acolhimento
+     ═══════════════════════════════════════════════════════════ */
 
-  /* PetLar Colors - Light Theme */
-  --color-background: #aec7e2; /* azul ceu */
-  --color-foreground: #783201; /* marrom terra */
+  --radius-xs: 0.375rem; /* 6px - chips, badges */
+  --radius-sm: 0.5rem; /* 8px - inputs, botões pequenos */
+  --radius-md: 0.75rem; /* 12px - cards internos */
+  --radius-lg: 1rem; /* 16px - cards principais */
+  --radius-xl: 1.25rem; /* 20px - modais */
+  --radius-2xl: 1.5rem; /* 24px - cards destacados */
+  --radius-3xl: 2rem; /* 32px - elementos hero */
 
+  /* ═══════════════════════════════════════════════════════════
+     CORES - LIGHT THEME
+     ═══════════════════════════════════════════════════════════ */
+
+  /* Fundos e texto */
+  --color-background: #aec7e2;
+  --color-foreground: #783201;
+
+  /* Cards e superfícies */
   --color-card: #ffffff;
   --color-card-foreground: #783201;
 
+  /* Popovers e dropdowns */
   --color-popover: #ffffff;
   --color-popover-foreground: #783201;
 
-  --color-primary: #e35915; /* laranja vibrante */
+  /* Ação primária (CTAs) */
+  --color-primary: #e35915;
   --color-primary-foreground: #ffffff;
 
-  --color-secondary: #d4e3f3; /* azul mais claro */
+  /* Ação secundária */
+  --color-secondary: #d4e3f3;
   --color-secondary-foreground: #783201;
 
+  /* Estados muted */
   --color-muted: #c5d8ee;
   --color-muted-foreground: #8b5a2b;
 
-  --color-accent: #f07b3d; /* laranja suave */
+  /* Accent/hover */
+  --color-accent: #f07b3d;
   --color-accent-foreground: #ffffff;
 
+  /* Status semânticos */
   --color-destructive: #dc2626;
+  --color-destructive-foreground: #ffffff;
 
+  --color-success: #16a34a;
+  --color-success-foreground: #ffffff;
+
+  --color-warning: #f59e0b;
+  --color-warning-foreground: #783201;
+
+  --color-info: #0ea5e9;
+  --color-info-foreground: #ffffff;
+
+  /* Bordas e inputs */
   --color-border: #9ab4d1;
   --color-input: #e8f0f8;
-  --color-ring: #e35915; /* laranja para focus */
+  --color-ring: #e35915;
 
   /* Charts */
   --color-chart-1: #e35915;
@@ -189,4 +226,50 @@
 }
 .animation-delay-500 {
   animation-delay: 500ms;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   UTILITÁRIOS CUSTOMIZADOS (Tailwind v4)
+   ═══════════════════════════════════════════════════════════ */
+
+/* Sombras warm - tons de marrom harmonizados */
+@utility shadow-warm-sm {
+  box-shadow: 0 2px 4px rgba(120, 50, 1, 0.06);
+}
+
+@utility shadow-warm-md {
+  box-shadow: 0 4px 12px rgba(120, 50, 1, 0.08);
+}
+
+@utility shadow-warm-lg {
+  box-shadow: 0 8px 24px rgba(120, 50, 1, 0.1);
+}
+
+@utility shadow-warm-xl {
+  box-shadow: 0 16px 48px rgba(120, 50, 1, 0.12);
+}
+
+/* Sombra colorida para CTAs */
+@utility shadow-primary-glow {
+  box-shadow: 0 4px 14px rgba(227, 89, 21, 0.25);
+}
+
+@utility shadow-primary-glow-hover {
+  box-shadow: 0 6px 20px rgba(227, 89, 21, 0.35);
+}
+
+/* Tipografia */
+@utility text-display {
+  font-family: var(--font-display);
+}
+
+/* Card interativo */
+@utility card-interactive {
+  transition-property: all;
+  transition-duration: 200ms;
+  transition-timing-function: ease-out;
+  &:hover {
+    box-shadow: 0 8px 24px rgba(120, 50, 1, 0.1);
+    transform: translateY(-2px);
+  }
 }

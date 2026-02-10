@@ -1,7 +1,7 @@
 'use client'
 
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Eye, EyeOff, Loader2, Lock, Mail } from 'lucide-react'
+import { ArrowRight, Eye, EyeOff, Loader2, Lock, Mail } from 'lucide-react'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { authClient } from '@/lib/auth-client'
+import { cn } from '@/lib/utils'
 
 const signInSchema = z.object({
   email: z.string().min(1, 'E-mail é obrigatório').email('E-mail inválido'),
@@ -36,6 +37,7 @@ interface SignInFormProps {
 
 export function SignInForm({ orgId, orgSlug }: SignInFormProps) {
   const [showPassword, setShowPassword] = useState(false)
+  const [focusedField, setFocusedField] = useState<string | null>(null)
 
   const form = useForm<SignInFormValues>({
     resolver: zodResolver(signInSchema),
@@ -59,25 +61,21 @@ export function SignInForm({ orgId, orgSlug }: SignInFormProps) {
         return
       }
 
-      // Verificar se o usuário pertence à org correta
       if (!session?.user) {
         toast.error('Erro ao obter dados do usuário')
         return
       }
 
-      // Buscar dados do usuário atualizado (com orgId)
       const { data: userData } = await authClient.getSession()
       const userOrgId = (userData?.user as { orgId?: string })?.orgId
 
       if (!userOrgId) {
-        // Usuário não pertence a nenhuma org
         await authClient.signOut()
         toast.error('Usuário não pertence a nenhuma organização')
         return
       }
 
       if (userOrgId !== orgId) {
-        // Usuário pertence a outra org
         await authClient.signOut()
         toast.error('Você não tem acesso a esta organização')
         return
@@ -93,80 +91,129 @@ export function SignInForm({ orgId, orgSlug }: SignInFormProps) {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+        {/* Campo E-mail */}
         <FormField
           control={form.control}
           name="email"
           render={({ field }) => (
-            <FormItem>
+            <FormItem className="space-y-2">
               <FormLabel className="text-foreground text-sm font-medium">
                 E-mail
               </FormLabel>
               <FormControl>
                 <div className="relative">
-                  <Mail className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
+                  {/* Icon container */}
+                  <div
+                    className={cn(
+                      'absolute top-0 left-0 flex h-12 w-12 items-center justify-center rounded-l-xl transition-colors duration-200',
+                      focusedField === 'email'
+                        ? 'bg-primary/10 text-primary'
+                        : 'bg-muted/50 text-muted-foreground'
+                    )}
+                  >
+                    <Mail className="h-4 w-4" />
+                  </div>
                   <Input
                     type="email"
                     placeholder="seu@email.com"
                     disabled={isLoading}
-                    className="border-border/60 h-11 rounded-lg bg-white/80 pl-10 transition-colors focus:bg-white"
+                    className="border-border/50 bg-muted/30 placeholder:text-muted-foreground/60 focus:border-primary focus:bg-card focus:ring-primary/20 h-12 rounded-xl pl-14 text-sm transition-all duration-200 focus:ring-2"
                     {...field}
+                    onFocus={() => setFocusedField('email')}
+                    onBlur={(e) => {
+                      field.onBlur()
+                      setFocusedField(null)
+                    }}
                   />
                 </div>
               </FormControl>
-              <FormMessage />
+              <FormMessage className="text-xs" />
             </FormItem>
           )}
         />
 
+        {/* Campo Senha */}
         <FormField
           control={form.control}
           name="password"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-foreground text-sm font-medium">
-                Senha
-              </FormLabel>
+            <FormItem className="space-y-2">
+              <div className="flex items-center justify-between">
+                <FormLabel className="text-foreground text-sm font-medium">
+                  Senha
+                </FormLabel>
+                <button
+                  type="button"
+                  className="text-primary hover:text-primary/80 text-xs font-medium transition-colors"
+                  tabIndex={-1}
+                >
+                  Esqueceu a senha?
+                </button>
+              </div>
               <FormControl>
                 <div className="relative">
-                  <Lock className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
+                  {/* Icon container */}
+                  <div
+                    className={cn(
+                      'absolute top-0 left-0 flex h-12 w-12 items-center justify-center rounded-l-xl transition-colors duration-200',
+                      focusedField === 'password'
+                        ? 'bg-primary/10 text-primary'
+                        : 'bg-muted/50 text-muted-foreground'
+                    )}
+                  >
+                    <Lock className="h-4 w-4" />
+                  </div>
                   <Input
                     type={showPassword ? 'text' : 'password'}
-                    placeholder="********"
+                    placeholder="••••••••"
                     disabled={isLoading}
-                    className="border-border/60 h-11 rounded-lg bg-white/80 pr-10 pl-10 transition-colors focus:bg-white"
+                    className="border-border/50 bg-muted/30 placeholder:text-muted-foreground/60 focus:border-primary focus:bg-card focus:ring-primary/20 h-12 rounded-xl pr-12 pl-14 text-sm transition-all duration-200 focus:ring-2"
                     {...field}
+                    onFocus={() => setFocusedField('password')}
+                    onBlur={(e) => {
+                      field.onBlur()
+                      setFocusedField(null)
+                    }}
                   />
+                  {/* Toggle password visibility */}
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="text-muted-foreground hover:text-foreground absolute top-1/2 right-3 -translate-y-1/2 transition-colors"
+                    className="text-muted-foreground hover:text-foreground absolute top-0 right-0 flex h-12 w-12 items-center justify-center rounded-r-xl transition-colors"
                     tabIndex={-1}
+                    aria-label={
+                      showPassword ? 'Ocultar senha' : 'Mostrar senha'
+                    }
                   >
                     {showPassword ? (
-                      <EyeOff className="size-4" />
+                      <EyeOff className="h-4 w-4" />
                     ) : (
-                      <Eye className="size-4" />
+                      <Eye className="h-4 w-4" />
                     )}
                   </button>
                 </div>
               </FormControl>
-              <FormMessage />
+              <FormMessage className="text-xs" />
             </FormItem>
           )}
         />
 
+        {/* Botão de submit */}
         <Button
           type="submit"
           disabled={isLoading}
-          className="bg-primary shadow-primary/25 hover:shadow-primary/40 h-11 w-full rounded-lg text-sm font-semibold shadow-lg transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
+          className="group from-primary to-primary/90 shadow-primary-glow hover:shadow-primary-glow-hover h-12 w-full rounded-xl bg-gradient-to-r text-sm font-semibold transition-all duration-300 hover:brightness-110 active:scale-[0.98] disabled:opacity-70 disabled:hover:brightness-100"
         >
           {isLoading ? (
             <>
-              <Loader2 className="mr-2 size-4 animate-spin" />
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               Entrando...
             </>
           ) : (
-            'Entrar'
+            <>
+              Entrar no Painel
+              <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
+            </>
           )}
         </Button>
       </form>
