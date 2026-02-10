@@ -1,6 +1,6 @@
 'use client'
 
-import { useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   Copy,
   Heart,
@@ -10,12 +10,8 @@ import {
   Trash2,
   Users,
 } from 'lucide-react'
-import { useState, useTransition } from 'react'
+import { useState } from 'react'
 import { toast } from 'sonner'
-
-import { deleteCat } from '../_actions/delete-cat'
-import { duplicateCat } from '../_actions/duplicate-cat'
-import { updateCatStatus } from '../_actions/update-cat-status'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -25,6 +21,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { trpc } from '@/utils/trpc'
 
 interface Cat {
   id: string
@@ -39,54 +36,74 @@ interface CatActionsMenuProps {
 
 export function CatActionsMenu({ cat, orgSlug }: CatActionsMenuProps) {
   const queryClient = useQueryClient()
-  const [isPending, startTransition] = useTransition()
   const [isOpen, setIsOpen] = useState(false)
 
   const invalidateQueries = () => {
     queryClient.invalidateQueries({ queryKey: [['cats', 'list']] })
   }
 
-  const handleDuplicate = () => {
-    setIsOpen(false)
-    startTransition(async () => {
-      const result = await duplicateCat(cat.id)
-      if (result.success) {
+  const duplicateMutation = useMutation(
+    trpc.cats.duplicate.mutationOptions({
+      onSuccess: () => {
         toast.success('Gato duplicado com sucesso!')
         invalidateQueries()
-      } else {
-        toast.error(result.error || 'Erro ao duplicar gato')
-      }
+      },
+      onError: (error) => {
+        toast.error(error.message || 'Erro ao duplicar gato')
+      },
     })
+  )
+
+  const deleteMutation = useMutation(
+    trpc.cats.delete.mutationOptions({
+      onSuccess: () => {
+        toast.success('Gato excluído com sucesso!')
+        invalidateQueries()
+      },
+      onError: (error) => {
+        toast.error(error.message || 'Erro ao excluir gato')
+      },
+    })
+  )
+
+  const updateStatusMutation = useMutation(
+    trpc.cats.updateStatus.mutationOptions({
+      onSuccess: (_, variables) => {
+        if (variables.status === 'adopted') {
+          toast.success(`${cat.name} foi adotado! 🎉`)
+        } else {
+          const label =
+            variables.status === 'available' ? 'Disponível' : 'Em processo'
+          toast.success(`Status alterado para "${label}"`)
+        }
+        invalidateQueries()
+      },
+      onError: (error) => {
+        toast.error(error.message || 'Erro ao atualizar status')
+      },
+    })
+  )
+
+  const isPending =
+    duplicateMutation.isPending ||
+    deleteMutation.isPending ||
+    updateStatusMutation.isPending
+
+  const handleDuplicate = () => {
+    setIsOpen(false)
+    duplicateMutation.mutate({ id: cat.id })
   }
 
   const handleDelete = () => {
     setIsOpen(false)
     if (!confirm(`Tem certeza que deseja excluir "${cat.name}"?`)) return
-
-    startTransition(async () => {
-      const result = await deleteCat(cat.id)
-      if (result.success) {
-        toast.success('Gato excluído com sucesso!')
-        invalidateQueries()
-      } else {
-        toast.error(result.error || 'Erro ao excluir gato')
-      }
-    })
+    deleteMutation.mutate({ id: cat.id })
   }
 
   const handleToggleStatus = () => {
     const newStatus = cat.status === 'available' ? 'in_progress' : 'available'
     setIsOpen(false)
-    startTransition(async () => {
-      const result = await updateCatStatus(cat.id, newStatus)
-      if (result.success) {
-        const label = newStatus === 'available' ? 'Disponível' : 'Em processo'
-        toast.success(`Status alterado para "${label}"`)
-        invalidateQueries()
-      } else {
-        toast.error(result.error || 'Erro ao atualizar status')
-      }
-    })
+    updateStatusMutation.mutate({ id: cat.id, status: newStatus })
   }
 
   const handleMarkAsAdopted = () => {
@@ -97,16 +114,7 @@ export function CatActionsMenu({ cat, orgSlug }: CatActionsMenuProps) {
       )
     )
       return
-
-    startTransition(async () => {
-      const result = await updateCatStatus(cat.id, 'adopted')
-      if (result.success) {
-        toast.success(`${cat.name} foi adotado! 🎉`)
-        invalidateQueries()
-      } else {
-        toast.error(result.error || 'Erro ao marcar como adotado')
-      }
-    })
+    updateStatusMutation.mutate({ id: cat.id, status: 'adopted' })
   }
 
   return (
