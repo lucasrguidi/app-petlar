@@ -238,6 +238,17 @@ export function usePhotoUpload({
       .map((p) => ({ url: p.url, order: p.order }))
   }, [photos])
 
+  const resetPhotos = useCallback(() => {
+    // Revoke all blob URLs
+    photos.forEach((photo) => {
+      if (photo.url.startsWith('blob:')) {
+        URL.revokeObjectURL(photo.url)
+      }
+    })
+    setPhotos([])
+    setIsUploading(false)
+  }, [photos])
+
   return {
     photos,
     isUploading,
@@ -245,5 +256,6 @@ export function usePhotoUpload({
     handleRemove,
     handleReorder,
     getPhotosForSubmit,
+    resetPhotos,
   }
 }

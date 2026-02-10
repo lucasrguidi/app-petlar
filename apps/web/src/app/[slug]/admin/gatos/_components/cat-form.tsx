@@ -5,6 +5,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { ArrowLeft, Loader2 } from 'lucide-react'
 import { type Route } from 'next'
 import { useRouter } from 'next/navigation'
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 
@@ -15,7 +16,13 @@ import {
   defaultCatFormValues,
   type CatFormData,
 } from './cat-form-schema'
-import { PhotoUpload } from './photo-upload/photo-upload'
+import { CatFormSuccess } from './cat-form-success'
+import {
+  HealthToggle,
+  SexToggle,
+  TestResultToggle,
+} from './form-fields'
+import { PhotoSection } from './photo-upload/photo-section'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -28,18 +35,10 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { Switch } from '@/components/ui/switch'
+import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { useOrgSlug } from '@/hooks/use-org-slug'
 import { trpc } from '@/utils/trpc'
-
 
 interface Photo {
   id: string
@@ -53,7 +52,10 @@ interface CatFormProps {
   catId?: string
 }
 
+type FormState = 'editing' | 'success'
+
 export function CatForm({ mode, initialData, catId }: CatFormProps) {
+  const [formState, setFormState] = useState<FormState>('editing')
   const slug = useOrgSlug()
   const router = useRouter()
   const queryClient = useQueryClient()
@@ -73,6 +75,7 @@ export function CatForm({ mode, initialData, catId }: CatFormProps) {
     handleRemove,
     handleReorder,
     getPhotosForSubmit,
+    resetPhotos,
   } = usePhotoUpload({
     initialPhotos: initialData?.photos,
   })
@@ -82,7 +85,7 @@ export function CatForm({ mode, initialData, catId }: CatFormProps) {
       onSuccess: () => {
         toast.success('Gato cadastrado com sucesso!')
         queryClient.invalidateQueries({ queryKey: [['cats']] })
-        router.push(`/${slug}/admin/gatos` as Route)
+        setFormState('success')
       },
       onError: (error) => {
         toast.error(error.message || 'Erro ao cadastrar gato')
@@ -93,7 +96,7 @@ export function CatForm({ mode, initialData, catId }: CatFormProps) {
   const updateMutation = useMutation(
     trpc.cats.update.mutationOptions({
       onSuccess: () => {
-        toast.success('Alterações salvas com sucesso!')
+        toast.success('Alteracoes salvas com sucesso!')
         queryClient.invalidateQueries({ queryKey: [['cats']] })
         router.push(`/${slug}/admin/gatos` as Route)
       },
@@ -122,8 +125,28 @@ export function CatForm({ mode, initialData, catId }: CatFormProps) {
     }
   }
 
-  const watchVaccinated = form.watch('vaccinated')
-  const watchDewormed = form.watch('dewormed')
+  const handleRegisterAnother = () => {
+    form.reset(defaultCatFormValues)
+    resetPhotos()
+    setFormState('editing')
+    setTimeout(() => {
+      document.querySelector<HTMLInputElement>('input[name="name"]')?.focus()
+    }, 100)
+  }
+
+  const handleGoToList = () => {
+    router.push(`/${slug}/admin/gatos` as Route)
+  }
+
+  // Show success screen after create
+  if (formState === 'success') {
+    return (
+      <CatFormSuccess
+        onRegisterAnother={handleRegisterAnother}
+        onGoToList={handleGoToList}
+      />
+    )
+  }
 
   return (
     <div className="space-y-6">
@@ -140,275 +163,164 @@ export function CatForm({ mode, initialData, catId }: CatFormProps) {
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          {/* Basic Info */}
+          {/* PHOTOS - Full width at top */}
           <Card className="rounded-xl">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-lg">Informações Básicas</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Nome</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Nome do gato" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+            <CardContent className="pt-6">
+              <PhotoSection
+                photos={photos}
+                isUploading={isUploading}
+                onFilesSelected={handleFilesSelected}
+                onRemove={handleRemove}
+                onReorder={handleReorder}
               />
-
-              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-                <FormField
-                  control={form.control}
-                  name="ageYears"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Anos</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          min={0}
-                          max={30}
-                          placeholder="0"
-                          {...field}
-                          value={field.value ?? ''}
-                          onChange={(e) => {
-                            const val = e.target.value
-                            field.onChange(val === '' ? null : Number(val))
-                          }}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="ageMonths"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Meses</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          min={0}
-                          max={11}
-                          placeholder="0"
-                          {...field}
-                          value={field.value ?? ''}
-                          onChange={(e) => {
-                            const val = e.target.value
-                            field.onChange(val === '' ? null : Number(val))
-                          }}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="sex"
-                  render={({ field }) => (
-                    <FormItem className="col-span-2 sm:col-span-1">
-                      <FormLabel>Sexo</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selecione" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="male">Macho</SelectItem>
-                          <SelectItem value="female">Fêmea</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
             </CardContent>
           </Card>
 
-          {/* Health */}
-          <Card className="rounded-xl">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-lg">Saúde</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid gap-4 sm:grid-cols-2">
+          {/* TWO COLUMN LAYOUT */}
+          <div className="grid gap-6 lg:grid-cols-2">
+            {/* LEFT COLUMN - Basic Info */}
+            <Card className="rounded-xl">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-lg">Informacoes Basicas</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Name */}
                 <FormField
                   control={form.control}
-                  name="fiv"
+                  name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>FIV</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selecione" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="negative">Negativo</SelectItem>
-                          <SelectItem value="positive">Positivo</SelectItem>
-                          <SelectItem value="not_tested">Não testado</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <FormLabel>Nome</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Nome do gato"
+                          className="h-11"
+                          {...field}
+                        />
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
 
-                <FormField
-                  control={form.control}
-                  name="felv"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>FeLV</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selecione" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="negative">Negativo</SelectItem>
-                          <SelectItem value="positive">Positivo</SelectItem>
-                          <SelectItem value="not_tested">Não testado</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+                {/* Age - inline years/months */}
+                <div className="space-y-2">
+                  <Label>Idade</Label>
+                  <div className="flex gap-3">
+                    <FormField
+                      control={form.control}
+                      name="ageYears"
+                      render={({ field }) => (
+                        <FormItem className="flex-1">
+                          <FormControl>
+                            <div className="relative">
+                              <Input
+                                type="number"
+                                min={0}
+                                max={30}
+                                placeholder="0"
+                                className="h-11 pr-12"
+                                {...field}
+                                value={field.value ?? ''}
+                                onChange={(e) => {
+                                  const val = e.target.value
+                                  field.onChange(val === '' ? null : Number(val))
+                                }}
+                              />
+                              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+                                anos
+                              </span>
+                            </div>
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="ageMonths"
+                      render={({ field }) => (
+                        <FormItem className="flex-1">
+                          <FormControl>
+                            <div className="relative">
+                              <Input
+                                type="number"
+                                min={0}
+                                max={11}
+                                placeholder="0"
+                                className="h-11 pr-14"
+                                {...field}
+                                value={field.value ?? ''}
+                                onChange={(e) => {
+                                  const val = e.target.value
+                                  field.onChange(val === '' ? null : Number(val))
+                                }}
+                              />
+                              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+                                meses
+                              </span>
+                            </div>
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
 
-              <FormField
-                control={form.control}
-                name="castrated"
-                render={({ field }) => (
-                  <FormItem className="flex items-center justify-between rounded-lg border p-4">
-                    <div className="space-y-0.5">
-                      <FormLabel className="text-base">Castrado</FormLabel>
-                    </div>
-                    <FormControl>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
+                {/* Sex */}
+                <SexToggle control={form.control} />
+              </CardContent>
+            </Card>
 
-              <div className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="vaccinated"
-                  render={({ field }) => (
-                    <FormItem className="flex items-center justify-between rounded-lg border p-4">
-                      <div className="space-y-0.5">
-                        <FormLabel className="text-base">Vacinado</FormLabel>
-                      </div>
-                      <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-
-                {watchVaccinated && (
-                  <FormField
+            {/* RIGHT COLUMN - Health */}
+            <Card className="rounded-xl">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-lg">Saude</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-5">
+                {/* FIV/FeLV - inline toggle groups */}
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <TestResultToggle
                     control={form.control}
-                    name="vaccinationNotes"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Notas sobre vacinação</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="Ex: V4, antirrábica..."
-                            {...field}
-                            value={field.value ?? ''}
-                            onChange={(e) =>
-                              field.onChange(e.target.value || null)
-                            }
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
+                    name="fiv"
+                    label="FIV"
                   />
-                )}
-              </div>
-
-              <div className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="dewormed"
-                  render={({ field }) => (
-                    <FormItem className="flex items-center justify-between rounded-lg border p-4">
-                      <div className="space-y-0.5">
-                        <FormLabel className="text-base">Vermifugado</FormLabel>
-                      </div>
-                      <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-
-                {watchDewormed && (
-                  <FormField
+                  <TestResultToggle
                     control={form.control}
-                    name="dewormingNotes"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Notas sobre vermifugação</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="Ex: Data da última dose..."
-                            {...field}
-                            value={field.value ?? ''}
-                            onChange={(e) =>
-                              field.onChange(e.target.value || null)
-                            }
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
+                    name="felv"
+                    label="FeLV"
                   />
-                )}
-              </div>
-            </CardContent>
-          </Card>
+                </div>
 
-          {/* Description */}
+                {/* Health toggles - compact */}
+                <div className="space-y-4 pt-2">
+                  <HealthToggle
+                    control={form.control}
+                    name="castrated"
+                    label="Castrado"
+                  />
+                  <HealthToggle
+                    control={form.control}
+                    name="vaccinated"
+                    label="Vacinado"
+                    notesName="vaccinationNotes"
+                    notesPlaceholder="Ex: V4, antirrabica..."
+                  />
+                  <HealthToggle
+                    control={form.control}
+                    name="dewormed"
+                    label="Vermifugado"
+                    notesName="dewormingNotes"
+                    notesPlaceholder="Ex: Data da ultima dose..."
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* DESCRIPTION - Full width, shorter */}
           <Card className="rounded-xl">
             <CardHeader className="pb-4">
-              <CardTitle className="text-lg">Descrição</CardTitle>
+              <CardTitle className="text-lg">Descricao</CardTitle>
             </CardHeader>
             <CardContent>
               <FormField
@@ -419,8 +331,8 @@ export function CatForm({ mode, initialData, catId }: CatFormProps) {
                     <FormLabel>Sobre o gato (opcional)</FormLabel>
                     <FormControl>
                       <Textarea
-                        placeholder="Conte sobre a personalidade, comportamento e história do gato..."
-                        className="min-h-32 resize-y"
+                        placeholder="Conte sobre a personalidade, comportamento e historia do gato..."
+                        className="min-h-24 resize-y"
                         {...field}
                         value={field.value ?? ''}
                         onChange={(e) =>
@@ -435,23 +347,7 @@ export function CatForm({ mode, initialData, catId }: CatFormProps) {
             </CardContent>
           </Card>
 
-          {/* Photos */}
-          <Card className="rounded-xl">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-lg">Fotos</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <PhotoUpload
-                photos={photos}
-                isUploading={isUploading}
-                onFilesSelected={handleFilesSelected}
-                onRemove={handleRemove}
-                onReorder={handleReorder}
-              />
-            </CardContent>
-          </Card>
-
-          {/* Submit */}
+          {/* SUBMIT */}
           <div className="sticky bottom-0 -mx-4 bg-gradient-to-t from-background via-background to-transparent px-4 pb-4 pt-6 sm:static sm:mx-0 sm:bg-none sm:p-0">
             <Button
               type="submit"
@@ -466,7 +362,7 @@ export function CatForm({ mode, initialData, catId }: CatFormProps) {
               ) : mode === 'create' ? (
                 'Cadastrar Gato'
               ) : (
-                'Salvar Alterações'
+                'Salvar Alteracoes'
               )}
             </Button>
           </div>
