@@ -213,6 +213,24 @@ Client-side auth (web app): `apps/web/src/lib/auth-client.ts`
 - **React Query**: Integrated with tRPC for data fetching
 - **Styling**: Tailwind CSS v4 with custom configuration
 
+### URL Params in Client Components
+
+Use the `useOrgSlug()` hook instead of prop drilling:
+
+```typescript
+import { useOrgSlug } from '@/hooks/use-org-slug'
+
+export function MyComponent() {
+  const slug = useOrgSlug()
+  return <a href={`/${slug}/admin/gatos`}>Gatos</a>
+}
+```
+
+**Why this approach:**
+- Avoids prop drilling through multiple component levels
+- Native Next.js `useParams()` hook, no extra dependencies
+- Single source of truth from URL
+
 ### Component Organization
 
 Components follow a co-location pattern:
@@ -232,6 +250,7 @@ apps/web/src/
 ├── components/
 │   ├── ui/                         # shadcn/ui base components
 │   └── providers.tsx               # Global providers
+├── hooks/                          # Custom hooks (useOrgSlug, etc.)
 ├── actions/                        # Shared server actions (auth only)
 └── lib/
     └── utils.ts
@@ -242,6 +261,7 @@ apps/web/src/
 - **`_components/`**: Page-specific components used only within that route
 - **`components/ui/`**: Reusable shadcn/ui base components
 - **`components/`**: Shared components used across multiple pages
+- **`hooks/`**: Custom React hooks for shared logic
 - **`actions/`**: Server Actions for auth operations with redirects
 
 **When creating new components:**

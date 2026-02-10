@@ -15,6 +15,7 @@ import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 
 import { Button } from '@/components/ui/button'
+import { useOrgSlug } from '@/hooks/use-org-slug'
 import { cn } from '@/lib/utils'
 
 type UserRole = 'admin' | 'volunteer'
@@ -28,50 +29,49 @@ interface NavItem {
 }
 
 interface AdminSidebarProps {
-  orgSlug: string
   orgName: string
   orgLogo: string | null
   userRole: UserRole
 }
 
 export function AdminSidebar({
-  orgSlug,
   orgName,
   orgLogo,
   userRole,
 }: AdminSidebarProps) {
   const pathname = usePathname()
+  const slug = useOrgSlug()
   const [mobileOpen, setMobileOpen] = useState(false)
 
   const navItems: NavItem[] = [
     {
       title: 'Dashboard',
-      href: `/${orgSlug}/admin`,
+      href: `/${slug}/admin`,
       icon: LayoutDashboard,
       description: 'Visão geral',
     },
     {
       title: 'Gatos',
-      href: `/${orgSlug}/admin/gatos`,
+      href: `/${slug}/admin/gatos`,
       icon: Cat,
       description: 'Gerenciar felinos',
     },
     {
       title: 'Adotados',
-      href: `/${orgSlug}/admin/adotados`,
+      href: `/${slug}/admin/adotados`,
       icon: Heart,
       description: 'Histórico de adoções',
     },
     {
       title: 'Formulários',
-      href: `/${orgSlug}/admin/formularios`,
+      href: `/${slug}/admin/formularios`,
       icon: FileText,
       adminOnly: true,
       description: 'Configurar formulários',
     },
     {
       title: 'Equipe',
-      href: `/${orgSlug}/admin/usuarios`,
+      href: `/${slug}/admin/usuarios`,
       icon: Users,
       adminOnly: true,
       description: 'Gerenciar usuários',
@@ -83,7 +83,7 @@ export function AdminSidebar({
   )
 
   const isActiveRoute = (href: string) => {
-    if (href === `/${orgSlug}/admin`) {
+    if (href === `/${slug}/admin`) {
       return pathname === href
     }
     return pathname.startsWith(href)
@@ -94,7 +94,7 @@ export function AdminSidebar({
       {/* Logo Header */}
       <div className="p-4">
         <a
-          href={`/${orgSlug}/admin`}
+          href={`/${slug}/admin`}
           className="group hover:bg-primary/5 flex items-center gap-3 rounded-xl p-2 transition-colors"
         >
           {/* Logo */}

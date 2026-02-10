@@ -17,6 +17,7 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { useOrgSlug } from '@/hooks/use-org-slug'
 import { authClient } from '@/lib/auth-client'
 import { cn } from '@/lib/utils'
 
@@ -32,10 +33,10 @@ type SignInFormValues = z.infer<typeof signInSchema>
 
 interface SignInFormProps {
   orgId: string
-  orgSlug: string
 }
 
-export function SignInForm({ orgId, orgSlug }: SignInFormProps) {
+export function SignInForm({ orgId }: SignInFormProps) {
+  const slug = useOrgSlug()
   const [showPassword, setShowPassword] = useState(false)
   const [focusedField, setFocusedField] = useState<string | null>(null)
 
@@ -82,7 +83,7 @@ export function SignInForm({ orgId, orgSlug }: SignInFormProps) {
       }
 
       toast.success('Login realizado com sucesso!')
-      window.location.href = `/${orgSlug}/admin`
+      window.location.href = `/${slug}/admin`
     } catch {
       toast.error('Erro ao fazer login. Tente novamente.')
     }

@@ -8,7 +8,6 @@ import {
   Users,
   X,
 } from 'lucide-react'
-import { useMemo } from 'react'
 
 import { CatActionsMenu } from './cat-actions-menu'
 
@@ -39,7 +38,6 @@ interface Cat {
 
 interface CatsDataTableProps {
   cats: Cat[]
-  orgSlug: string
 }
 
 // Helper: Format age compact
@@ -173,9 +171,8 @@ function ExpandedContent({ cat }: { cat: Cat }) {
   )
 }
 
-// Column definitions creator
-function createColumns(orgSlug: string): ColumnDef<Cat>[] {
-  return [
+// Column definitions
+const columns: ColumnDef<Cat>[] = [
     // Expand column
     {
       id: 'expand',
@@ -304,20 +301,15 @@ function createColumns(orgSlug: string): ColumnDef<Cat>[] {
     {
       id: 'actions',
       header: () => null,
-      cell: ({ row }) => (
-        <CatActionsMenu cat={row.original} orgSlug={orgSlug} />
-      ),
+      cell: ({ row }) => <CatActionsMenu cat={row.original} />,
       meta: {
         className: 'w-10 px-1 sticky right-0 bg-card group-hover:bg-transparent',
         headerClassName: 'sticky right-0 bg-muted/50',
       },
     },
   ]
-}
 
-export function CatsDataTable({ cats, orgSlug }: CatsDataTableProps) {
-  const columns = useMemo(() => createColumns(orgSlug), [orgSlug])
-
+export function CatsDataTable({ cats }: CatsDataTableProps) {
   return (
     <DataTable
       columns={columns}

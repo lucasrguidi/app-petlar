@@ -21,6 +21,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { useOrgSlug } from '@/hooks/use-org-slug'
 import { trpc } from '@/utils/trpc'
 
 interface Cat {
@@ -31,10 +32,10 @@ interface Cat {
 
 interface CatActionsMenuProps {
   cat: Cat
-  orgSlug: string
 }
 
-export function CatActionsMenu({ cat, orgSlug }: CatActionsMenuProps) {
+export function CatActionsMenu({ cat }: CatActionsMenuProps) {
+  const slug = useOrgSlug()
   const queryClient = useQueryClient()
   const [isOpen, setIsOpen] = useState(false)
 
@@ -133,7 +134,7 @@ export function CatActionsMenu({ cat, orgSlug }: CatActionsMenuProps) {
       <DropdownMenuContent align="end" className="w-48 rounded-xl">
         {/* Navigation */}
         <DropdownMenuItem asChild>
-          <a href={`/${orgSlug}/admin/gatos/${cat.id}/editar`}>
+          <a href={`/${slug}/admin/gatos/${cat.id}/editar`}>
             <Pencil className="mr-2 h-4 w-4" />
             Editar
           </a>
@@ -145,7 +146,7 @@ export function CatActionsMenu({ cat, orgSlug }: CatActionsMenuProps) {
         </DropdownMenuItem>
 
         <DropdownMenuItem asChild>
-          <a href={`/${orgSlug}/admin/gatos/${cat.id}/interessados`}>
+          <a href={`/${slug}/admin/gatos/${cat.id}/interessados`}>
             <Users className="mr-2 h-4 w-4" />
             Ver interessados
           </a>

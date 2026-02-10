@@ -1,19 +1,21 @@
+'use client'
+
 import { Cat, Plus, Search } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import { useOrgSlug } from '@/hooks/use-org-slug'
 
 interface CatsEmptyStateProps {
   hasFilters: boolean
-  orgSlug: string
   onClearFilters: () => void
 }
 
 export function CatsEmptyState({
   hasFilters,
-  orgSlug,
   onClearFilters,
 }: CatsEmptyStateProps) {
+  const slug = useOrgSlug()
   if (hasFilters) {
     return (
       <Card className="rounded-xl border-0 shadow-sm">
@@ -52,7 +54,7 @@ export function CatsEmptyState({
           Comece cadastrando o primeiro gato disponível para adoção.
         </p>
         <Button asChild className="mt-4 gap-2 rounded-lg">
-          <a href={`/${orgSlug}/admin/gatos/novo`}>
+          <a href={`/${slug}/admin/gatos/novo`}>
             <Plus className="h-4 w-4" />
             Cadastrar primeiro gato
           </a>

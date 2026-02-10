@@ -13,14 +13,12 @@ import { trpc } from '@/utils/trpc'
 
 interface CatsListProps {
   filters: CatsFilters
-  orgSlug: string
   onPageChange: (page: number) => void
   onClearFilters: () => void
 }
 
 export function CatsList({
   filters,
-  orgSlug,
   onPageChange,
   onClearFilters,
 }: CatsListProps) {
@@ -74,7 +72,6 @@ export function CatsList({
     return (
       <CatsEmptyState
         hasFilters={Boolean(hasActiveFilters)}
-        orgSlug={orgSlug}
         onClearFilters={onClearFilters}
       />
     )
@@ -91,7 +88,7 @@ export function CatsList({
 
       {/* Data Table - scrollable area */}
       <div className="min-h-0 flex-1">
-        <CatsDataTable cats={data.cats} orgSlug={orgSlug} />
+        <CatsDataTable cats={data.cats} />
       </div>
 
       {/* Pagination - fixed at bottom */}

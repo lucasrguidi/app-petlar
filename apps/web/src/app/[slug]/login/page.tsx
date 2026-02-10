@@ -145,7 +145,7 @@ export default async function OrgLoginPage({ params }: LoginPageProps) {
 
           <CardContent className="px-8 pt-4 pb-8">
             <Suspense fallback={<FormSkeleton />}>
-              <SignInForm orgId={org.id} orgSlug={org.slug} />
+              <SignInForm orgId={org.id} />
             </Suspense>
 
             {/* Divider */}

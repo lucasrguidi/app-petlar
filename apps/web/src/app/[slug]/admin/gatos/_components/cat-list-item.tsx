@@ -22,7 +22,6 @@ interface Cat {
 
 interface CatListItemProps {
   cat: Cat
-  orgSlug: string
   index: number
 }
 
@@ -77,7 +76,7 @@ function HealthBadge({
   )
 }
 
-export function CatListItem({ cat, orgSlug, index }: CatListItemProps) {
+export function CatListItem({ cat, index }: CatListItemProps) {
   const statusConfig = getStatusConfig(cat.status)
 
   return (
@@ -124,7 +123,7 @@ export function CatListItem({ cat, orgSlug, index }: CatListItemProps) {
                 >
                   {statusConfig.label}
                 </Badge>
-                <CatActionsMenu cat={cat} orgSlug={orgSlug} />
+                <CatActionsMenu cat={cat} />
               </div>
             </div>
 

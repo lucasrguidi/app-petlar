@@ -48,7 +48,7 @@ export default async function GatosPage({
 
       {/* Content com Suspense - ocupa espaço restante */}
       <Suspense fallback={<CatsLoadingSkeleton />}>
-        <CatsPageContent orgSlug={slug} searchParams={filters} />
+        <CatsPageContent searchParams={filters} />
       </Suspense>
 
       {/* FAB Mobile */}

@@ -71,7 +71,6 @@ export default async function AdminLayout({
 
       {/* Sidebar - fixed height */}
       <AdminSidebar
-        orgSlug={org.slug}
         orgName={org.name}
         orgLogo={org.logoUrl}
         userRole={user.role}
@@ -80,7 +79,6 @@ export default async function AdminLayout({
       {/* Main content area - flex column with fixed header */}
       <div className="flex min-w-0 flex-1 flex-col">
         <AdminHeader
-          orgSlug={org.slug}
           user={{
             name: user.name,
             email: user.email,

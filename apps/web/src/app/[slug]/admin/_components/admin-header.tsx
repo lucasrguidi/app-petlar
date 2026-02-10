@@ -13,12 +13,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { useOrgSlug } from '@/hooks/use-org-slug'
 import { cn } from '@/lib/utils'
 
 type UserRole = 'admin' | 'volunteer'
 
 interface AdminHeaderProps {
-  orgSlug: string
   user: {
     name: string
     email: string
@@ -58,12 +58,13 @@ function getRoleBadge(role: UserRole) {
   )
 }
 
-export function AdminHeader({ orgSlug, user }: AdminHeaderProps) {
+export function AdminHeader({ user }: AdminHeaderProps) {
+  const slug = useOrgSlug()
   const [isPending, startTransition] = useTransition()
 
   function handleSignOut() {
     startTransition(() => {
-      signOut(orgSlug)
+      signOut(slug)
     })
   }
 

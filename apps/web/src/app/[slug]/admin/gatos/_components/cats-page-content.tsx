@@ -24,7 +24,6 @@ export interface CatsFilters {
 }
 
 interface CatsPageContentProps {
-  orgSlug: string
   searchParams: {
     status?: string
     sex?: string
@@ -36,10 +35,7 @@ interface CatsPageContentProps {
   }
 }
 
-export function CatsPageContent({
-  orgSlug,
-  searchParams,
-}: CatsPageContentProps) {
+export function CatsPageContent({ searchParams }: CatsPageContentProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [drawerOpen, setDrawerOpen] = useState(false)
@@ -135,7 +131,6 @@ export function CatsPageContent({
       {/* List with table scroll - takes remaining space */}
       <CatsList
         filters={filters}
-        orgSlug={orgSlug}
         onPageChange={handlePageChange}
         onClearFilters={() =>
           updateFilters({
