@@ -231,9 +231,9 @@ export function MyComponent() {
 - Native Next.js `useParams()` hook, no extra dependencies
 - Single source of truth from URL
 
-### Component Organization
+### Component & Hook Organization
 
-Components follow a co-location pattern:
+Components and hooks follow a **strict co-location pattern**. Files live as close as possible to where they're used.
 
 ```
 apps/web/src/
@@ -241,34 +241,56 @@ apps/web/src/
 │   ├── [slug]/
 │   │   ├── admin/
 │   │   │   ├── gatos/
-│   │   │   │   ├── _components/    # Page-specific components
+│   │   │   │   ├── _components/        # Shared within gatos feature
+│   │   │   │   │   ├── cat-form.tsx
+│   │   │   │   │   └── photo-upload/   # Sub-feature components
+│   │   │   │   ├── _hooks/             # Hooks for gatos feature
+│   │   │   │   │   └── use-photo-upload.ts
+│   │   │   │   ├── novo/
+│   │   │   │   │   └── page.tsx
+│   │   │   │   ├── [id]/
+│   │   │   │   │   └── editar/
+│   │   │   │   │       ├── _components/  # Exclusive to edit page
+│   │   │   │   │       │   └── cat-form-loader.tsx
+│   │   │   │   │       └── page.tsx
 │   │   │   │   └── page.tsx
 │   │   │   └── layout.tsx
 │   │   └── login/
 │   │       └── page.tsx
 │   └── layout.tsx
 ├── components/
-│   ├── ui/                         # shadcn/ui base components
-│   └── providers.tsx               # Global providers
-├── hooks/                          # Custom hooks (useOrgSlug, etc.)
-├── actions/                        # Shared server actions (auth only)
+│   ├── ui/                             # shadcn/ui base components
+│   └── providers.tsx                   # Global providers
+├── hooks/                              # Global reusable hooks
+│   └── use-org-slug.ts
+├── actions/                            # Shared server actions (auth only)
 └── lib/
     └── utils.ts
 ```
 
-**Guidelines:**
+#### Components Guidelines
 
-- **`_components/`**: Page-specific components used only within that route
-- **`components/ui/`**: Reusable shadcn/ui base components
-- **`components/`**: Shared components used across multiple pages
-- **`hooks/`**: Custom React hooks for shared logic
-- **`actions/`**: Server Actions for auth operations with redirects
+| Scope | Location | Example |
+|-------|----------|---------|
+| Exclusive to one page | `app/[page]/_components/` | `editar/_components/cat-form-loader.tsx` |
+| Shared within feature | `app/[feature]/_components/` | `gatos/_components/cat-form.tsx` |
+| Shared across features | `components/` | `components/data-table.tsx` |
+| shadcn/ui primitives | `components/ui/` | `components/ui/button.tsx` |
 
-**When creating new components:**
+#### Hooks Guidelines
 
-1. Used in one page → `app/[page]/_components/`
-2. Base UI primitive → `components/ui/`
-3. Shared across pages → `components/`
+| Scope | Location | Example |
+|-------|----------|---------|
+| Exclusive to one page | `app/[page]/_hooks/` | `novo/_hooks/use-prefill.ts` |
+| Shared within feature | `app/[feature]/_hooks/` | `gatos/_hooks/use-photo-upload.ts` |
+| Global reusable | `hooks/` | `hooks/use-org-slug.ts` |
+
+#### Key Principles
+
+1. **Start local, promote when needed**: Create in the most specific location first. Only move up when reuse is required.
+2. **Feature folders own their code**: A feature like `gatos/` contains its own `_components/` and `_hooks/`.
+3. **Underscore prefix**: `_components/` and `_hooks/` use underscore to signal "private to this route segment".
+4. **No orphan files**: Every file should be imported somewhere within its scope.
 
 ### shadcn/ui
 

@@ -1,15 +1,18 @@
 'use client'
 
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   Copy,
   Heart,
   MoreVertical,
   Pencil,
+  PenLine,
   RefreshCw,
   Trash2,
   Users,
 } from 'lucide-react'
+import { type Route } from 'next'
+import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
@@ -36,8 +39,16 @@ interface CatActionsMenuProps {
 
 export function CatActionsMenu({ cat }: CatActionsMenuProps) {
   const slug = useOrgSlug()
+  const router = useRouter()
   const queryClient = useQueryClient()
   const [isOpen, setIsOpen] = useState(false)
+  const [isDuplicatingToEdit, setIsDuplicatingToEdit] = useState(false)
+
+  // Query for fetching full cat data when duplicating to edit
+  const { refetch: fetchCatData } = useQuery({
+    ...trpc.cats.getById.queryOptions({ id: cat.id }),
+    enabled: false, // Only fetch when triggered
+  })
 
   const invalidateQueries = () => {
     queryClient.invalidateQueries({ queryKey: [['cats', 'list']] })
@@ -88,11 +99,49 @@ export function CatActionsMenu({ cat }: CatActionsMenuProps) {
   const isPending =
     duplicateMutation.isPending ||
     deleteMutation.isPending ||
-    updateStatusMutation.isPending
+    updateStatusMutation.isPending ||
+    isDuplicatingToEdit
 
   const handleDuplicate = () => {
     setIsOpen(false)
     duplicateMutation.mutate({ id: cat.id })
+  }
+
+  const handleDuplicateAndEdit = async () => {
+    setIsOpen(false)
+    setIsDuplicatingToEdit(true)
+
+    try {
+      const { data } = await fetchCatData()
+
+      if (data) {
+        const prefillData = {
+          name: `${data.name} (cópia)`,
+          ageYears: data.ageYears,
+          ageMonths: data.ageMonths,
+          sex: data.sex,
+          fiv: data.fiv,
+          felv: data.felv,
+          castrated: data.castrated,
+          vaccinated: data.vaccinated,
+          vaccinationNotes: data.vaccinationNotes,
+          dewormed: data.dewormed,
+          dewormingNotes: data.dewormingNotes,
+          description: data.description,
+          formId: data.formId,
+        }
+        const encoded = btoa(JSON.stringify(prefillData))
+        router.push(
+          `/${slug}/admin/gatos/novo?prefill=${encoded}` as Route
+        )
+      } else {
+        toast.error('Erro ao carregar dados do gato')
+      }
+    } catch {
+      toast.error('Erro ao carregar dados do gato')
+    } finally {
+      setIsDuplicatingToEdit(false)
+    }
   }
 
   const handleDelete = () => {
@@ -143,6 +192,11 @@ export function CatActionsMenu({ cat }: CatActionsMenuProps) {
         <DropdownMenuItem onClick={handleDuplicate} disabled={isPending}>
           <Copy className="mr-2 h-4 w-4" />
           Duplicar
+        </DropdownMenuItem>
+
+        <DropdownMenuItem onClick={handleDuplicateAndEdit} disabled={isPending}>
+          <PenLine className="mr-2 h-4 w-4" />
+          Duplicar e editar
         </DropdownMenuItem>
 
         <DropdownMenuItem asChild>

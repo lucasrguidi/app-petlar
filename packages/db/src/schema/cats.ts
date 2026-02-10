@@ -37,7 +37,7 @@ export const cats = sqliteTable(
     dewormingNotes: text('deworming_notes'),
 
     // Descrição
-    description: text('description').notNull(),
+    description: text('description'),
 
     // Status
     status: text('status', { enum: ['available', 'in_progress', 'adopted'] })

@@ -20,7 +20,7 @@ const catInputSchema = z.object({
   vaccinationNotes: z.string().nullable(),
   dewormed: z.boolean(),
   dewormingNotes: z.string().nullable(),
-  description: z.string().min(1),
+  description: z.string().nullable(),
   formId: z.string().nullable(),
 })
 
