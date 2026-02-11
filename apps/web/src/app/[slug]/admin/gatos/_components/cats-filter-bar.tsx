@@ -1,7 +1,7 @@
 'use client'
 
 import { Search, SlidersHorizontal } from 'lucide-react'
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import type { CatsFilters } from './cats-page-content'
 
@@ -23,6 +23,8 @@ interface CatsFilterBarProps {
   isPending: boolean
 }
 
+const SEARCH_DEBOUNCE_MS = 450
+
 export function CatsFilterBar({
   filters,
   onFilterChange,
@@ -37,20 +39,17 @@ export function CatsFilterBar({
     setSearchValue(filters.search || '')
   }, [filters.search])
 
-  // Debounce search
-  const handleSearchChange = useCallback(
-    (value: string) => {
-      setSearchValue(value)
+  // Debounce search with cleanup to avoid firing requests on every keystroke
+  useEffect(() => {
+    const currentSearch = filters.search || ''
+    if (searchValue === currentSearch) return
 
-      // Debounce
-      const timeoutId = setTimeout(() => {
-        onFilterChange({ search: value || undefined })
-      }, 300)
+    const timeoutId = window.setTimeout(() => {
+      onFilterChange({ search: searchValue || undefined })
+    }, SEARCH_DEBOUNCE_MS)
 
-      return () => clearTimeout(timeoutId)
-    },
-    [onFilterChange]
-  )
+    return () => window.clearTimeout(timeoutId)
+  }, [searchValue, filters.search, onFilterChange])
 
   return (
     <div className="border-border/60 bg-card/95 shadow-warm-sm rounded-xl border p-2.5 sm:p-3">
@@ -78,8 +77,7 @@ export function CatsFilterBar({
           <Input
             placeholder="Buscar por nome..."
             value={searchValue}
-            onChange={(e) => handleSearchChange(e.target.value)}
-            disabled={isPending}
+            onChange={(e) => setSearchValue(e.target.value)}
             className="h-10 rounded-xl pl-10"
           />
         </div>

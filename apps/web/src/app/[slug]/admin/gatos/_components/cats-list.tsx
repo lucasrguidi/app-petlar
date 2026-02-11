@@ -99,11 +99,7 @@ export function CatsList({
         )}
       </div>
 
-      <div
-        className={`min-h-0 flex-1 transition-opacity duration-200 ${
-          isFetching ? 'pointer-events-none opacity-60' : ''
-        }`}
-      >
+      <div className="min-h-0 flex-1">
         <CatsDataTable cats={data.cats} />
       </div>
 

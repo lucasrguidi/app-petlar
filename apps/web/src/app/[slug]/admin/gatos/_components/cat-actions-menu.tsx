@@ -228,7 +228,7 @@ export function CatActionsMenu({ cat }: CatActionsMenuProps) {
         <DropdownMenuItem
           onClick={handleDelete}
           disabled={isPending}
-          className="text-destructive focus:text-destructive"
+          className="text-destructive focus:bg-destructive focus:text-destructive-foreground data-[highlighted]:bg-destructive data-[highlighted]:text-destructive-foreground"
         >
           <Trash2 className="mr-2 h-4 w-4" />
           Excluir
