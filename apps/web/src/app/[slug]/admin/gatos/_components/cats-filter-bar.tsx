@@ -53,54 +53,52 @@ export function CatsFilterBar({
   )
 
   return (
-    <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-      {/* Status Select */}
-      <Select
-        value={filters.status || 'all'}
-        onValueChange={(value: string) =>
-          onFilterChange({ status: value === 'all' ? undefined : value })
-        }
-        disabled={isPending}
-      >
-        <SelectTrigger className="h-10 w-full rounded-lg sm:w-[160px]">
-          <SelectValue placeholder="Status" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">Todos os status</SelectItem>
-          <SelectItem value="available">Disponível</SelectItem>
-          <SelectItem value="in_progress">Em processo</SelectItem>
-          <SelectItem value="adopted">Adotado</SelectItem>
-        </SelectContent>
-      </Select>
-
-      {/* Search Input with Icon */}
-      <div className="relative flex-1">
-        <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
-        <Input
-          placeholder="Buscar gato..."
-          value={searchValue}
-          onChange={(e) => handleSearchChange(e.target.value)}
+    <div className="border-border/60 bg-card/95 shadow-warm-sm rounded-xl border p-2.5 sm:p-3">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+        <Select
+          value={filters.status || 'all'}
+          onValueChange={(value: string) =>
+            onFilterChange({ status: value === 'all' ? undefined : value })
+          }
           disabled={isPending}
-          className="h-10 rounded-lg pl-10"
-        />
-      </div>
+        >
+          <SelectTrigger className="h-10 w-full rounded-xl sm:w-[180px]">
+            <SelectValue placeholder="Status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos os status</SelectItem>
+            <SelectItem value="available">Disponível</SelectItem>
+            <SelectItem value="in_progress">Em processo</SelectItem>
+            <SelectItem value="adopted">Adotado</SelectItem>
+          </SelectContent>
+        </Select>
 
-      {/* Advanced Filters Button */}
-      <Button
-        variant="outline"
-        size="icon"
-        onClick={onOpenAdvanced}
-        disabled={isPending}
-        className="relative h-10 w-10 shrink-0 rounded-lg"
-      >
-        <SlidersHorizontal className="h-4 w-4" />
-        {/* Badge for active filter count */}
-        {activeAdvancedFiltersCount > 0 && (
-          <span className="bg-primary text-primary-foreground absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full text-[10px] font-bold">
-            {activeAdvancedFiltersCount}
-          </span>
-        )}
-      </Button>
+        <div className="relative flex-1">
+          <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
+          <Input
+            placeholder="Buscar por nome..."
+            value={searchValue}
+            onChange={(e) => handleSearchChange(e.target.value)}
+            disabled={isPending}
+            className="h-10 rounded-xl pl-10"
+          />
+        </div>
+
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={onOpenAdvanced}
+          disabled={isPending}
+          className="border-border/60 bg-card hover:bg-sidebar-accent relative h-10 w-10 shrink-0 rounded-xl"
+        >
+          <SlidersHorizontal className="h-4 w-4" />
+          {activeAdvancedFiltersCount > 0 && (
+            <span className="bg-primary text-primary-foreground absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full text-[10px] font-bold">
+              {activeAdvancedFiltersCount}
+            </span>
+          )}
+        </Button>
+      </div>
     </div>
   )
 }

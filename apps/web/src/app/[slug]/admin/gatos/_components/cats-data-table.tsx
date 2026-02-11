@@ -2,9 +2,11 @@
 
 import {
   Cat as CatIcon,
+  Clock3,
   Check,
   ChevronDown,
   ChevronRight,
+  ShieldCheck,
   Users,
   X,
 } from 'lucide-react'
@@ -84,7 +86,7 @@ function HealthBadge({
   const symbol = isNegative ? '-' : isPositive ? '+' : '?'
 
   return (
-    <Badge variant={variant} className="px-1 py-0 text-[10px]">
+    <Badge variant={variant} className="rounded-md px-1.5 py-0 text-[10px]">
       {label}
       {symbol}
     </Badge>
@@ -94,7 +96,7 @@ function HealthBadge({
 // Expanded row content
 function ExpandedContent({ cat }: { cat: Cat }) {
   return (
-    <div className="bg-muted/10 border-muted animate-in fade-in-0 slide-in-from-top-1 border-t px-3 py-2 duration-200">
+    <div className="border-border/50 bg-sidebar-accent/40 animate-in fade-in-0 slide-in-from-top-1 border-t px-3 py-2.5 duration-200">
       <div className="grid gap-3 text-xs sm:grid-cols-2 lg:grid-cols-4">
         {/* Health Info */}
         <div className="space-y-1">
@@ -181,7 +183,7 @@ const columns: ColumnDef<Cat>[] = [
         <Button
           variant="ghost"
           size="icon"
-          className="h-6 w-6"
+          className="h-6 w-6 rounded-md"
           onClick={() => row.toggleExpanded()}
           aria-label={row.getIsExpanded() ? 'Recolher' : 'Expandir'}
         >
@@ -198,12 +200,17 @@ const columns: ColumnDef<Cat>[] = [
     {
       id: 'cat',
       accessorKey: 'name',
-      header: () => 'Gato',
+      header: () => (
+        <span className="inline-flex items-center gap-1.5">
+          <CatIcon className="text-primary h-3.5 w-3.5" />
+          Gato
+        </span>
+      ),
       cell: ({ row }) => {
         const cat = row.original
         return (
           <div className="flex items-center gap-2">
-            <div className="bg-muted relative h-8 w-8 shrink-0 overflow-hidden rounded">
+            <div className="bg-muted relative h-8 w-8 shrink-0 overflow-hidden rounded-lg">
               {cat.photoUrl ? (
                 <img
                   src={cat.photoUrl}
@@ -235,7 +242,12 @@ const columns: ColumnDef<Cat>[] = [
     {
       id: 'age',
       accessorFn: (row) => (row.ageYears ?? 0) * 12 + (row.ageMonths ?? 0),
-      header: () => <span className="hidden sm:inline">Idade</span>,
+      header: () => (
+        <span className="hidden items-center gap-1 sm:inline-flex">
+          <Clock3 className="h-3.5 w-3.5" />
+          Idade
+        </span>
+      ),
       cell: ({ row }) => (
         <span className="text-muted-foreground hidden text-sm sm:inline">
           {formatAge(row.original.ageYears, row.original.ageMonths)}
@@ -283,7 +295,12 @@ const columns: ColumnDef<Cat>[] = [
     {
       id: 'status',
       accessorKey: 'status',
-      header: () => <span className="hidden sm:inline">Status</span>,
+      header: () => (
+        <span className="hidden items-center gap-1 sm:inline-flex">
+          <ShieldCheck className="h-3.5 w-3.5" />
+          Status
+        </span>
+      ),
       cell: ({ row }) => {
         const config = getStatusConfig(row.original.status)
         return (
@@ -303,7 +320,8 @@ const columns: ColumnDef<Cat>[] = [
       header: () => null,
       cell: ({ row }) => <CatActionsMenu cat={row.original} />,
       meta: {
-        className: 'w-10 px-1 sticky right-0 bg-card group-hover:bg-transparent',
+        className:
+          'w-10 px-1 sticky right-0 bg-card/95 group-hover:bg-sidebar-accent/20',
         headerClassName: 'sticky right-0 bg-muted/50',
       },
     },
@@ -314,7 +332,7 @@ export function CatsDataTable({ cats }: CatsDataTableProps) {
     <DataTable
       columns={columns}
       data={cats}
-      className="bg-card shadow-sm"
+      className="border-border/60 bg-card/95 shadow-warm-sm rounded-xl border"
       renderExpandedRow={(row: Row<Cat>) => (
         <ExpandedContent cat={row.original} />
       )}

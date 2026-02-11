@@ -116,8 +116,7 @@ export function CatsPageContent({ searchParams }: CatsPageContentProps) {
   }, [updateFilters])
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-4">
-      {/* Filter bar - fixed height */}
+    <div className="flex min-h-0 flex-1 flex-col gap-3">
       <div className="shrink-0">
         <CatsFilterBar
           filters={filters}
@@ -128,7 +127,6 @@ export function CatsPageContent({ searchParams }: CatsPageContentProps) {
         />
       </div>
 
-      {/* List with table scroll - takes remaining space */}
       <CatsList
         filters={filters}
         onPageChange={handlePageChange}

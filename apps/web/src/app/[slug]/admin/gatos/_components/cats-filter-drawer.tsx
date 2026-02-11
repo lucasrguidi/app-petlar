@@ -1,5 +1,6 @@
 'use client'
 
+import { Check, FilterX, SlidersHorizontal } from 'lucide-react'
 import { useState } from 'react'
 
 import type { CatsFilters } from './cats-page-content'
@@ -76,9 +77,15 @@ export function CatsFilterDrawer({
 
   return (
     <Sheet open={open} onOpenChange={handleOpenChange}>
-      <SheetContent side="right" className="w-full sm:max-w-md">
+      <SheetContent
+        side="right"
+        className="border-border/60 w-full sm:max-w-md"
+      >
         <SheetHeader>
-          <SheetTitle>Filtros Avançados</SheetTitle>
+          <SheetTitle className="text-display flex items-center gap-2">
+            <SlidersHorizontal className="text-primary h-4 w-4" />
+            Filtros avançados
+          </SheetTitle>
           <SheetDescription>
             Refine a busca por características específicas
           </SheetDescription>
@@ -94,7 +101,7 @@ export function CatsFilterDrawer({
                 variant={sex === 'male' ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => setSex(sex === 'male' ? undefined : 'male')}
-                className="flex-1 rounded-lg"
+                className="flex-1 rounded-xl"
               >
                 Macho
               </Button>
@@ -103,7 +110,7 @@ export function CatsFilterDrawer({
                 variant={sex === 'female' ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => setSex(sex === 'female' ? undefined : 'female')}
-                className="flex-1 rounded-lg"
+                className="flex-1 rounded-xl"
               >
                 Fêmea
               </Button>
@@ -119,7 +126,7 @@ export function CatsFilterDrawer({
                 setFiv(value === 'all' ? undefined : value)
               }
             >
-              <SelectTrigger className="rounded-lg">
+              <SelectTrigger className="rounded-xl">
                 <SelectValue placeholder="Qualquer" />
               </SelectTrigger>
               <SelectContent>
@@ -140,7 +147,7 @@ export function CatsFilterDrawer({
                 setFelv(value === 'all' ? undefined : value)
               }
             >
-              <SelectTrigger className="rounded-lg">
+              <SelectTrigger className="rounded-xl">
                 <SelectValue placeholder="Qualquer" />
               </SelectTrigger>
               <SelectContent>
@@ -173,15 +180,17 @@ export function CatsFilterDrawer({
             type="button"
             variant="outline"
             onClick={handleClear}
-            className="flex-1 rounded-lg"
+            className="flex-1 gap-2 rounded-xl"
           >
+            <FilterX className="h-4 w-4" />
             Limpar
           </Button>
           <Button
             type="button"
             onClick={handleApply}
-            className="flex-1 rounded-lg"
+            className="shadow-primary-glow flex-1 gap-2 rounded-xl"
           >
+            <Check className="h-4 w-4" />
             Aplicar
           </Button>
         </SheetFooter>

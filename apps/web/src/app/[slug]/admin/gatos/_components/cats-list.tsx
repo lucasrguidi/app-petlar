@@ -1,6 +1,7 @@
 'use client'
 
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
+import { AlertTriangle, Loader2, PawPrint } from 'lucide-react'
 
 import { CatsDataTable } from './cats-data-table'
 import { CatsEmptyState } from './cats-empty-state'
@@ -57,9 +58,10 @@ export function CatsList({
 
   if (isError) {
     return (
-      <div className="border-destructive/20 bg-destructive/5 rounded-xl border p-4 text-center">
-        <p className="text-destructive text-sm">
-          Erro ao carregar gatos.{' '}
+      <div className="border-destructive/20 bg-destructive/5 shadow-warm-sm rounded-xl border p-4 text-center">
+        <p className="text-destructive inline-flex items-center gap-2 text-sm">
+          <AlertTriangle className="h-4 w-4" />
+          Erro ao carregar gatos.
           <button
             onClick={() => refetch()}
             className="underline hover:no-underline"
@@ -81,15 +83,22 @@ export function CatsList({
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
-      {/* Results count - fixed */}
-      <p className="text-muted-foreground shrink-0 pb-2 text-sm">
-        {data.pagination.total} gato
-        {data.pagination.total !== 1 ? 's' : ''} encontrado
-        {data.pagination.total !== 1 ? 's' : ''}
-      </p>
+    <div className="flex min-h-0 flex-1 flex-col gap-3">
+      <div className="border-border/60 bg-card/95 shadow-warm-sm flex shrink-0 items-center justify-between rounded-xl border px-3 py-2">
+        <p className="text-muted-foreground inline-flex items-center gap-2 text-sm font-medium">
+          <PawPrint className="text-primary h-4 w-4" />
+          {data.pagination.total} gato
+          {data.pagination.total !== 1 ? 's' : ''} encontrado
+          {data.pagination.total !== 1 ? 's' : ''}
+        </p>
+        {isFetching && (
+          <span className="text-muted-foreground inline-flex items-center gap-1.5 text-xs">
+            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            Atualizando...
+          </span>
+        )}
+      </div>
 
-      {/* Data Table - scrollable area with subtle opacity on refetch */}
       <div
         className={`min-h-0 flex-1 transition-opacity duration-200 ${
           isFetching ? 'pointer-events-none opacity-60' : ''
@@ -98,8 +107,7 @@ export function CatsList({
         <CatsDataTable cats={data.cats} />
       </div>
 
-      {/* Pagination - fixed at bottom */}
-      <div className="shrink-0">
+      <div className="border-border/60 bg-card/95 shadow-warm-sm shrink-0 rounded-xl border px-2">
         <CatsPagination
           page={data.pagination.page}
           totalPages={data.pagination.totalPages}

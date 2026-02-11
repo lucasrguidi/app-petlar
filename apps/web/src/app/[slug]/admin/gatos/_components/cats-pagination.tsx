@@ -62,8 +62,7 @@ export function CatsPagination({
   }
 
   return (
-    <div className="py-4">
-      {/* Mobile: Simple prev/next */}
+    <div className="py-2">
       <div className="flex items-center justify-between gap-4 sm:hidden">
         <PaginationPrevious
           onClick={() => onPageChange(page - 1)}
@@ -78,7 +77,6 @@ export function CatsPagination({
         />
       </div>
 
-      {/* Desktop: Full pagination */}
       <Pagination className="hidden sm:flex">
         <PaginationContent>
           <PaginationItem>
