@@ -61,10 +61,10 @@ export function CompactDropzone({
   return (
     <div
       className={cn(
-        'flex h-24 w-24 shrink-0 cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed transition-colors',
+        'shadow-warm-sm flex h-24 w-24 shrink-0 cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed transition-all duration-200',
         isDragOver
-          ? 'border-primary bg-primary/5'
-          : 'border-muted-foreground/25 hover:border-primary/50 hover:bg-muted/50',
+          ? 'shadow-primary-glow border-primary bg-primary/10'
+          : 'border-border/70 bg-sidebar-accent/50 hover:border-primary/40 hover:bg-muted/40',
         isUploading && 'pointer-events-none opacity-50'
       )}
       onDragOver={handleDragOver}
@@ -94,8 +94,10 @@ export function CompactDropzone({
         <Loader2 className="h-6 w-6 animate-spin text-primary" />
       ) : (
         <>
-          <ImagePlus className="h-6 w-6 text-muted-foreground" />
-          <span className="mt-1 text-xs text-muted-foreground">Adicionar</span>
+          <ImagePlus className="text-muted-foreground h-5 w-5" />
+          <span className="text-muted-foreground mt-1 text-[11px] font-medium">
+            Adicionar
+          </span>
         </>
       )}
     </div>

@@ -40,8 +40,8 @@ export function CompactPhotoPreview({
       ref={setNodeRef}
       style={style}
       className={cn(
-        'group relative h-24 w-24 shrink-0 overflow-hidden rounded-lg border bg-muted',
-        isDragging && 'z-50 shadow-lg ring-2 ring-primary'
+        'shadow-warm-sm group relative h-24 w-24 shrink-0 overflow-hidden rounded-xl border border-border/60 bg-muted/25',
+        isDragging && 'shadow-warm-lg z-50 ring-2 ring-primary/40'
       )}
     >
       <img
@@ -72,16 +72,16 @@ export function CompactPhotoPreview({
       {isPrimary && photo.status === 'uploaded' && (
         <Badge
           variant="secondary"
-          className="absolute left-1 top-1 px-1.5 py-0.5 text-[10px] shadow-sm"
+          className="absolute left-1 top-1 border-border/60 bg-card/90 px-1.5 py-0.5 text-[10px] shadow-sm"
         >
-          1a
+          Capa
         </Badge>
       )}
 
       <button
         type="button"
         className={cn(
-          'absolute bottom-1 left-1 flex h-6 w-6 cursor-grab items-center justify-center rounded bg-background/90 opacity-0 shadow-sm backdrop-blur-sm transition-opacity group-hover:opacity-100',
+          'absolute bottom-1 left-1 flex h-6 w-6 cursor-grab items-center justify-center rounded-md bg-background/90 opacity-0 shadow-sm backdrop-blur-sm transition-opacity group-hover:opacity-100',
           isDragging && 'cursor-grabbing'
         )}
         {...attributes}
@@ -94,7 +94,7 @@ export function CompactPhotoPreview({
         type="button"
         variant="secondary"
         size="icon"
-        className="absolute right-1 top-1 h-6 w-6 opacity-0 shadow-sm transition-opacity group-hover:opacity-100"
+        className="absolute right-1 top-1 h-6 w-6 rounded-md opacity-0 shadow-sm transition-opacity group-hover:opacity-100"
         onClick={() => onRemove(photo.id)}
         disabled={photo.status === 'uploading'}
       >

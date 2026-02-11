@@ -24,20 +24,26 @@ export function SexToggle({ control }: SexToggleProps) {
       control={control}
       name="sex"
       render={({ field }) => (
-        <FormItem className="space-y-2">
+        <FormItem className="space-y-1.5">
           <FormLabel className="text-sm">Sexo</FormLabel>
           <FormControl>
             <ToggleGroup
               type="single"
               value={field.value}
               onValueChange={(value) => value && field.onChange(value)}
-              className="justify-start"
+              className="grid grid-cols-2 gap-1 rounded-lg bg-muted/35 p-1"
             >
-              <ToggleGroupItem value="male" className="h-9 px-4">
+              <ToggleGroupItem
+                value="male"
+                className="h-8 rounded-md border border-transparent px-3 text-xs data-[state=on]:border-primary/30 data-[state=on]:bg-primary/10 data-[state=on]:text-primary"
+              >
                 Macho
               </ToggleGroupItem>
-              <ToggleGroupItem value="female" className="h-9 px-4">
-                Femea
+              <ToggleGroupItem
+                value="female"
+                className="h-8 rounded-md border border-transparent px-3 text-xs data-[state=on]:border-primary/30 data-[state=on]:bg-primary/10 data-[state=on]:text-primary"
+              >
+                Fêmea
               </ToggleGroupItem>
             </ToggleGroup>
           </FormControl>

@@ -30,32 +30,34 @@ export function TestResultToggle({
       control={control}
       name={name}
       render={({ field }) => (
-        <FormItem className="space-y-2">
-          <FormLabel className="text-sm">{label}</FormLabel>
+        <FormItem className="space-y-1.5">
+          <FormLabel className="text-xs font-semibold uppercase tracking-wide">
+            {label}
+          </FormLabel>
           <FormControl>
             <ToggleGroup
               type="single"
               value={field.value}
               onValueChange={(value) => value && field.onChange(value)}
-              className="justify-start"
+              className="grid grid-cols-3 gap-1 rounded-lg bg-muted/35 p-1"
             >
               <ToggleGroupItem
                 value="negative"
-                className="h-8 px-3 text-xs data-[state=on]:bg-success/10 data-[state=on]:text-success data-[state=on]:border-success/30"
+                className="h-8 rounded-md border border-transparent px-1 text-[11px] font-medium data-[state=on]:border-success/30 data-[state=on]:bg-success/10 data-[state=on]:text-success"
               >
                 Negativo
               </ToggleGroupItem>
               <ToggleGroupItem
                 value="positive"
-                className="h-8 px-3 text-xs data-[state=on]:bg-destructive/10 data-[state=on]:text-destructive data-[state=on]:border-destructive/30"
+                className="h-8 rounded-md border border-transparent px-1 text-[11px] font-medium data-[state=on]:border-destructive/30 data-[state=on]:bg-destructive/10 data-[state=on]:text-destructive"
               >
                 Positivo
               </ToggleGroupItem>
               <ToggleGroupItem
                 value="not_tested"
-                className="h-8 px-3 text-xs data-[state=on]:bg-muted data-[state=on]:text-muted-foreground"
+                className="h-8 rounded-md border border-transparent px-1 text-[11px] font-medium data-[state=on]:border-border data-[state=on]:bg-card data-[state=on]:text-foreground"
               >
-                Nao testado
+                Não testado
               </ToggleGroupItem>
             </ToggleGroup>
           </FormControl>

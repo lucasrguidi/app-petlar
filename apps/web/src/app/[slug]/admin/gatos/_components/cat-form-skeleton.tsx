@@ -4,83 +4,77 @@ import { Skeleton } from '@/components/ui/skeleton'
 export function CatFormSkeleton() {
   return (
     <div className="space-y-6">
-      {/* Back button */}
       <Skeleton className="h-9 w-20" />
 
-      {/* Basic Info Card */}
       <Card className="rounded-xl">
-        <CardHeader className="pb-4">
-          <Skeleton className="h-6 w-40" />
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Skeleton className="h-4 w-12" />
-            <Skeleton className="h-10 w-full" />
+        <CardContent className="space-y-4 pt-6">
+          <div className="flex items-center justify-between">
+            <Skeleton className="h-5 w-14" />
+            <Skeleton className="h-4 w-10" />
           </div>
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-            <div className="space-y-2">
-              <Skeleton className="h-4 w-12" />
-              <Skeleton className="h-10 w-full" />
-            </div>
-            <div className="space-y-2">
-              <Skeleton className="h-4 w-14" />
-              <Skeleton className="h-10 w-full" />
-            </div>
-            <div className="col-span-2 space-y-2 sm:col-span-1">
-              <Skeleton className="h-4 w-10" />
-              <Skeleton className="h-10 w-full" />
-            </div>
+          <div className="flex gap-3">
+            <Skeleton className="h-24 w-24 shrink-0 rounded-lg" />
+            <Skeleton className="h-24 w-24 shrink-0 rounded-lg" />
+            <Skeleton className="h-24 w-24 shrink-0 rounded-lg" />
           </div>
         </CardContent>
       </Card>
 
-      {/* Health Card */}
-      <Card className="rounded-xl">
-        <CardHeader className="pb-4">
-          <Skeleton className="h-6 w-16" />
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Skeleton className="h-4 w-8" />
-              <Skeleton className="h-10 w-full" />
-            </div>
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Card className="rounded-xl">
+          <CardHeader className="pb-4">
+            <Skeleton className="h-6 w-40" />
+          </CardHeader>
+          <CardContent className="space-y-4">
             <div className="space-y-2">
               <Skeleton className="h-4 w-12" />
               <Skeleton className="h-10 w-full" />
             </div>
-          </div>
-          <Skeleton className="h-16 w-full rounded-lg" />
-          <Skeleton className="h-16 w-full rounded-lg" />
-          <Skeleton className="h-16 w-full rounded-lg" />
-        </CardContent>
-      </Card>
+            <div className="grid grid-cols-2 gap-3">
+              <Skeleton className="h-11 w-full" />
+              <Skeleton className="h-11 w-full" />
+            </div>
+            <Skeleton className="h-9 w-48" />
+          </CardContent>
+        </Card>
 
-      {/* Description Card */}
+        <Card className="rounded-xl">
+          <CardHeader className="pb-4">
+            <Skeleton className="h-6 w-16" />
+          </CardHeader>
+          <CardContent className="space-y-5">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-8" />
+                <Skeleton className="h-8 w-full" />
+              </div>
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-12" />
+                <Skeleton className="h-8 w-full" />
+              </div>
+            </div>
+            <Skeleton className="h-9 w-full" />
+            <Skeleton className="h-9 w-full" />
+            <Skeleton className="h-9 w-full" />
+          </CardContent>
+        </Card>
+      </div>
+
       <Card className="rounded-xl">
         <CardHeader className="pb-4">
           <Skeleton className="h-6 w-24" />
         </CardHeader>
         <CardContent>
           <div className="space-y-2">
-            <Skeleton className="h-4 w-28" />
-            <Skeleton className="h-32 w-full" />
+            <Skeleton className="h-4 w-36" />
+            <Skeleton className="h-24 w-full" />
           </div>
         </CardContent>
       </Card>
 
-      {/* Photos Card */}
-      <Card className="rounded-xl">
-        <CardHeader className="pb-4">
-          <Skeleton className="h-6 w-14" />
-        </CardHeader>
-        <CardContent>
-          <Skeleton className="h-32 w-full rounded-lg" />
-        </CardContent>
-      </Card>
-
-      {/* Submit Button */}
-      <Skeleton className="h-10 w-36" />
+      <div className="flex justify-start sm:justify-end">
+        <Skeleton className="h-10 w-full sm:w-40" />
+      </div>
     </div>
   )
 }

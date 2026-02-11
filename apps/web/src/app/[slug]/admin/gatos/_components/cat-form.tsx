@@ -2,7 +2,13 @@
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, Loader2 } from 'lucide-react'
+import {
+  ArrowLeft,
+  FileText,
+  HeartPulse,
+  Loader2,
+  PawPrint,
+} from 'lucide-react'
 import { type Route } from 'next'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
@@ -96,7 +102,7 @@ export function CatForm({ mode, initialData, catId }: CatFormProps) {
   const updateMutation = useMutation(
     trpc.cats.update.mutationOptions({
       onSuccess: () => {
-        toast.success('Alteracoes salvas com sucesso!')
+        toast.success('Alterações salvas com sucesso!')
         queryClient.invalidateQueries({ queryKey: [['cats']] })
         router.push(`/${slug}/admin/gatos` as Route)
       },
@@ -129,9 +135,9 @@ export function CatForm({ mode, initialData, catId }: CatFormProps) {
     form.reset(defaultCatFormValues)
     resetPhotos()
     setFormState('editing')
-    setTimeout(() => {
-      document.querySelector<HTMLInputElement>('input[name="name"]')?.focus()
-    }, 100)
+    requestAnimationFrame(() => {
+      form.setFocus('name')
+    })
   }
 
   const handleGoToList = () => {
@@ -149,12 +155,11 @@ export function CatForm({ mode, initialData, catId }: CatFormProps) {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Back button */}
+    <div className="mx-auto w-full max-w-6xl space-y-4">
       <Button
-        variant="ghost"
+        variant="outline"
         size="sm"
-        className="gap-2"
+        className="border-border/60 bg-card/80 shadow-warm-sm hover:bg-sidebar-accent gap-2 rounded-xl"
         onClick={() => router.back()}
       >
         <ArrowLeft className="h-4 w-4" />
@@ -162,10 +167,9 @@ export function CatForm({ mode, initialData, catId }: CatFormProps) {
       </Button>
 
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          {/* PHOTOS - Full width at top */}
-          <Card className="rounded-xl">
-            <CardContent className="pt-6">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <Card className="border-border/60 bg-card/95 shadow-warm-sm rounded-xl">
+            <CardContent className="p-4 sm:p-5">
               <PhotoSection
                 photos={photos}
                 isUploading={isUploading}
@@ -176,109 +180,151 @@ export function CatForm({ mode, initialData, catId }: CatFormProps) {
             </CardContent>
           </Card>
 
-          {/* TWO COLUMN LAYOUT */}
-          <div className="grid gap-6 lg:grid-cols-2">
-            {/* LEFT COLUMN - Basic Info */}
-            <Card className="rounded-xl">
-              <CardHeader className="pb-4">
-                <CardTitle className="text-lg">Informacoes Basicas</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {/* Name */}
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Nome</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="Nome do gato"
-                          className="h-11"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+          <div className="grid gap-4 lg:grid-cols-[1.05fr_1fr]">
+            <div className="space-y-4">
+              <Card className="border-border/60 bg-card/95 shadow-warm-sm rounded-xl">
+                <CardHeader className="space-y-1 p-4 pb-2 sm:p-5 sm:pb-3">
+                  <CardTitle className="text-display flex items-center gap-2 text-base font-semibold">
+                    <PawPrint className="text-primary h-4 w-4" />
+                    Informações básicas
+                  </CardTitle>
+                  <p className="text-muted-foreground text-xs">
+                    Dados essenciais para identificação
+                  </p>
+                </CardHeader>
+                <CardContent className="space-y-3 p-4 pt-0 sm:p-5 sm:pt-0">
+                  <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem className="space-y-1.5">
+                        <FormLabel>Nome</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Nome do gato"
+                            className="h-10"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                {/* Age - inline years/months */}
-                <div className="space-y-2">
-                  <Label>Idade</Label>
-                  <div className="flex gap-3">
-                    <FormField
-                      control={form.control}
-                      name="ageYears"
-                      render={({ field }) => (
-                        <FormItem className="flex-1">
-                          <FormControl>
-                            <div className="relative">
-                              <Input
-                                type="number"
-                                min={0}
-                                max={30}
-                                placeholder="0"
-                                className="h-11 pr-12"
-                                {...field}
-                                value={field.value ?? ''}
-                                onChange={(e) => {
-                                  const val = e.target.value
-                                  field.onChange(val === '' ? null : Number(val))
-                                }}
-                              />
-                              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
-                                anos
-                              </span>
-                            </div>
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="ageMonths"
-                      render={({ field }) => (
-                        <FormItem className="flex-1">
-                          <FormControl>
-                            <div className="relative">
-                              <Input
-                                type="number"
-                                min={0}
-                                max={11}
-                                placeholder="0"
-                                className="h-11 pr-14"
-                                {...field}
-                                value={field.value ?? ''}
-                                onChange={(e) => {
-                                  const val = e.target.value
-                                  field.onChange(val === '' ? null : Number(val))
-                                }}
-                              />
-                              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
-                                meses
-                              </span>
-                            </div>
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
+                  <div className="space-y-1.5">
+                    <Label>Idade</Label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <FormField
+                        control={form.control}
+                        name="ageYears"
+                        render={({ field }) => (
+                          <FormItem className="space-y-0">
+                            <FormControl>
+                              <div className="relative">
+                                <Input
+                                  type="number"
+                                  min={0}
+                                  max={30}
+                                  placeholder="0"
+                                  className="h-10 pr-11"
+                                  {...field}
+                                  value={field.value ?? ''}
+                                  onChange={(e) => {
+                                    const val = e.target.value
+                                    field.onChange(val === '' ? null : Number(val))
+                                  }}
+                                />
+                                <span className="text-muted-foreground pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-xs">
+                                  anos
+                                </span>
+                              </div>
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="ageMonths"
+                        render={({ field }) => (
+                          <FormItem className="space-y-0">
+                            <FormControl>
+                              <div className="relative">
+                                <Input
+                                  type="number"
+                                  min={0}
+                                  max={11}
+                                  placeholder="0"
+                                  className="h-10 pr-12"
+                                  {...field}
+                                  value={field.value ?? ''}
+                                  onChange={(e) => {
+                                    const val = e.target.value
+                                    field.onChange(val === '' ? null : Number(val))
+                                  }}
+                                />
+                                <span className="text-muted-foreground pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-xs">
+                                  meses
+                                </span>
+                              </div>
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+                    </div>
                   </div>
-                </div>
 
-                {/* Sex */}
-                <SexToggle control={form.control} />
-              </CardContent>
-            </Card>
+                  <SexToggle control={form.control} />
+                </CardContent>
+              </Card>
 
-            {/* RIGHT COLUMN - Health */}
-            <Card className="rounded-xl">
-              <CardHeader className="pb-4">
-                <CardTitle className="text-lg">Saude</CardTitle>
+              <Card className="border-border/60 bg-card/95 shadow-warm-sm rounded-xl">
+                <CardHeader className="space-y-1 p-4 pb-2 sm:p-5 sm:pb-3">
+                  <CardTitle className="text-display flex items-center gap-2 text-base font-semibold">
+                    <FileText className="text-primary h-4 w-4" />
+                    Descrição
+                  </CardTitle>
+                  <p className="text-muted-foreground text-xs">
+                    Resumo rápido para a equipe de adoção
+                  </p>
+                </CardHeader>
+                <CardContent className="p-4 pt-0 sm:p-5 sm:pt-0">
+                  <FormField
+                    control={form.control}
+                    name="description"
+                    render={({ field }) => (
+                      <FormItem className="space-y-1.5">
+                        <FormLabel>Sobre o gato (opcional)</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            placeholder="Personalidade, comportamento e histórico..."
+                            className="min-h-20 resize-y"
+                            {...field}
+                            value={field.value ?? ''}
+                            onChange={(e) =>
+                              field.onChange(e.target.value || null)
+                            }
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </CardContent>
+              </Card>
+            </div>
+
+            <Card className="border-border/60 bg-card/95 shadow-warm-sm rounded-xl">
+              <CardHeader className="space-y-1 p-4 pb-2 sm:p-5 sm:pb-3">
+                <CardTitle className="text-display flex items-center gap-2 text-base font-semibold">
+                  <HeartPulse className="text-primary h-4 w-4" />
+                  Saúde
+                </CardTitle>
+                <p className="text-muted-foreground text-xs">
+                  Testes e cuidados essenciais
+                </p>
               </CardHeader>
-              <CardContent className="space-y-5">
-                {/* FIV/FeLV - inline toggle groups */}
-                <div className="grid gap-4 sm:grid-cols-2">
+              <CardContent className="space-y-4 p-4 pt-0 sm:p-5 sm:pt-0">
+                <div className="grid gap-3 sm:grid-cols-2">
                   <TestResultToggle
                     control={form.control}
                     name="fiv"
@@ -291,8 +337,7 @@ export function CatForm({ mode, initialData, catId }: CatFormProps) {
                   />
                 </div>
 
-                {/* Health toggles - compact */}
-                <div className="space-y-4 pt-2">
+                <div className="space-y-2">
                   <HealthToggle
                     control={form.control}
                     name="castrated"
@@ -303,55 +348,24 @@ export function CatForm({ mode, initialData, catId }: CatFormProps) {
                     name="vaccinated"
                     label="Vacinado"
                     notesName="vaccinationNotes"
-                    notesPlaceholder="Ex: V4, antirrabica..."
+                    notesPlaceholder="Ex.: V4, antirrábica e reforços..."
                   />
                   <HealthToggle
                     control={form.control}
                     name="dewormed"
                     label="Vermifugado"
                     notesName="dewormingNotes"
-                    notesPlaceholder="Ex: Data da ultima dose..."
+                    notesPlaceholder="Ex.: Data da última dose e produto..."
                   />
                 </div>
               </CardContent>
             </Card>
           </div>
 
-          {/* DESCRIPTION - Full width, shorter */}
-          <Card className="rounded-xl">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-lg">Descricao</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Sobre o gato (opcional)</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder="Conte sobre a personalidade, comportamento e historia do gato..."
-                        className="min-h-24 resize-y"
-                        {...field}
-                        value={field.value ?? ''}
-                        onChange={(e) =>
-                          field.onChange(e.target.value || null)
-                        }
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </CardContent>
-          </Card>
-
-          {/* SUBMIT */}
-          <div className="sticky bottom-0 -mx-4 bg-gradient-to-t from-background via-background to-transparent px-4 pb-4 pt-6 sm:static sm:mx-0 sm:bg-none sm:p-0">
+          <div className="bg-background/90 sticky bottom-0 z-10 -mx-4 border-t border-border/40 px-4 py-3 backdrop-blur sm:static sm:mx-0 sm:flex sm:justify-end sm:border-0 sm:bg-transparent sm:p-0">
             <Button
               type="submit"
-              className="w-full rounded-lg sm:w-auto"
+              className="shadow-primary-glow hover:shadow-primary-glow-hover w-full rounded-xl transition-all duration-200 sm:w-auto"
               disabled={isPending || isUploading}
             >
               {isPending ? (
@@ -362,7 +376,7 @@ export function CatForm({ mode, initialData, catId }: CatFormProps) {
               ) : mode === 'create' ? (
                 'Cadastrar Gato'
               ) : (
-                'Salvar Alteracoes'
+                'Salvar Alterações'
               )}
             </Button>
           </div>
