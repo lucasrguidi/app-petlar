@@ -86,13 +86,68 @@ export default async function PublicLayout({
   }
 
   return (
-    <div className="from-background via-muted/20 to-background relative min-h-screen bg-gradient-to-b">
+    <div className="relative min-h-screen bg-[#AEC7E2]">
+      {/* Gradient overlays for depth */}
+      <div className="pointer-events-none fixed inset-0">
+        {/* Warm accent top-left */}
+        <div
+          className="absolute -top-[20%] -left-[10%] h-[600px] w-[600px] rounded-full opacity-60 blur-3xl"
+          style={{
+            background:
+              'radial-gradient(circle, rgba(227,89,21,0.15) 0%, rgba(240,123,61,0.1) 40%, transparent 70%)',
+          }}
+        />
+        {/* Light center area */}
+        <div
+          className="absolute top-[20%] left-[20%] h-[800px] w-[800px] rounded-full opacity-40 blur-3xl"
+          style={{
+            background:
+              'radial-gradient(circle, rgba(255,255,255,0.5) 0%, transparent 60%)',
+          }}
+        />
+        {/* Accent bottom-right */}
+        <div
+          className="absolute -bottom-[10%] -right-[10%] h-[500px] w-[500px] rounded-full opacity-50 blur-3xl"
+          style={{
+            background:
+              'radial-gradient(circle, rgba(227,89,21,0.12) 0%, rgba(174,199,226,0.3) 50%, transparent 70%)',
+          }}
+        />
+      </div>
+
+      {/* Subtle pattern overlay */}
       <div
-        className="pointer-events-none fixed inset-0 opacity-[0.02]"
+        className="pointer-events-none fixed inset-0 opacity-[0.03]"
         style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23783201' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+          backgroundImage: `radial-gradient(circle at 1px 1px, #783201 1px, transparent 0)`,
+          backgroundSize: '32px 32px',
         }}
       />
+
+      {/* Floating paw prints decoration */}
+      <div className="pointer-events-none fixed inset-0 overflow-hidden opacity-[0.06]">
+        <svg
+          className="absolute top-[12%] left-[6%] h-14 w-14 rotate-[-15deg] text-[#783201]"
+          viewBox="0 0 24 24"
+          fill="currentColor"
+        >
+          <path d="M12 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0-4c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm4 4c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-8 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm4 6c-2.2 0-4 1.8-4 4h8c0-2.2-1.8-4-4-4z" />
+        </svg>
+        <svg
+          className="absolute top-[40%] right-[8%] h-10 w-10 rotate-[20deg] text-[#783201]"
+          viewBox="0 0 24 24"
+          fill="currentColor"
+        >
+          <path d="M12 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0-4c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm4 4c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-8 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm4 6c-2.2 0-4 1.8-4 4h8c0-2.2-1.8-4-4-4z" />
+        </svg>
+        <svg
+          className="absolute bottom-[25%] left-[12%] h-8 w-8 rotate-[10deg] text-[#783201]"
+          viewBox="0 0 24 24"
+          fill="currentColor"
+        >
+          <path d="M12 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0-4c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm4 4c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-8 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm4 6c-2.2 0-4 1.8-4 4h8c0-2.2-1.8-4-4-4z" />
+        </svg>
+      </div>
 
       <div className="relative z-10 flex min-h-screen flex-col">
         <PublicHeader orgName={org.name} orgLogo={org.logoUrl} />

@@ -1,14 +1,8 @@
 'use client'
 
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from '@/components/ui/pagination'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
+
+import { cn } from '@/lib/utils'
 
 interface PublicCatsPaginationProps {
   page: number
@@ -57,55 +51,81 @@ export function PublicCatsPagination({
   }
 
   return (
-    <div className="border-border/60 bg-card/95 shadow-warm-md rounded-2xl border px-3 py-2">
-      <div className="flex items-center justify-between gap-4 sm:hidden">
-        <PaginationPrevious
-          onClick={() => onPageChange(page - 1)}
-          disabled={page === 1}
-        />
-        <span className="text-muted-foreground text-sm">
-          Página {page} de {totalPages}
-        </span>
-        <PaginationNext
-          onClick={() => onPageChange(page + 1)}
-          disabled={page === totalPages}
-        />
+    <div
+      className={cn(
+        'flex items-center justify-center gap-2 rounded-2xl px-4 py-3',
+        'bg-white/70 backdrop-blur-sm',
+        'border border-white/50',
+        'shadow-sm'
+      )}
+    >
+      {/* Previous button */}
+      <button
+        onClick={() => onPageChange(page - 1)}
+        disabled={page === 1}
+        className={cn(
+          'flex h-10 items-center gap-1 rounded-xl px-3 text-sm font-medium transition-all',
+          page === 1
+            ? 'cursor-not-allowed text-[#8B5A2B]/30'
+            : 'text-[#783201] hover:bg-[#AEC7E2]/40 hover:text-[#E35915]'
+        )}
+        aria-label="Página anterior"
+      >
+        <ChevronLeft className="h-4 w-4" />
+        <span className="hidden sm:inline">Anterior</span>
+      </button>
+
+      {/* Page numbers - desktop */}
+      <div className="hidden items-center gap-1 sm:flex">
+        {getPageNumbers().map((pageNum) =>
+          typeof pageNum === 'string' ? (
+            <span
+              key={pageNum}
+              className="flex h-10 w-10 items-center justify-center text-[#8B5A2B]/40"
+            >
+              ...
+            </span>
+          ) : (
+            <button
+              key={`page-${pageNum}`}
+              onClick={() => onPageChange(pageNum)}
+              className={cn(
+                'flex h-10 w-10 items-center justify-center rounded-xl text-sm font-medium transition-all',
+                pageNum === page
+                  ? 'bg-gradient-to-r from-[#E35915] to-[#F07B3D] text-white shadow-lg shadow-[#E35915]/25'
+                  : 'text-[#783201] hover:bg-[#AEC7E2]/40 hover:text-[#E35915]'
+              )}
+              aria-label={`Página ${pageNum}`}
+              aria-current={pageNum === page ? 'page' : undefined}
+            >
+              {pageNum}
+            </button>
+          )
+        )}
       </div>
 
-      <Pagination className="hidden sm:flex">
-        <PaginationContent>
-          <PaginationItem>
-            <PaginationPrevious
-              onClick={() => onPageChange(page - 1)}
-              disabled={page === 1}
-            />
-          </PaginationItem>
+      {/* Page indicator - mobile */}
+      <div className="flex items-center gap-2 sm:hidden">
+        <span className="text-sm font-medium text-[#783201]">
+          {page} de {totalPages}
+        </span>
+      </div>
 
-          {getPageNumbers().map((pageNum) =>
-            typeof pageNum === 'string' ? (
-              <PaginationItem key={pageNum}>
-                <PaginationEllipsis />
-              </PaginationItem>
-            ) : (
-              <PaginationItem key={pageNum}>
-                <PaginationLink
-                  isActive={pageNum === page}
-                  onClick={() => onPageChange(pageNum)}
-                >
-                  {pageNum}
-                </PaginationLink>
-              </PaginationItem>
-            )
-          )}
-
-          <PaginationItem>
-            <PaginationNext
-              onClick={() => onPageChange(page + 1)}
-              disabled={page === totalPages}
-            />
-          </PaginationItem>
-        </PaginationContent>
-      </Pagination>
+      {/* Next button */}
+      <button
+        onClick={() => onPageChange(page + 1)}
+        disabled={page === totalPages}
+        className={cn(
+          'flex h-10 items-center gap-1 rounded-xl px-3 text-sm font-medium transition-all',
+          page === totalPages
+            ? 'cursor-not-allowed text-[#8B5A2B]/30'
+            : 'text-[#783201] hover:bg-[#AEC7E2]/40 hover:text-[#E35915]'
+        )}
+        aria-label="Próxima página"
+      >
+        <span className="hidden sm:inline">Próxima</span>
+        <ChevronRight className="h-4 w-4" />
+      </button>
     </div>
   )
 }
