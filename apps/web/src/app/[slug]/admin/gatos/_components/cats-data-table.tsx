@@ -5,11 +5,14 @@ import {
   Clock3,
   Check,
   ChevronDown,
+  ChevronLeft,
   ChevronRight,
+  Image as ImageIcon,
   ShieldCheck,
   Users,
   X,
 } from 'lucide-react'
+import { useCallback, useMemo, useState } from 'react'
 
 import { CatActionsMenu } from './cat-actions-menu'
 
@@ -18,7 +21,20 @@ import type { ColumnDef, Row } from '@tanstack/react-table'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { DataTable } from '@/components/ui/data-table'
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet'
 import { cn } from '@/lib/utils'
+
+interface CatPhoto {
+  id: string
+  url: string
+  order: number
+}
 
 // Types
 interface Cat {
@@ -37,6 +53,7 @@ interface Cat {
   description: string | null
   status: 'available' | 'in_progress' | 'adopted'
   photoUrl: string | null
+  photos?: CatPhoto[]
   interestedCount?: number
 }
 
@@ -66,6 +83,18 @@ function getStatusConfig(status: Cat['status']) {
     adopted: { label: 'Adotado', variant: 'info' as const },
   }
   return config[status]
+}
+
+function resolveCatPhotos(cat: Cat): CatPhoto[] {
+  if (cat.photos && cat.photos.length > 0) {
+    return cat.photos
+  }
+
+  if (cat.photoUrl) {
+    return [{ id: `${cat.id}-main`, url: cat.photoUrl, order: 1 }]
+  }
+
+  return []
 }
 
 // Helper: Health badge
@@ -184,8 +213,10 @@ function ExpandedContent({ cat }: { cat: Cat }) {
   )
 }
 
-// Column definitions
-const columns: ColumnDef<Cat>[] = [
+function getColumns(
+  onOpenPhotoPreview: (cat: Cat) => void
+): ColumnDef<Cat>[] {
+  return [
     // Expand column
     {
       id: 'expand',
@@ -219,16 +250,29 @@ const columns: ColumnDef<Cat>[] = [
       ),
       cell: ({ row }) => {
         const cat = row.original
+        const photoCount = resolveCatPhotos(cat).length
+
         return (
-          <div className="flex items-center gap-2">
-            <div className="bg-muted relative h-8 w-8 shrink-0 overflow-hidden rounded-lg">
+          <div className="flex items-center gap-2.5">
+            <div className="bg-muted relative h-12 w-12 shrink-0 overflow-hidden rounded-lg border border-border/50">
               {cat.photoUrl ? (
-                <img
-                  src={cat.photoUrl}
-                  alt={cat.name}
-                  className="h-full w-full object-cover"
-                  loading="lazy"
-                />
+                <button
+                  type="button"
+                  onClick={() => onOpenPhotoPreview(cat)}
+                  className="group/photo relative h-full w-full"
+                  aria-label={`Ver fotos de ${cat.name}`}
+                >
+                  <img
+                    src={cat.photoUrl}
+                    alt={cat.name}
+                    className="h-full w-full object-cover transition-transform duration-200 group-hover/photo:scale-105"
+                    loading="lazy"
+                  />
+                  <span className="from-foreground/55 absolute inset-x-0 bottom-0 h-5 bg-gradient-to-t to-transparent" />
+                  <span className="text-card absolute right-1 bottom-0.5 text-[10px] font-semibold">
+                    {photoCount > 1 ? `${photoCount} fotos` : '1 foto'}
+                  </span>
+                </button>
               ) : (
                 <div className="flex h-full w-full items-center justify-center">
                   <CatIcon className="text-muted-foreground h-4 w-4" />
@@ -337,16 +381,186 @@ const columns: ColumnDef<Cat>[] = [
       },
     },
   ]
+}
 
 export function CatsDataTable({ cats }: CatsDataTableProps) {
+  const [previewState, setPreviewState] = useState<{
+    cat: Cat
+    index: number
+  } | null>(null)
+
+  const openPhotoPreview = useCallback((cat: Cat) => {
+    const photos = resolveCatPhotos(cat)
+    if (photos.length === 0) return
+    setPreviewState({ cat, index: 0 })
+  }, [])
+
+  const closePhotoPreview = useCallback((open: boolean) => {
+    if (!open) {
+      setPreviewState(null)
+    }
+  }, [])
+
+  const previewPhotos = useMemo(
+    () => (previewState ? resolveCatPhotos(previewState.cat) : []),
+    [previewState]
+  )
+
+  const activePhoto =
+    previewState && previewPhotos.length > 0
+      ? previewPhotos[previewState.index]
+      : null
+
+  const hasCarousel = previewPhotos.length > 1
+
+  const goToPreviousPhoto = useCallback(() => {
+    setPreviewState((current) => {
+      if (!current) return current
+
+      const photos = resolveCatPhotos(current.cat)
+      if (photos.length <= 1) return current
+
+      return {
+        ...current,
+        index: current.index === 0 ? photos.length - 1 : current.index - 1,
+      }
+    })
+  }, [])
+
+  const goToNextPhoto = useCallback(() => {
+    setPreviewState((current) => {
+      if (!current) return current
+
+      const photos = resolveCatPhotos(current.cat)
+      if (photos.length <= 1) return current
+
+      return {
+        ...current,
+        index: current.index >= photos.length - 1 ? 0 : current.index + 1,
+      }
+    })
+  }, [])
+
+  const goToPhotoIndex = useCallback((index: number) => {
+    setPreviewState((current) => {
+      if (!current) return current
+
+      const photos = resolveCatPhotos(current.cat)
+      if (index < 0 || index >= photos.length) return current
+
+      return {
+        ...current,
+        index,
+      }
+    })
+  }, [])
+
+  const columns = useMemo(() => getColumns(openPhotoPreview), [openPhotoPreview])
+
   return (
-    <DataTable
-      columns={columns}
-      data={cats}
-      className="border-border/60 bg-card/95 shadow-warm-sm rounded-xl border"
-      renderExpandedRow={(row: Row<Cat>) => (
-        <ExpandedContent cat={row.original} />
-      )}
-    />
+    <>
+      <DataTable
+        columns={columns}
+        data={cats}
+        className="border-border/60 bg-card/95 shadow-warm-sm rounded-xl border"
+        renderExpandedRow={(row: Row<Cat>) => (
+          <ExpandedContent cat={row.original} />
+        )}
+      />
+
+      <Sheet open={Boolean(previewState)} onOpenChange={closePhotoPreview}>
+        <SheetContent
+          side="right"
+          className="w-full overflow-y-auto p-0 sm:max-w-lg"
+        >
+          {previewState ? (
+            <div className="flex h-full flex-col">
+              <SheetHeader className="border-border/60 border-b px-5 py-4 pr-12">
+                <SheetTitle className="text-display text-xl">
+                  {previewState.cat.name}
+                </SheetTitle>
+                <SheetDescription>
+                  {activePhoto
+                    ? `Foto ${previewState.index + 1} de ${previewPhotos.length}`
+                    : 'Sem foto disponível'}
+                </SheetDescription>
+              </SheetHeader>
+
+              <div className="flex flex-1 flex-col gap-3 p-4">
+                <div className="border-border/60 bg-muted/40 relative overflow-hidden rounded-xl border">
+                  <div className="aspect-[4/3] w-full">
+                    {activePhoto ? (
+                      <img
+                        src={activePhoto.url}
+                        alt={`Foto ${previewState.index + 1} de ${previewState.cat.name}`}
+                        className="h-full w-full object-contain"
+                      />
+                    ) : (
+                      <div className="text-muted-foreground flex h-full w-full items-center justify-center gap-2 text-sm">
+                        <ImageIcon className="h-4 w-4" />
+                        Sem foto
+                      </div>
+                    )}
+                  </div>
+
+                  {hasCarousel && (
+                    <>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="icon"
+                        onClick={goToPreviousPhoto}
+                        className="absolute top-1/2 left-2 h-8 w-8 -translate-y-1/2 rounded-full"
+                        aria-label="Foto anterior"
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="icon"
+                        onClick={goToNextPhoto}
+                        className="absolute top-1/2 right-2 h-8 w-8 -translate-y-1/2 rounded-full"
+                        aria-label="Próxima foto"
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </>
+                  )}
+                </div>
+
+                {hasCarousel && (
+                  <div className="flex gap-2 overflow-x-auto pb-1">
+                    {previewPhotos.map((photo, index) => {
+                      const isActive = index === previewState.index
+                      return (
+                        <button
+                          key={photo.id}
+                          type="button"
+                          onClick={() => goToPhotoIndex(index)}
+                          className={cn(
+                            'relative h-14 w-14 shrink-0 overflow-hidden rounded-lg border transition-colors',
+                            isActive
+                              ? 'border-primary ring-primary/30 ring-2'
+                              : 'border-border/60 hover:border-primary/50'
+                          )}
+                          aria-label={`Abrir foto ${index + 1}`}
+                        >
+                          <img
+                            src={photo.url}
+                            alt={`Miniatura ${index + 1} de ${previewState.cat.name}`}
+                            className="h-full w-full object-cover"
+                          />
+                        </button>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : null}
+        </SheetContent>
+      </Sheet>
+    </>
   )
 }

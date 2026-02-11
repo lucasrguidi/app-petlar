@@ -285,26 +285,35 @@ export const catsRouter = router({
         .limit(limit)
         .offset(offset)
 
-      // Buscar fotos principais (order=1) para cada gato
+      // Buscar fotos para cada gato da página atual
       const catIds = catsList.map((c) => c.id)
       const photos =
         catIds.length > 0
           ? await db
               .select({
+                id: catPhotos.id,
                 catId: catPhotos.catId,
                 url: catPhotos.url,
+                order: catPhotos.order,
               })
               .from(catPhotos)
-              .where(
-                and(
-                  eq(catPhotos.order, 1),
-                  sql`${catPhotos.catId} IN ${catIds}`
-                )
-              )
+              .where(sql`${catPhotos.catId} IN ${catIds}`)
+              .orderBy(catPhotos.catId, catPhotos.order)
           : []
 
-      // Mapear fotos para gatos
-      const photosMap = new Map(photos.map((p) => [p.catId, p.url]))
+      const photosByCatId = photos.reduce<
+        Record<string, Array<{ id: string; url: string; order: number }>>
+      >((acc, photo) => {
+        if (!acc[photo.catId]) {
+          acc[photo.catId] = []
+        }
+        acc[photo.catId]?.push({
+          id: photo.id,
+          url: photo.url,
+          order: photo.order,
+        })
+        return acc
+      }, {})
 
       // Contar total para paginação
       const [countResult] = await db
@@ -315,10 +324,14 @@ export const catsRouter = router({
       const total = countResult?.count ?? 0
 
       return {
-        cats: catsList.map((cat) => ({
-          ...cat,
-          photoUrl: photosMap.get(cat.id) ?? null,
-        })),
+        cats: catsList.map((cat) => {
+          const catPhotosList = photosByCatId[cat.id] ?? []
+          return {
+            ...cat,
+            photoUrl: catPhotosList[0]?.url ?? null,
+            photos: catPhotosList,
+          }
+        }),
         pagination: {
           page,
           limit,
