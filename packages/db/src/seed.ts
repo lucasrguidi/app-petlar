@@ -1,6 +1,6 @@
 import { createClient } from '@libsql/client'
 import dotenv from 'dotenv'
-import { eq } from 'drizzle-orm'
+import { eq, sql } from 'drizzle-orm'
 import { drizzle } from 'drizzle-orm/libsql'
 import { Scrypt } from 'oslo/password'
 
@@ -14,6 +14,11 @@ const client = createClient({
 })
 
 const db = drizzle({ client, schema })
+
+function buildCatPhotoUrl(seed: number): string {
+  // Stable image per lock value, useful for visual testing in development.
+  return `https://loremflickr.com/1200/900/cat?lock=${seed}`
+}
 
 async function seed() {
   console.log('🌱 Seeding database...')
@@ -186,6 +191,55 @@ async function seed() {
     if (catsToCreate.length > 0) {
       await db.insert(schema.cats).values(catsToCreate)
       console.log(`✅ ${catsToCreate.length} gatos criados`)
+    }
+  }
+
+  // Garantir que todos os gatos tenham pelo menos 1 foto.
+  // Também adiciona variação de 1 a 3 fotos para testar o carrossel no site público.
+  const orgCats = await db
+    .select({ id: schema.cats.id, name: schema.cats.name })
+    .from(schema.cats)
+    .where(eq(schema.cats.orgId, orgId))
+
+  if (orgCats.length === 0) {
+    console.log('⚠️  Nenhum gato encontrado para gerar fotos.')
+  } else {
+    const catIds = orgCats.map((cat) => cat.id)
+
+    const existingPhotos =
+      catIds.length > 0
+        ? await db
+            .select({
+              catId: schema.catPhotos.catId,
+            })
+            .from(schema.catPhotos)
+            .where(sql`${schema.catPhotos.catId} in ${catIds}`)
+        : []
+
+    const catsWithPhotos = new Set(existingPhotos.map((photo) => photo.catId))
+
+    const photosToInsert = orgCats.flatMap((cat, index) => {
+      if (catsWithPhotos.has(cat.id)) {
+        return []
+      }
+
+      const photoCount = index % 3 === 0 ? 3 : index % 2 === 0 ? 2 : 1
+
+      return Array.from({ length: photoCount }, (_, photoIndex) => ({
+        id: crypto.randomUUID(),
+        catId: cat.id,
+        order: photoIndex + 1,
+        url: buildCatPhotoUrl((index + 1) * 10 + photoIndex + 1),
+      }))
+    })
+
+    if (photosToInsert.length > 0) {
+      await db.insert(schema.catPhotos).values(photosToInsert)
+      console.log(
+        `✅ ${photosToInsert.length} fotos adicionadas para gatos sem imagem`
+      )
+    } else {
+      console.log('⏭️  Todos os gatos já possuem foto')
     }
   }
 

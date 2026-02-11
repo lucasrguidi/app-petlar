@@ -1,11 +1,11 @@
 import { db } from '@app-petlar/db'
-import { catPhotos, cats, forms } from '@app-petlar/db/schema'
+import { catPhotos, cats, forms, orgs } from '@app-petlar/db/schema'
 import { TRPCError } from '@trpc/server'
 import { and, desc, eq, like, sql } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
 import { z } from 'zod'
 
-import { protectedProcedure, router } from '../index'
+import { protectedProcedure, publicProcedure, router } from '../index'
 
 // Schema base para criar gato
 const catInputSchema = z.object({
@@ -41,6 +41,14 @@ const listFiltersSchema = z.object({
   page: z.number().int().min(1).default(1),
   limit: z.number().int().min(1).max(50).default(10),
   includeAdopted: z.boolean().default(false),
+})
+
+const publicListFiltersSchema = z.object({
+  slug: z.string().min(1),
+  sex: z.enum(['male', 'female']).optional(),
+  ageRange: z.enum(['kitten', 'young', 'adult', 'senior']).optional(),
+  page: z.number().int().min(1).default(1),
+  limit: z.number().int().min(1).max(30).default(9),
 })
 
 /**
@@ -80,6 +88,129 @@ async function validateFormAccess(
 }
 
 export const catsRouter = router({
+  /**
+   * Lista pública de gatos disponíveis por ONG.
+   * Sempre retorna somente status "available".
+   */
+  listPublic: publicProcedure
+    .input(publicListFiltersSchema)
+    .query(async ({ input }) => {
+      const { slug, sex, ageRange, page, limit } = input
+      const offset = (page - 1) * limit
+
+      const [org] = await db
+        .select({ id: orgs.id })
+        .from(orgs)
+        .where(eq(orgs.slug, slug))
+
+      if (!org) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Organização não encontrada',
+        })
+      }
+
+      const conditions = [eq(cats.orgId, org.id), eq(cats.status, 'available')]
+
+      if (sex) {
+        conditions.push(eq(cats.sex, sex))
+      }
+
+      if (ageRange) {
+        const hasKnownAge = sql`(${cats.ageYears} is not null or ${cats.ageMonths} is not null)`
+        const ageInMonths = sql<number>`(coalesce(${cats.ageYears}, 0) * 12 + coalesce(${cats.ageMonths}, 0))`
+
+        conditions.push(hasKnownAge)
+
+        if (ageRange === 'kitten') {
+          conditions.push(sql`${ageInMonths} between 0 and 11`)
+        } else if (ageRange === 'young') {
+          conditions.push(sql`${ageInMonths} between 12 and 47`)
+        } else if (ageRange === 'adult') {
+          conditions.push(sql`${ageInMonths} between 48 and 95`)
+        } else if (ageRange === 'senior') {
+          conditions.push(sql`${ageInMonths} >= 96`)
+        }
+      }
+
+      const catsList = await db
+        .select({
+          id: cats.id,
+          formId: cats.formId,
+          name: cats.name,
+          ageYears: cats.ageYears,
+          ageMonths: cats.ageMonths,
+          sex: cats.sex,
+          fiv: cats.fiv,
+          felv: cats.felv,
+          castrated: cats.castrated,
+          vaccinated: cats.vaccinated,
+          vaccinationNotes: cats.vaccinationNotes,
+          dewormed: cats.dewormed,
+          dewormingNotes: cats.dewormingNotes,
+          description: cats.description,
+          createdAt: cats.createdAt,
+        })
+        .from(cats)
+        .where(and(...conditions))
+        .orderBy(desc(cats.createdAt))
+        .limit(limit)
+        .offset(offset)
+
+      const catIds = catsList.map((cat) => cat.id)
+      const photos =
+        catIds.length > 0
+          ? await db
+              .select({
+                id: catPhotos.id,
+                catId: catPhotos.catId,
+                url: catPhotos.url,
+                order: catPhotos.order,
+              })
+              .from(catPhotos)
+              .where(sql`${catPhotos.catId} in ${catIds}`)
+              .orderBy(catPhotos.catId, catPhotos.order)
+          : []
+
+      const photosByCatId = photos.reduce<
+        Record<string, Array<{ id: string; url: string; order: number }>>
+      >((acc, photo) => {
+        if (!acc[photo.catId]) {
+          acc[photo.catId] = []
+        }
+        acc[photo.catId]?.push({
+          id: photo.id,
+          url: photo.url,
+          order: photo.order,
+        })
+        return acc
+      }, {})
+
+      const [countResult] = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(cats)
+        .where(and(...conditions))
+
+      const total = countResult?.count ?? 0
+
+      return {
+        cats: catsList.map((cat) => {
+          const catPhotosList = photosByCatId[cat.id] ?? []
+          return {
+            ...cat,
+            photoUrl: catPhotosList[0]?.url ?? null,
+            photos: catPhotosList,
+          }
+        }),
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit),
+        },
+      }
+    }),
+
   /**
    * Lista gatos com filtros e paginação
    */
