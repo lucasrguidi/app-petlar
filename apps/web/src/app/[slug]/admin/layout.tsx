@@ -2,6 +2,7 @@ import { auth } from '@app-petlar/auth'
 import { db } from '@app-petlar/db'
 import { orgs } from '@app-petlar/db/schema'
 import { eq } from 'drizzle-orm'
+import { type Metadata } from 'next'
 import { headers } from 'next/headers'
 import { notFound, redirect } from 'next/navigation'
 
@@ -11,6 +12,13 @@ import { AdminSidebar } from './_components/admin-sidebar'
 interface AdminLayoutProps {
   children: React.ReactNode
   params: Promise<{ slug: string }>
+}
+
+export const metadata: Metadata = {
+  robots: {
+    index: false,
+    follow: false,
+  },
 }
 
 async function getOrg(slug: string) {

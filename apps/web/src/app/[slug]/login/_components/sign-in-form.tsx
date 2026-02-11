@@ -121,7 +121,7 @@ export function SignInForm({ orgId }: SignInFormProps) {
                     className="border-border/50 bg-muted/30 placeholder:text-muted-foreground/60 focus:border-primary focus:bg-card focus:ring-primary/20 h-12 rounded-xl pl-14 text-sm transition-all duration-200 focus:ring-2"
                     {...field}
                     onFocus={() => setFocusedField('email')}
-                    onBlur={(e) => {
+                    onBlur={() => {
                       field.onBlur()
                       setFocusedField(null)
                     }}
@@ -171,7 +171,7 @@ export function SignInForm({ orgId }: SignInFormProps) {
                     className="border-border/50 bg-muted/30 placeholder:text-muted-foreground/60 focus:border-primary focus:bg-card focus:ring-primary/20 h-12 rounded-xl pr-12 pl-14 text-sm transition-all duration-200 focus:ring-2"
                     {...field}
                     onFocus={() => setFocusedField('password')}
-                    onBlur={(e) => {
+                    onBlur={() => {
                       field.onBlur()
                       setFocusedField(null)
                     }}

@@ -2,6 +2,7 @@ import { db } from '@app-petlar/db'
 import { orgs } from '@app-petlar/db/schema'
 import { eq } from 'drizzle-orm'
 import { Heart, PawPrint, Shield } from 'lucide-react'
+import { type Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 
@@ -18,6 +19,13 @@ import { Skeleton } from '@/components/ui/skeleton'
 
 interface LoginPageProps {
   params: Promise<{ slug: string }>
+}
+
+export const metadata: Metadata = {
+  robots: {
+    index: false,
+    follow: false,
+  },
 }
 
 async function getOrg(slug: string) {
