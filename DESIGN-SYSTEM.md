@@ -568,6 +568,16 @@ Todos os componentes interativos devem ter estes estados:
 // Input com erro
 <Input className="border-destructive focus:ring-destructive" />
 <p className="text-sm text-destructive mt-1">Mensagem de erro</p>
+
+// Textarea padrão (Admin)
+<Textarea
+  className="min-h-[80px] rounded-lg border border-border/60 bg-card
+             transition-colors focus:border-primary focus:ring-2
+             focus:ring-primary/20"
+/>
+
+// ⚠️ Evitar em telas admin:
+// bg-background no textarea (pode herdar fundo azul do tema)
 ```
 
 ### Badge/Tag
@@ -683,7 +693,7 @@ Todos os componentes interativos devem ter estes estados:
 </div>
 
 // Card admin
-<Card className="rounded-xl shadow-sm">
+<Card className="rounded-xl border border-border/60 bg-card/95 shadow-warm-sm">
   <CardHeader className="pb-3">
     <CardTitle className="text-lg">Resumo</CardTitle>
   </CardHeader>
@@ -708,6 +718,68 @@ Todos os componentes interativos devem ter estes estados:
   </TableBody>
 </Table>
 ```
+
+### Padrões Consolidados (CRUD de Gatos)
+
+Estes padrões foram consolidados nas telas de **cadastro** e **listagem** de gatos e devem ser reutilizados em novos fluxos administrativos.
+
+#### 1) Formulário de Cadastro (alta frequência)
+
+- Container centralizado com largura máxima: `max-w-6xl`
+- Cards compactos e consistentes: `rounded-xl border-border/60 bg-card/95 shadow-warm-sm`
+- Fotos no topo em faixa horizontal compacta (com contador e drag-and-drop)
+- Layout desktop em 2 colunas:
+  - Esquerda: informações básicas + descrição
+  - Direita: saúde
+- Densidade de campos:
+  - Inputs principais: `h-10`
+  - Toggles/segmentos: `h-8`
+  - Notas condicionais: `h-8`
+- CTA sticky no mobile e alinhada à direita no desktop
+- Títulos de seção com ícone Lucide `h-4 w-4` + `text-display`
+- Tela de sucesso com card destacado e duas ações claras: `Cadastrar outro` e `Ver lista`
+
+```tsx
+<div className="mx-auto w-full max-w-6xl space-y-4">
+  <Card className="rounded-xl border border-border/60 bg-card/95 shadow-warm-sm" />
+  <div className="grid gap-4 lg:grid-cols-[1.05fr_1fr]">
+    <Card className="rounded-xl border border-border/60 bg-card/95 shadow-warm-sm" />
+    <Card className="rounded-xl border border-border/60 bg-card/95 shadow-warm-sm" />
+  </div>
+</div>
+```
+
+#### 2) Listagem de Gatos (operação diária)
+
+- Header no mesmo tom visual do formulário (`max-w-6xl`, título com ícone, CTA com glow)
+- Barra de filtros em card compacto:
+  - Status
+  - Busca por nome
+  - Botão de filtros avançados com badge de quantidade
+- Estrutura de resultado em blocos:
+  - Card de resumo (`N gatos encontrados`)
+  - Card da tabela
+  - Card da paginação
+- Tabela com ações sticky à direita e linha expansível para detalhes de saúde/cuidados
+- Estados `loading`, `empty` e `error` com o mesmo shape visual da tela principal
+- Drawer de filtros avançados seguindo o mesmo padrão de radius/sombra/botões
+
+```tsx
+<div className="flex min-h-0 flex-1 flex-col gap-3">
+  <div className="rounded-xl border border-border/60 bg-card/95 shadow-warm-sm" />
+  <div className="rounded-xl border border-border/60 bg-card/95 shadow-warm-sm" />
+  <div className="rounded-xl border border-border/60 bg-card/95 shadow-warm-sm" />
+</div>
+```
+
+#### 3) Microcopy e linguagem (PT-BR)
+
+- Sempre usar acentuação correta em labels, mensagens e placeholders
+- Preferir textos curtos e acionáveis para operações de alta frequência
+- Padrão recomendado:
+  - Título + subtítulo de contexto
+  - Label objetiva
+  - Placeholder exemplificando formato (`Ex.: ...`)
 
 ### Comparativo Visual
 
@@ -850,11 +922,18 @@ Permitidos apenas no site público:
 | `Trash2` | Excluir |
 | `Eye` | Visualizar |
 | `Search` | Buscar |
-| `Filter` | Filtros |
+| `Filter` / `SlidersHorizontal` | Filtros |
 | `Download` | Exportar |
 | `Upload` | Importar |
 | `ChevronDown` | Expandir |
 | `MoreVertical` | Menu de ações |
+| `PawPrint` | Seção de identificação / contagem |
+| `HeartPulse` | Seção de saúde |
+| `FileText` | Seção de descrição |
+| `Images` | Seção de fotos |
+| `Clock3` | Coluna de idade |
+| `ShieldCheck` | Coluna de status |
+| `CheckCircle2` | Confirmação de sucesso |
 
 ---
 
@@ -874,8 +953,11 @@ Permitidos apenas no site público:
 
 - [ ] Título com `font-display`
 - [ ] Descrição em `text-muted-foreground`
-- [ ] Espaçamento consistente (`space-y-8` entre seções)
-- [ ] Cards com `rounded-xl` e `shadow-sm`
+- [ ] Container centralizado com `max-w-6xl` (quando aplicável)
+- [ ] Espaçamento compacto e consistente (`gap-3` a `gap-4` para operações frequentes)
+- [ ] Cards com `rounded-xl`, `border-border/60`, `bg-card/95` e `shadow-warm-sm`
+- [ ] Estados `loading`, `empty` e `error` com o mesmo padrão visual da tela final
+- [ ] Microcopy em PT-BR com acentuação correta
 - [ ] Breadcrumb se necessário
 - [ ] Loading states
 
@@ -915,4 +997,4 @@ Permitidos apenas no site público:
 
 ---
 
-*PetLar Design System v1.0 - Atualizado em Janeiro/2025*
+*PetLar Design System v1.1 - Atualizado em Fevereiro/2026*
