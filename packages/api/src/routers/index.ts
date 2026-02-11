@@ -1,6 +1,7 @@
 import { protectedProcedure, publicProcedure, router } from '../index'
 
 import { catsRouter } from './cats'
+import { formsRouter } from './forms'
 import { orgsRouter } from './orgs'
 import { uploadRouter } from './upload'
 
@@ -16,6 +17,7 @@ export const appRouter = router({
   }),
   upload: uploadRouter,
   cats: catsRouter,
+  forms: formsRouter,
   orgs: orgsRouter,
 })
 export type AppRouter = typeof appRouter

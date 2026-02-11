@@ -23,6 +23,8 @@ import { cn } from '@/lib/utils'
 // Types
 interface Cat {
   id: string
+  formId: string | null
+  formName: string | null
   name: string
   ageYears: number | null
   ageMonths: number | null
@@ -155,6 +157,15 @@ function ExpandedContent({ cat }: { cat: Cat }) {
               Vermifugado
             </span>
           </div>
+        </div>
+
+        <div className="space-y-1">
+          <p className="text-muted-foreground font-medium uppercase tracking-wide">
+            Formulário
+          </p>
+          <p className="text-foreground/80 leading-relaxed">
+            {cat.formName ?? 'Sem formulário selecionado'}
+          </p>
         </div>
 
         {/* Description */}

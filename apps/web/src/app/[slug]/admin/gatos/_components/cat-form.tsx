@@ -1,7 +1,7 @@
 'use client'
 
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   ArrowLeft,
   FileText,
@@ -42,6 +42,13 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { useOrgSlug } from '@/hooks/use-org-slug'
 import { trpc } from '@/utils/trpc'
@@ -85,6 +92,10 @@ export function CatForm({ mode, initialData, catId }: CatFormProps) {
   } = usePhotoUpload({
     initialPhotos: initialData?.photos,
   })
+
+  const { data: formOptions, isLoading: isLoadingFormOptions } = useQuery(
+    trpc.forms.options.queryOptions()
+  )
 
   const createMutation = useMutation(
     trpc.cats.create.mutationOptions({
@@ -272,6 +283,52 @@ export function CatForm({ mode, initialData, catId }: CatFormProps) {
                       />
                     </div>
                   </div>
+
+                  <FormField
+                    control={form.control}
+                    name="formId"
+                    render={({ field }) => (
+                      <FormItem className="space-y-1.5">
+                        <FormLabel>Formulário de candidatura</FormLabel>
+                        <Select
+                          value={field.value ?? 'none'}
+                          onValueChange={(value) =>
+                            field.onChange(value === 'none' ? null : value)
+                          }
+                          disabled={isLoadingFormOptions}
+                        >
+                          <FormControl>
+                            <SelectTrigger className="h-10 rounded-lg">
+                              <SelectValue placeholder="Escolha um formulário" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="none">
+                              Sem formulário (por enquanto)
+                            </SelectItem>
+                            {formOptions?.map((option) => {
+                              const isCurrent = option.id === field.value
+                              return (
+                                <SelectItem
+                                  key={option.id}
+                                  value={option.id}
+                                  disabled={!option.active && !isCurrent}
+                                >
+                                  {option.name}
+                                  {!option.active ? ' (inativo)' : ''}
+                                </SelectItem>
+                              )
+                            })}
+                          </SelectContent>
+                        </Select>
+                        <p className="text-muted-foreground text-xs">
+                          Esse modelo será usado quando alguém clicar em "Quero
+                          adotar".
+                        </p>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
                   <SexToggle control={form.control} />
                 </CardContent>

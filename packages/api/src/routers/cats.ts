@@ -1,5 +1,5 @@
 import { db } from '@app-petlar/db'
-import { catPhotos, cats } from '@app-petlar/db/schema'
+import { catPhotos, cats, forms } from '@app-petlar/db/schema'
 import { TRPCError } from '@trpc/server'
 import { and, desc, eq, like, sql } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
@@ -57,6 +57,28 @@ function requireOrgId(user: { orgId?: string | null }): string {
   return user.orgId
 }
 
+/**
+ * Valida se o formulário pertence à mesma organização.
+ */
+async function validateFormAccess(
+  formId: string | null | undefined,
+  orgId: string
+): Promise<void> {
+  if (!formId) return
+
+  const [form] = await db
+    .select({ id: forms.id })
+    .from(forms)
+    .where(and(eq(forms.id, formId), eq(forms.orgId, orgId)))
+
+  if (!form) {
+    throw new TRPCError({
+      code: 'BAD_REQUEST',
+      message: 'Formulário inválido para esta organização',
+    })
+  }
+}
+
 export const catsRouter = router({
   /**
    * Lista gatos com filtros e paginação
@@ -107,6 +129,8 @@ export const catsRouter = router({
       const catsList = await db
         .select({
           id: cats.id,
+          formId: cats.formId,
+          formName: forms.name,
           name: cats.name,
           ageYears: cats.ageYears,
           ageMonths: cats.ageMonths,
@@ -121,6 +145,10 @@ export const catsRouter = router({
           createdAt: cats.createdAt,
         })
         .from(cats)
+        .leftJoin(
+          forms,
+          and(eq(cats.formId, forms.id), eq(forms.orgId, orgId))
+        )
         .where(and(...conditions))
         .orderBy(desc(cats.createdAt))
         .limit(limit)
@@ -178,8 +206,33 @@ export const catsRouter = router({
       const orgId = requireOrgId(ctx.session.user)
 
       const [cat] = await db
-        .select()
+        .select({
+          id: cats.id,
+          orgId: cats.orgId,
+          formId: cats.formId,
+          formName: forms.name,
+          name: cats.name,
+          ageYears: cats.ageYears,
+          ageMonths: cats.ageMonths,
+          sex: cats.sex,
+          fiv: cats.fiv,
+          felv: cats.felv,
+          castrated: cats.castrated,
+          vaccinated: cats.vaccinated,
+          vaccinationNotes: cats.vaccinationNotes,
+          dewormed: cats.dewormed,
+          dewormingNotes: cats.dewormingNotes,
+          description: cats.description,
+          status: cats.status,
+          createdBy: cats.createdBy,
+          createdAt: cats.createdAt,
+          updatedAt: cats.updatedAt,
+        })
         .from(cats)
+        .leftJoin(
+          forms,
+          and(eq(cats.formId, forms.id), eq(forms.orgId, orgId))
+        )
         .where(and(eq(cats.id, input.id), eq(cats.orgId, orgId)))
 
       if (!cat) {
@@ -218,6 +271,7 @@ export const catsRouter = router({
     .mutation(async ({ ctx, input }) => {
       const orgId = requireOrgId(ctx.session.user)
       const catId = nanoid()
+      await validateFormAccess(input.cat.formId, orgId)
 
       await db.transaction(async (tx) => {
         // Inserir gato
@@ -269,6 +323,10 @@ export const catsRouter = router({
           code: 'NOT_FOUND',
           message: 'Gato não encontrado',
         })
+      }
+
+      if (input.cat.formId !== undefined) {
+        await validateFormAccess(input.cat.formId, orgId)
       }
 
       await db.transaction(async (tx) => {
