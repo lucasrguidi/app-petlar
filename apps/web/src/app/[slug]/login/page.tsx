@@ -1,7 +1,7 @@
 import { db } from '@app-petlar/db'
 import { orgs } from '@app-petlar/db/schema'
 import { eq } from 'drizzle-orm'
-import { Heart, PawPrint, Shield } from 'lucide-react'
+import { PawPrint, Shield } from 'lucide-react'
 import { type Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
@@ -146,8 +146,7 @@ export default async function OrgLoginPage({ params }: LoginPageProps) {
 
             {/* Description */}
             <CardDescription className="text-muted-foreground mx-auto max-w-xs text-base text-balance">
-              Entre com suas credenciais para acessar o painel e continuar
-              ajudando nossos amigos peludos.
+              Entre com suas credenciais para acessar o painel.
             </CardDescription>
           </CardHeader>
 
@@ -181,22 +180,6 @@ export default async function OrgLoginPage({ params }: LoginPageProps) {
             </div>
           </CardContent>
         </Card>
-
-        {/* Footer */}
-        <div className="mt-8 flex flex-col items-center gap-3">
-          <p className="text-muted-foreground text-xs">
-            Feito com{' '}
-            <Heart
-              className="text-primary inline h-3 w-3"
-              fill="currentColor"
-            />{' '}
-            para os gatinhos
-          </p>
-          <p className="text-muted-foreground/60 text-[10px]">
-            PetLar &copy; {new Date().getFullYear()} &middot; Todos os direitos
-            reservados
-          </p>
-        </div>
       </div>
     </div>
   )
