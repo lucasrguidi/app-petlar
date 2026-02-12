@@ -68,14 +68,14 @@ export function DataTable<TData, TValue>({
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id}>
+            <TableRow key={headerGroup.id} className="hover:bg-transparent">
               {headerGroup.headers.map((header) => {
                 const meta = header.column.columnDef.meta
                 return (
                   <TableHead
                     key={header.id}
                     className={cn(
-                      'bg-muted/50',
+                      'bg-muted/40 border-border/40 h-10 border-b',
                       meta?.className,
                       meta?.headerClassName
                     )}
@@ -99,14 +99,19 @@ export function DataTable<TData, TValue>({
                 <TableRow
                   data-state={row.getIsSelected() && 'selected'}
                   className={cn(
-                    'group',
-                    row.getIsExpanded() && 'bg-muted/30'
+                    'group border-border/30 transition-colors duration-150',
+                    row.getIsExpanded()
+                      ? 'bg-primary/[0.03]'
+                      : 'hover:bg-muted/40'
                   )}
                 >
                   {row.getVisibleCells().map((cell) => {
                     const meta = cell.column.columnDef.meta
                     return (
-                      <TableCell key={cell.id} className={meta?.className}>
+                      <TableCell
+                        key={cell.id}
+                        className={cn('py-2', meta?.className)}
+                      >
                         {flexRender(
                           cell.column.columnDef.cell,
                           cell.getContext()
@@ -116,7 +121,7 @@ export function DataTable<TData, TValue>({
                   })}
                 </TableRow>
                 {row.getIsExpanded() && renderExpandedRow && (
-                  <TableRow className="bg-muted/20 hover:bg-muted/30">
+                  <TableRow className="border-0 hover:bg-transparent">
                     <TableCell colSpan={columns.length} className="p-0">
                       {renderExpandedRow(row)}
                     </TableCell>
@@ -125,8 +130,11 @@ export function DataTable<TData, TValue>({
               </Fragment>
             ))
           ) : (
-            <TableRow>
-              <TableCell colSpan={columns.length} className="h-24 text-center">
+            <TableRow className="hover:bg-transparent">
+              <TableCell
+                colSpan={columns.length}
+                className="text-muted-foreground h-24 text-center"
+              >
                 Nenhum resultado encontrado.
               </TableCell>
             </TableRow>

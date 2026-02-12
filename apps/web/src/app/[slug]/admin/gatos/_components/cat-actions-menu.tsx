@@ -9,7 +9,6 @@ import {
   PenLine,
   RefreshCw,
   Trash2,
-  Users,
 } from 'lucide-react'
 import { type Route } from 'next'
 import Link from 'next/link'
@@ -174,64 +173,80 @@ export function CatActionsMenu({ cat }: CatActionsMenuProps) {
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8 rounded-lg"
+          className="text-muted-foreground hover:text-foreground data-[state=open]:bg-muted data-[state=open]:text-foreground h-8 w-8 rounded-lg transition-colors"
           disabled={isPending}
         >
           <MoreVertical className="h-4 w-4" />
           <span className="sr-only">Abrir menu</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-48 rounded-xl">
-        {/* Navigation */}
-        <DropdownMenuItem asChild>
+      <DropdownMenuContent
+        align="end"
+        sideOffset={4}
+        className="border-border/50 min-w-[160px] rounded-xl border p-1 shadow-lg"
+      >
+        {/* Primary actions */}
+        <DropdownMenuItem
+          asChild
+          className="hover:!bg-muted/80 focus:!bg-muted/80 hover:!text-foreground focus:!text-foreground cursor-pointer gap-2 rounded-lg px-2.5 py-1.5 text-[13px] transition-colors"
+        >
           <Link href={`/${slug}/admin/gatos/${cat.id}/editar`}>
-            <Pencil className="mr-2 h-4 w-4" />
-            Editar
+            <Pencil className="text-primary h-3.5 w-3.5" />
+            <span className="font-medium">Editar</span>
           </Link>
         </DropdownMenuItem>
 
-        <DropdownMenuItem onClick={handleDuplicate} disabled={isPending}>
-          <Copy className="mr-2 h-4 w-4" />
-          Duplicar
+        <DropdownMenuItem
+          onClick={handleDuplicate}
+          disabled={isPending}
+          className="hover:!bg-muted/80 focus:!bg-muted/80 hover:!text-foreground focus:!text-foreground cursor-pointer gap-2 rounded-lg px-2.5 py-1.5 text-[13px] transition-colors"
+        >
+          <Copy className="text-muted-foreground h-3.5 w-3.5" />
+          <span>Duplicar</span>
         </DropdownMenuItem>
 
-        <DropdownMenuItem onClick={handleDuplicateAndEdit} disabled={isPending}>
-          <PenLine className="mr-2 h-4 w-4" />
-          Duplicar e editar
+        <DropdownMenuItem
+          onClick={handleDuplicateAndEdit}
+          disabled={isPending}
+          className="hover:!bg-muted/80 focus:!bg-muted/80 hover:!text-foreground focus:!text-foreground cursor-pointer gap-2 rounded-lg px-2.5 py-1.5 text-[13px] transition-colors"
+        >
+          <PenLine className="text-muted-foreground h-3.5 w-3.5" />
+          <span>Duplicar e editar</span>
         </DropdownMenuItem>
 
-        <DropdownMenuItem asChild>
-          <Link href={`/${slug}/admin/gatos/${cat.id}/interessados`}>
-            <Users className="mr-2 h-4 w-4" />
-            Ver interessados
-          </Link>
+        <DropdownMenuSeparator className="bg-border/40 my-1" />
+
+        {/* Status actions */}
+        <DropdownMenuItem
+          onClick={handleToggleStatus}
+          disabled={isPending}
+          className="hover:!bg-muted/80 focus:!bg-muted/80 hover:!text-foreground focus:!text-foreground cursor-pointer gap-2 rounded-lg px-2.5 py-1.5 text-[13px] transition-colors"
+        >
+          <RefreshCw className="text-warning h-3.5 w-3.5" />
+          <span>
+            {cat.status === 'available' ? 'Em processo' : 'Disponível'}
+          </span>
         </DropdownMenuItem>
 
-        <DropdownMenuSeparator />
-
-        {/* Status toggle */}
-        <DropdownMenuItem onClick={handleToggleStatus} disabled={isPending}>
-          <RefreshCw className="mr-2 h-4 w-4" />
-          {cat.status === 'available'
-            ? 'Marcar em processo'
-            : 'Marcar disponível'}
+        <DropdownMenuItem
+          onClick={handleMarkAsAdopted}
+          disabled={isPending}
+          className="hover:!bg-muted/80 focus:!bg-muted/80 hover:!text-foreground focus:!text-foreground cursor-pointer gap-2 rounded-lg px-2.5 py-1.5 text-[13px] transition-colors"
+        >
+          <Heart className="text-success h-3.5 w-3.5" />
+          <span>Adotado</span>
         </DropdownMenuItem>
 
-        {/* Mark as adopted */}
-        <DropdownMenuItem onClick={handleMarkAsAdopted} disabled={isPending}>
-          <Heart className="mr-2 h-4 w-4" />
-          Marcar como adotado
-        </DropdownMenuItem>
+        <DropdownMenuSeparator className="bg-border/40 my-1" />
 
-        <DropdownMenuSeparator />
-
+        {/* Danger */}
         <DropdownMenuItem
           onClick={handleDelete}
           disabled={isPending}
-          className="text-destructive focus:bg-destructive focus:text-destructive-foreground data-[highlighted]:bg-destructive data-[highlighted]:text-destructive-foreground"
+          className="text-destructive hover:!bg-destructive/10 focus:!bg-destructive/10 hover:!text-destructive focus:!text-destructive cursor-pointer gap-2 rounded-lg px-2.5 py-1.5 text-[13px] transition-colors"
         >
-          <Trash2 className="mr-2 h-4 w-4" />
-          Excluir
+          <Trash2 className="h-3.5 w-3.5" />
+          <span>Excluir</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
