@@ -484,13 +484,15 @@ export function FormBuilder({ mode, formId, initialData }: FormBuilderProps) {
             <Switch checked={active} onCheckedChange={setActive} />
           </div>
 
-          <div className="border-warning/30 bg-warning/10 flex items-start gap-2 rounded-lg border px-3 py-2.5">
-            <AlertTriangle className="text-warning mt-0.5 h-4 w-4 shrink-0" />
-            <p className="text-xs text-[#783201]">
-              Este formulário funciona como template. Alterações feitas aqui
-              valem apenas para novos gatos cadastrados depois da edição.
-            </p>
-          </div>
+          {mode === 'edit' && (
+            <div className="border-warning/30 bg-warning/10 flex items-start gap-2 rounded-lg border px-3 py-2.5">
+              <AlertTriangle className="text-warning mt-0.5 h-4 w-4 shrink-0" />
+              <p className="text-xs text-[#783201]">
+                Este formulário funciona como template. Alterações feitas aqui
+                valem apenas para novos gatos cadastrados depois da edição.
+              </p>
+            </div>
+          )}
         </CardContent>
       </Card>
 
