@@ -1,7 +1,14 @@
 import { db } from '@app-petlar/db'
-import { catPhotos, cats, forms, orgs } from '@app-petlar/db/schema'
+import {
+  catPhotos,
+  cats,
+  formFields,
+  forms,
+  orgs,
+  type CatFormFieldSnapshot,
+} from '@app-petlar/db/schema'
 import { TRPCError } from '@trpc/server'
-import { and, desc, eq, like, sql } from 'drizzle-orm'
+import { and, asc, desc, eq, like, sql } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
 import { z } from 'zod'
 
@@ -83,6 +90,38 @@ async function validateFormAccess(
       message: 'Formulário inválido para esta organização',
     })
   }
+}
+
+async function buildCatFormSnapshot(
+  formId: string
+): Promise<CatFormFieldSnapshot[]> {
+  const fields = await db
+    .select({
+      id: formFields.id,
+      type: formFields.type,
+      label: formFields.label,
+      required: formFields.required,
+      helpText: formFields.helpText,
+      options: formFields.options,
+      condition: formFields.condition,
+      mediaConfig: formFields.mediaConfig,
+      order: formFields.order,
+    })
+    .from(formFields)
+    .where(eq(formFields.formId, formId))
+    .orderBy(asc(formFields.order))
+
+  return fields.map((field) => ({
+    id: field.id,
+    type: field.type,
+    label: field.label,
+    required: field.required,
+    helpText: field.helpText,
+    options: field.options,
+    condition: field.condition,
+    mediaConfig: field.mediaConfig,
+    order: field.order,
+  }))
 }
 
 export const catsRouter = router({
@@ -414,6 +453,7 @@ export const catsRouter = router({
       const orgId = requireOrgId(ctx.session.user)
       const catId = nanoid()
       await validateFormAccess(input.cat.formId, orgId)
+      const formSnapshot = await buildCatFormSnapshot(input.cat.formId)
 
       await db.transaction(async (tx) => {
         // Inserir gato
@@ -421,6 +461,7 @@ export const catsRouter = router({
           id: catId,
           orgId,
           createdBy: ctx.session.user.id,
+          formSnapshot,
           ...input.cat,
         })
 
@@ -554,12 +595,15 @@ export const catsRouter = router({
       }
 
       const newCatId = nanoid()
+      const formSnapshot =
+        originalCat.formSnapshot ?? (await buildCatFormSnapshot(originalCat.formId))
 
       // Criar cópia com novo ID e nome modificado
       await db.insert(cats).values({
         id: newCatId,
         orgId,
         formId: originalCat.formId,
+        formSnapshot,
         name: `${originalCat.name} (cópia)`,
         ageYears: originalCat.ageYears,
         ageMonths: originalCat.ageMonths,

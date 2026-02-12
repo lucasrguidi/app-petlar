@@ -42,6 +42,9 @@ export const applications = sqliteTable(
 
     // Applicant fixed data
     applicantName: text('applicant_name').notNull(),
+    applicantNameNormalized: text('applicant_name_normalized')
+      .notNull()
+      .default(''),
     applicantEmail: text('applicant_email').notNull(),
     applicantWhatsapp: text('applicant_whatsapp').notNull(),
 
@@ -84,6 +87,22 @@ export const applications = sqliteTable(
       table.catId,
       table.applicantEmail,
       table.confirmedAt
+    ),
+    index('applications_catId_confirmedAt_createdAt_idx').on(
+      table.catId,
+      table.confirmedAt,
+      table.createdAt
+    ),
+    index('applications_catId_confirmedAt_status_createdAt_idx').on(
+      table.catId,
+      table.confirmedAt,
+      table.status,
+      table.createdAt
+    ),
+    index('applications_catId_confirmedAt_nameNormalized_idx').on(
+      table.catId,
+      table.confirmedAt,
+      table.applicantNameNormalized
     ),
   ]
 )

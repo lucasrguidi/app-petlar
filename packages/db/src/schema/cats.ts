@@ -5,6 +5,24 @@ import { user } from './auth'
 import { forms } from './forms'
 import { orgs } from './orgs'
 
+import type {
+  FormFieldCondition,
+  FormFieldMediaConfig,
+  FormFieldType,
+} from './forms'
+
+export interface CatFormFieldSnapshot {
+  id: string
+  type: FormFieldType
+  label: string
+  required: boolean
+  helpText: string | null
+  options: string[] | null
+  condition: FormFieldCondition | null
+  mediaConfig: FormFieldMediaConfig | null
+  order: number
+}
+
 export const cats = sqliteTable(
   'cats',
   {
@@ -15,6 +33,11 @@ export const cats = sqliteTable(
     formId: text('form_id')
       .notNull()
       .references(() => forms.id),
+    // Snapshot do formulário no momento da criação do gato.
+    // Templates podem evoluir, mas o gato mantém estrutura fixa para candidaturas.
+    formSnapshot: text('form_snapshot', { mode: 'json' }).$type<
+      CatFormFieldSnapshot[] | null
+    >(),
 
     // Dados básicos
     name: text('name').notNull(),

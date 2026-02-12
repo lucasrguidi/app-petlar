@@ -20,8 +20,102 @@ function buildCatPhotoUrl(seed: number): string {
   return `https://loremflickr.com/1200/900/cat?lock=${seed}`
 }
 
+function normalizeNameForSearch(value: string): string {
+  return value
+    .trim()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+}
+
+function randomInt(min: number, max: number): number {
+  return Math.floor(Math.random() * (max - min + 1)) + min
+}
+
+type R2Helpers = {
+  deleteFile: (key: string) => Promise<void>
+  getKeyFromUrl: (url: string) => string | null
+}
+
+async function getR2Helpers(): Promise<R2Helpers | null> {
+  try {
+    const modulePath = '../../api/src/lib/r2'
+    const module = (await import(modulePath)) as R2Helpers
+    return module
+  } catch (error) {
+    console.warn(
+      '⚠️  Não foi possível carregar helpers de R2. Limpeza de arquivos será ignorada.',
+      error
+    )
+    return null
+  }
+}
+
+async function ensureColumnExists(params: {
+  table: string
+  column: string
+  alterSql: string
+}): Promise<void> {
+  const info = await client.execute(`PRAGMA table_info(${params.table})`)
+  const hasColumn = info.rows.some(
+    (row) => String((row as Record<string, unknown>).name) === params.column
+  )
+
+  if (hasColumn) {
+    return
+  }
+
+  await client.execute(params.alterSql)
+  console.warn(`✅ Coluna adicionada: ${params.table}.${params.column}`)
+}
+
+async function buildFormSnapshot(
+  formId: string
+): Promise<schema.CatFormFieldSnapshot[]> {
+  const fields = await db
+    .select({
+      id: schema.formFields.id,
+      type: schema.formFields.type,
+      label: schema.formFields.label,
+      required: schema.formFields.required,
+      helpText: schema.formFields.helpText,
+      options: schema.formFields.options,
+      condition: schema.formFields.condition,
+      mediaConfig: schema.formFields.mediaConfig,
+      order: schema.formFields.order,
+    })
+    .from(schema.formFields)
+    .where(eq(schema.formFields.formId, formId))
+    .orderBy(schema.formFields.order)
+
+  return fields.map((field) => ({
+    id: field.id,
+    type: field.type,
+    label: field.label,
+    required: field.required,
+    helpText: field.helpText,
+    options: field.options,
+    condition: field.condition,
+    mediaConfig: field.mediaConfig,
+    order: field.order,
+  }))
+}
+
 async function seed() {
   console.log('🌱 Seeding database...')
+
+  // Compatibilidade para ambientes que ficaram com histórico de migration divergente.
+  await ensureColumnExists({
+    table: 'cats',
+    column: 'form_snapshot',
+    alterSql: 'ALTER TABLE cats ADD COLUMN form_snapshot text',
+  })
+  await ensureColumnExists({
+    table: 'applications',
+    column: 'applicant_name_normalized',
+    alterSql:
+      "ALTER TABLE applications ADD COLUMN applicant_name_normalized text DEFAULT '' NOT NULL",
+  })
 
   // Verificar se org já existe
   const existingOrg = await db.query.orgs.findFirst({
@@ -197,6 +291,8 @@ async function seed() {
     console.log('✅ Campos padrão do formulário criados')
   }
 
+  const defaultFormSnapshot = await buildFormSnapshot(defaultFormId)
+
   // Verificar quantos gatos já existem
   const existingCatsCount = await db
     .select({ id: schema.cats.id })
@@ -283,6 +379,7 @@ async function seed() {
         description: descriptions[index % descriptions.length]!,
         status: statusOptions[index % 5 === 0 ? 2 : index % 3 === 0 ? 1 : 0]!,
         formId: defaultFormId,
+        formSnapshot: defaultFormSnapshot,
         createdBy: adminUser.id,
       }))
 
@@ -305,7 +402,7 @@ async function seed() {
   if (catsWithoutForm.length > 0) {
     await db
       .update(schema.cats)
-      .set({ formId: defaultFormId })
+      .set({ formId: defaultFormId, formSnapshot: defaultFormSnapshot })
       .where(
         and(
           eq(schema.cats.orgId, orgId),
@@ -313,6 +410,40 @@ async function seed() {
         )
       )
     console.log(`✅ ${catsWithoutForm.length} gatos vinculados ao formulário padrão`)
+  }
+
+  const catsWithoutSnapshot = await db
+    .select({
+      id: schema.cats.id,
+      formId: schema.cats.formId,
+    })
+    .from(schema.cats)
+    .where(
+      and(
+        eq(schema.cats.orgId, orgId),
+        sql`${schema.cats.formSnapshot} is null`
+      )
+    )
+
+  if (catsWithoutSnapshot.length > 0) {
+    const snapshotCache = new Map<string, schema.CatFormFieldSnapshot[]>()
+
+    for (const cat of catsWithoutSnapshot) {
+      const cached = snapshotCache.get(cat.formId)
+      const snapshot = cached ?? (await buildFormSnapshot(cat.formId))
+      if (!cached) {
+        snapshotCache.set(cat.formId, snapshot)
+      }
+
+      await db
+        .update(schema.cats)
+        .set({ formSnapshot: snapshot })
+        .where(eq(schema.cats.id, cat.id))
+    }
+
+    console.log(
+      `✅ Snapshot de formulário preenchido em ${catsWithoutSnapshot.length} gatos`
+    )
   }
 
   // Garantir que todos os gatos tenham pelo menos 1 foto.
@@ -362,6 +493,247 @@ async function seed() {
     } else {
       console.log('⏭️  Todos os gatos já possuem foto')
     }
+  }
+
+  // Limpeza inicial para org de teste (petlar): remove candidaturas + arquivos no R2.
+  const existingApplicationFiles = await db
+    .select({ url: schema.applicationFiles.url })
+    .from(schema.applicationFiles)
+    .innerJoin(
+      schema.applications,
+      eq(schema.applicationFiles.applicationId, schema.applications.id)
+    )
+    .where(eq(schema.applications.orgId, orgId))
+
+  const r2Helpers = await getR2Helpers()
+
+  if (existingApplicationFiles.length > 0 && r2Helpers) {
+    await Promise.all(
+      existingApplicationFiles.map(async ({ url }) => {
+        const key = r2Helpers.getKeyFromUrl(url)
+        if (!key) return
+
+        try {
+          await r2Helpers.deleteFile(key)
+        } catch (error) {
+          console.warn('⚠️  Falha ao remover arquivo da candidatura no R2:', {
+            url,
+            error,
+          })
+        }
+      })
+    )
+    console.log(
+      `✅ Tentativa de limpeza no R2 para ${existingApplicationFiles.length} arquivos de candidatura`
+    )
+  } else if (existingApplicationFiles.length > 0) {
+    console.log(
+      `⚠️  ${existingApplicationFiles.length} arquivos não removidos do R2 (helpers indisponíveis)`
+    )
+  }
+
+  const deletedApplications = await db
+    .delete(schema.applications)
+    .where(eq(schema.applications.orgId, orgId))
+    .returning({ id: schema.applications.id })
+
+  console.log(
+    `✅ ${deletedApplications.length} candidaturas antigas removidas da org petlar`
+  )
+
+  // Seed de candidaturas confirmadas para testes do admin (3 a 8 por gato, status pending).
+  const candidatesFirstNames = [
+    'Ana',
+    'Bruno',
+    'Carla',
+    'Diego',
+    'Eduarda',
+    'Felipe',
+    'Giovana',
+    'Henrique',
+    'Isabela',
+    'João',
+    'Karina',
+    'Luís',
+    'Marina',
+    'Nicolas',
+    'Otávio',
+    'Paula',
+    'Rafael',
+    'Sofia',
+    'Thiago',
+    'Vitória',
+  ]
+
+  const candidatesLastNames = [
+    'Silva',
+    'Souza',
+    'Oliveira',
+    'Santos',
+    'Pereira',
+    'Costa',
+    'Almeida',
+    'Rodrigues',
+    'Ferreira',
+    'Gomes',
+    'Martins',
+    'Araújo',
+  ]
+
+  const orgCatsForApplications = await db
+    .select({
+      id: schema.cats.id,
+      name: schema.cats.name,
+      formId: schema.cats.formId,
+      formSnapshot: schema.cats.formSnapshot,
+    })
+    .from(schema.cats)
+    .where(eq(schema.cats.orgId, orgId))
+
+  const snapshotCache = new Map<string, schema.CatFormFieldSnapshot[]>()
+
+  const applicationsToInsert: Array<typeof schema.applications.$inferInsert> = []
+  const applicationFilesToInsert: Array<typeof schema.applicationFiles.$inferInsert> = []
+
+  let globalCandidateIndex = 0
+
+  for (const [catIndex, cat] of orgCatsForApplications.entries()) {
+    let snapshot = cat.formSnapshot
+    if (!snapshot || snapshot.length === 0) {
+      const cached = snapshotCache.get(cat.formId)
+      snapshot = cached ?? (await buildFormSnapshot(cat.formId))
+      if (!cached) {
+        snapshotCache.set(cat.formId, snapshot)
+      }
+
+      await db
+        .update(schema.cats)
+        .set({ formSnapshot: snapshot })
+        .where(eq(schema.cats.id, cat.id))
+    }
+
+    const applicationsCount = randomInt(3, 8)
+
+    for (let applicationIndex = 0; applicationIndex < applicationsCount; applicationIndex++) {
+      globalCandidateIndex += 1
+
+      const firstName =
+        candidatesFirstNames[globalCandidateIndex % candidatesFirstNames.length]!
+      const lastName =
+        candidatesLastNames[globalCandidateIndex % candidatesLastNames.length]!
+      const applicantName = `${firstName} ${lastName}`
+      const applicantNameNormalized = normalizeNameForSearch(applicantName)
+      const applicantEmail = `candidato+${catIndex + 1}-${applicationIndex + 1}@petlar.dev`
+      const applicantWhatsapp = `119${String(80000000 + globalCandidateIndex).slice(0, 8)}`
+      const createdAt = new Date(
+        Date.now() - (catIndex * 8 + applicationIndex + 1) * 6 * 60 * 60 * 1000
+      )
+      const confirmedAt = new Date(createdAt.getTime() + 10 * 60 * 1000)
+
+      const responses: Record<string, string | boolean | null> = {}
+      const filesForApplication: Array<typeof schema.applicationFiles.$inferInsert> = []
+
+      for (const field of [...snapshot].sort((a, b) => a.order - b.order)) {
+        if (field.condition) {
+          const parentValue = responses[field.condition.fieldId]
+          if (parentValue !== field.condition.value) {
+            continue
+          }
+        }
+
+        if (field.type === 'select') {
+          const options = field.options ?? []
+          responses[field.id] =
+            options.length > 0
+              ? options[(globalCandidateIndex + field.order) % options.length]!
+              : null
+          continue
+        }
+
+        if (field.type === 'boolean') {
+          responses[field.id] = (globalCandidateIndex + field.order) % 2 === 0
+          continue
+        }
+
+        if (field.type === 'date') {
+          const day = ((globalCandidateIndex + field.order) % 26) + 1
+          responses[field.id] = `2026-01-${String(day).padStart(2, '0')}`
+          continue
+        }
+
+        if (field.type === 'textarea') {
+          responses[field.id] = `Tenho rotina estável e experiência com gatos. Candidatura ${globalCandidateIndex}.`
+          continue
+        }
+
+        if (field.type === 'media') {
+          const mediaKind = field.mediaConfig?.kind ?? 'image'
+          const placeholderToken = `${Date.now()}-${catIndex}-${applicationIndex}-${field.order}-${randomInt(1000, 9999)}`
+          const mediaUrl =
+            mediaKind === 'image'
+              ? `https://picsum.photos/seed/petlar-app-${placeholderToken}/1200/900`
+              : `https://example.com/mock-video-${placeholderToken}.mp4`
+
+          responses[field.id] = mediaUrl
+          filesForApplication.push({
+            id: crypto.randomUUID(),
+            applicationId: '',
+            fieldId: field.id,
+            url: mediaUrl,
+            fileType: mediaKind,
+          })
+          continue
+        }
+
+        responses[field.id] = `Resposta ${globalCandidateIndex} - ${field.label}`
+      }
+
+      const applicationId = crypto.randomUUID()
+
+      applicationsToInsert.push({
+        id: applicationId,
+        orgId,
+        catId: cat.id,
+        formId: cat.formId,
+        status: 'pending',
+        applicantName,
+        applicantNameNormalized,
+        applicantEmail,
+        applicantWhatsapp,
+        responses,
+        lgpdConsent: true,
+        whatsappConsent: true,
+        confirmationToken: null,
+        confirmationCodeHash: null,
+        confirmationCodeExpiresAt: null,
+        confirmationResendCount: 0,
+        confirmationLastSentAt: null,
+        confirmedAt,
+        createdAt,
+        updatedAt: createdAt,
+      })
+
+      for (const file of filesForApplication) {
+        applicationFilesToInsert.push({
+          ...file,
+          applicationId,
+        })
+      }
+    }
+  }
+
+  if (applicationsToInsert.length > 0) {
+    await db.insert(schema.applications).values(applicationsToInsert)
+    console.log(
+      `✅ ${applicationsToInsert.length} candidaturas confirmadas de teste criadas`
+    )
+  }
+
+  if (applicationFilesToInsert.length > 0) {
+    await db.insert(schema.applicationFiles).values(applicationFilesToInsert)
+    console.log(
+      `✅ ${applicationFilesToInsert.length} arquivos de candidatura de teste criados`
+    )
   }
 
   console.log('🌱 Seed concluído!')

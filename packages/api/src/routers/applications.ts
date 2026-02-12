@@ -4,20 +4,24 @@ import { db } from '@app-petlar/db'
 import {
   applicationFiles,
   applications,
+  applicationStatuses,
   catPhotos,
   cats,
+  type CatFormFieldSnapshot,
   formFields,
+  type FormFieldMediaConfig,
+  type FormFieldType,
   forms,
   orgs,
   type FormFieldCondition,
 } from '@app-petlar/db/schema'
 import { env } from '@app-petlar/env/server'
 import { TRPCError } from '@trpc/server'
-import { and, asc, desc, eq, inArray, isNull, lt, sql } from 'drizzle-orm'
+import { and, asc, desc, eq, inArray, isNull, lt, sql, type SQL } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
 import { z } from 'zod'
 
-import { publicProcedure, router } from '../index'
+import { protectedProcedure, publicProcedure, router } from '../index'
 import {
   deleteFile,
   generateApplicationFileKey,
@@ -40,6 +44,19 @@ const MAX_RESEND_ATTEMPTS = 3
 const PENDING_APPLICATION_TTL_HOURS = 48
 
 type ApplicationResponsesRecord = Record<string, string | boolean | null>
+type JsonPrimitive = string | boolean
+
+interface ApplicationFormField {
+  id: string
+  type: FormFieldType
+  label: string
+  required: boolean
+  helpText: string | null
+  options: string[] | null
+  condition: FormFieldCondition | null
+  mediaConfig: FormFieldMediaConfig | null
+  order: number
+}
 
 const createApplicationSchema = z.object({
   slug: z.string().min(1),
@@ -77,6 +94,40 @@ const resendCodeSchema = z.object({
   confirmationToken: z.string().min(1),
 })
 
+const dynamicFilterOperatorSchema = z.enum([
+  'contains',
+  'equals',
+  'before',
+  'after',
+])
+
+const listByCatSchema = z.object({
+  catId: z.string().min(1),
+  status: z.enum(applicationStatuses).optional(),
+  search: z.string().trim().max(200).optional(),
+  page: z.number().int().min(1).default(1),
+  limit: z.number().int().min(1).max(50).default(15),
+  dynamicFilters: z
+    .array(
+      z.object({
+        fieldId: z.string().min(1),
+        operator: dynamicFilterOperatorSchema,
+        value: z.union([z.string(), z.boolean()]),
+      })
+    )
+    .max(30)
+    .optional(),
+})
+
+const getByIdSchema = z.object({
+  id: z.string().min(1),
+})
+
+const updateStatusSchema = z.object({
+  id: z.string().min(1),
+  status: z.enum(applicationStatuses),
+})
+
 function hasResponseValue(value: string | boolean | null | undefined): boolean {
   if (typeof value === 'string') {
     return value.trim().length > 0
@@ -99,8 +150,26 @@ function isFieldVisible(
   return parentValue === field.condition.value
 }
 
+function normalizeSearchText(value: string): string {
+  return value
+    .trim()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+}
+
+function normalizeSqlText(value: SQL): SQL {
+  const lowered = sql`lower(coalesce(cast(${value} as text), ''))`
+
+  return sql`replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(${lowered}, 'á', 'a'), 'à', 'a'), 'â', 'a'), 'ã', 'a'), 'ä', 'a'), 'é', 'e'), 'è', 'e'), 'ê', 'e'), 'ë', 'e'), 'í', 'i'), 'ì', 'i'), 'î', 'i'), 'ï', 'i'), 'ó', 'o'), 'ò', 'o'), 'ô', 'o'), 'õ', 'o'), 'ö', 'o'), 'ú', 'u'), 'ù', 'u'), 'û', 'u'), 'ü', 'u'), 'ç', 'c'), 'ñ', 'n')`
+}
+
 function normalizeEmail(email: string): string {
   return email.trim().toLowerCase()
+}
+
+function toJsonPath(fieldId: string): string {
+  return `$."${fieldId.replaceAll('"', '\\"')}"`
 }
 
 function generateConfirmationCode(): string {
@@ -292,6 +361,93 @@ async function cleanupExpiredPendingApplications(orgId: string) {
   }
 }
 
+function requireOrgId(user: { orgId?: string | null }): string {
+  if (!user.orgId) {
+    throw new TRPCError({
+      code: 'FORBIDDEN',
+      message: 'Usuário não pertence a nenhuma organização',
+    })
+  }
+
+  return user.orgId
+}
+
+function mapSnapshotToApplicationFields(
+  snapshot: CatFormFieldSnapshot[]
+): ApplicationFormField[] {
+  return [...snapshot]
+    .sort((a, b) => a.order - b.order)
+    .map((field) => ({
+      id: field.id,
+      type: field.type,
+      label: field.label,
+      required: field.required,
+      helpText: field.helpText,
+      options: field.options,
+      condition: field.condition,
+      mediaConfig: field.mediaConfig,
+      order: field.order,
+    }))
+}
+
+async function getCatApplicationFields(params: {
+  orgId: string
+  formId: string | null
+  formSnapshot: CatFormFieldSnapshot[] | null
+}): Promise<ApplicationFormField[]> {
+  if (params.formSnapshot && params.formSnapshot.length > 0) {
+    return mapSnapshotToApplicationFields(params.formSnapshot)
+  }
+
+  if (!params.formId) {
+    throw new TRPCError({
+      code: 'BAD_REQUEST',
+      message: 'Este gato não possui formulário de candidatura configurado',
+    })
+  }
+
+  const [form] = await db
+    .select({ id: forms.id })
+    .from(forms)
+    .where(and(eq(forms.id, params.formId), eq(forms.orgId, params.orgId)))
+    .limit(1)
+
+  if (!form) {
+    throw new TRPCError({
+      code: 'BAD_REQUEST',
+      message: 'O formulário desta candidatura está indisponível',
+    })
+  }
+
+  const fields = await db
+    .select({
+      id: formFields.id,
+      type: formFields.type,
+      label: formFields.label,
+      required: formFields.required,
+      helpText: formFields.helpText,
+      options: formFields.options,
+      condition: formFields.condition,
+      mediaConfig: formFields.mediaConfig,
+      order: formFields.order,
+    })
+    .from(formFields)
+    .where(eq(formFields.formId, params.formId))
+    .orderBy(asc(formFields.order))
+
+  return fields.map((field) => ({
+    id: field.id,
+    type: field.type,
+    label: field.label,
+    required: field.required,
+    helpText: field.helpText,
+    options: field.options,
+    condition: field.condition,
+    mediaConfig: field.mediaConfig,
+    order: field.order,
+  }))
+}
+
 async function getOrgBySlug(slug: string) {
   const [org] = await db
     .select({
@@ -365,6 +521,139 @@ async function getConfirmedApplicationByEmail(params: {
   return confirmed
 }
 
+type FilterableFieldType = 'text' | 'select' | 'boolean' | 'date'
+type DynamicFilterOperator = z.infer<typeof dynamicFilterOperatorSchema>
+
+export interface FilterableField {
+  id: string
+  label: string
+  type: FilterableFieldType
+  options: string[] | null
+}
+
+function getFilterableFields(fields: ApplicationFormField[]): FilterableField[] {
+  return fields
+    .filter((field): field is ApplicationFormField & { type: FilterableFieldType } =>
+      field.type === 'text' ||
+      field.type === 'select' ||
+      field.type === 'boolean' ||
+      field.type === 'date'
+    )
+    .map((field) => ({
+      id: field.id,
+      label: field.label,
+      type: field.type,
+      options: field.type === 'select' ? field.options ?? [] : null,
+    }))
+}
+
+function getDynamicFilterCondition(params: {
+  field: FilterableField
+  operator: DynamicFilterOperator
+  value: JsonPrimitive
+}): SQL {
+  const jsonPath = toJsonPath(params.field.id)
+  const jsonValue = sql`json_extract(${applications.responses}, ${jsonPath})`
+
+  if (params.field.type === 'text') {
+    if (typeof params.value !== 'string') {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: `Filtro inválido para o campo "${params.field.label}"`,
+      })
+    }
+
+    const normalizedValue = normalizeSearchText(params.value)
+    if (!normalizedValue) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: `Informe um valor para filtrar "${params.field.label}"`,
+      })
+    }
+
+    const normalizedJsonValue = normalizeSqlText(jsonValue)
+
+    if (params.operator === 'contains') {
+      return sql`${normalizedJsonValue} like ${`%${normalizedValue}%`}`
+    }
+
+    if (params.operator === 'equals') {
+      return sql`${normalizedJsonValue} = ${normalizedValue}`
+    }
+
+    throw new TRPCError({
+      code: 'BAD_REQUEST',
+      message: `Operador inválido para "${params.field.label}"`,
+    })
+  }
+
+  if (params.field.type === 'select') {
+    if (typeof params.value !== 'string' || params.operator !== 'equals') {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: `Filtro inválido para o campo "${params.field.label}"`,
+      })
+    }
+
+    return sql`lower(coalesce(cast(${jsonValue} as text), '')) = ${params.value.trim().toLowerCase()}`
+  }
+
+  if (params.field.type === 'boolean') {
+    if (params.operator !== 'equals') {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: `Operador inválido para "${params.field.label}"`,
+      })
+    }
+
+    const boolValue =
+      typeof params.value === 'boolean'
+        ? params.value
+        : params.value.toLowerCase() === 'true'
+
+    return sql`${jsonValue} = ${boolValue ? 1 : 0}`
+  }
+
+  if (params.field.type === 'date') {
+    if (typeof params.value !== 'string') {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: `Filtro inválido para o campo "${params.field.label}"`,
+      })
+    }
+
+    const dateValue = params.value.trim()
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(dateValue)) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: `Data inválida para o campo "${params.field.label}"`,
+      })
+    }
+
+    if (params.operator === 'before') {
+      return sql`cast(${jsonValue} as text) <= ${dateValue}`
+    }
+
+    if (params.operator === 'after') {
+      return sql`cast(${jsonValue} as text) >= ${dateValue}`
+    }
+
+    if (params.operator === 'equals') {
+      return sql`cast(${jsonValue} as text) = ${dateValue}`
+    }
+
+    throw new TRPCError({
+      code: 'BAD_REQUEST',
+      message: `Operador inválido para "${params.field.label}"`,
+    })
+  }
+
+  throw new TRPCError({
+    code: 'BAD_REQUEST',
+    message: `Tipo de campo inválido em filtro`,
+  })
+}
+
 export const applicationsRouter = router({
   getFormForCat: publicProcedure
     .input(
@@ -386,6 +675,7 @@ export const applicationsRouter = router({
           ageMonths: cats.ageMonths,
           status: cats.status,
           formId: cats.formId,
+          formSnapshot: cats.formSnapshot,
         })
         .from(cats)
         .where(and(eq(cats.id, catId), eq(cats.orgId, org.id)))
@@ -418,47 +708,11 @@ export const applicationsRouter = router({
         .orderBy(asc(catPhotos.order))
         .limit(1)
 
-      const [form] = await db
-        .select({ id: forms.id })
-        .from(forms)
-        .where(
-          and(
-            eq(forms.id, cat.formId),
-            eq(forms.orgId, org.id),
-            eq(forms.active, true)
-          )
-        )
-
-      if (!form) {
-        throw new TRPCError({
-          code: 'BAD_REQUEST',
-          message: 'O formulário desta candidatura está inativo ou indisponível',
-        })
-      }
-
-      const fields: Array<{
-        id: string
-        type: string
-        label: string
-        required: boolean
-        helpText: string | null
-        options: string[] | null
-        condition: { fieldId: string; operator: string; value: string | boolean } | null
-        mediaConfig: { kind: 'image' | 'video' } | null
-      }> = await db
-        .select({
-          id: formFields.id,
-          type: formFields.type,
-          label: formFields.label,
-          required: formFields.required,
-          helpText: formFields.helpText,
-          options: formFields.options,
-          condition: formFields.condition,
-          mediaConfig: formFields.mediaConfig,
-        })
-        .from(formFields)
-        .where(eq(formFields.formId, cat.formId))
-        .orderBy(asc(formFields.order))
+      const fields = await getCatApplicationFields({
+        orgId: org.id,
+        formId: cat.formId,
+        formSnapshot: cat.formSnapshot,
+      })
 
       return {
         cat: {
@@ -470,7 +724,16 @@ export const applicationsRouter = router({
           photoUrl: photo?.url ?? null,
         },
         formId: cat.formId,
-        fields,
+        fields: fields.map((field) => ({
+          id: field.id,
+          type: field.type,
+          label: field.label,
+          required: field.required,
+          helpText: field.helpText,
+          options: field.options,
+          condition: field.condition,
+          mediaConfig: field.mediaConfig,
+        })),
       }
     }),
 
@@ -522,6 +785,282 @@ export const applicationsRouter = router({
       }
     }),
 
+  listByCat: protectedProcedure
+    .input(listByCatSchema)
+    .query(async ({ ctx, input }) => {
+      const orgId = requireOrgId(ctx.session.user)
+      const offset = (input.page - 1) * input.limit
+
+      const [cat] = await db
+        .select({
+          id: cats.id,
+          name: cats.name,
+          status: cats.status,
+          formId: cats.formId,
+          formSnapshot: cats.formSnapshot,
+        })
+        .from(cats)
+        .where(and(eq(cats.id, input.catId), eq(cats.orgId, orgId)))
+        .limit(1)
+
+      if (!cat) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Gato não encontrado',
+        })
+      }
+
+      const [photo] = await db
+        .select({ url: catPhotos.url })
+        .from(catPhotos)
+        .where(eq(catPhotos.catId, cat.id))
+        .orderBy(asc(catPhotos.order))
+        .limit(1)
+
+      const fields = await getCatApplicationFields({
+        orgId,
+        formId: cat.formId,
+        formSnapshot: cat.formSnapshot,
+      })
+      const filterableFields = getFilterableFields(fields)
+      const filterableFieldsMap = new Map(
+        filterableFields.map((field) => [field.id, field])
+      )
+
+      const whereConditions: SQL[] = [
+        eq(applications.orgId, orgId),
+        eq(applications.catId, input.catId),
+        sql`${applications.confirmedAt} is not null`,
+      ]
+
+      if (input.status) {
+        whereConditions.push(eq(applications.status, input.status))
+      }
+
+      if (input.search) {
+        const normalizedSearch = normalizeSearchText(input.search)
+        if (normalizedSearch.length > 0) {
+          whereConditions.push(
+            sql`coalesce(${applications.applicantNameNormalized}, '') like ${`%${normalizedSearch}%`}`
+          )
+        }
+      }
+
+      for (const dynamicFilter of input.dynamicFilters ?? []) {
+        const field = filterableFieldsMap.get(dynamicFilter.fieldId)
+        if (!field) {
+          continue
+        }
+
+        whereConditions.push(
+          getDynamicFilterCondition({
+            field,
+            operator: dynamicFilter.operator,
+            value: dynamicFilter.value,
+          })
+        )
+      }
+
+      const [countResult] = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(applications)
+        .where(and(...whereConditions))
+
+      const rows = await db
+        .select({
+          id: applications.id,
+          applicantName: applications.applicantName,
+          applicantWhatsapp: applications.applicantWhatsapp,
+          status: applications.status,
+          createdAt: applications.createdAt,
+        })
+        .from(applications)
+        .where(and(...whereConditions))
+        .orderBy(asc(applications.createdAt))
+        .limit(input.limit)
+        .offset(offset)
+
+      const applicationIds = rows.map((row) => row.id)
+      const mediaCounts =
+        applicationIds.length > 0
+          ? await db
+              .select({
+                applicationId: applicationFiles.applicationId,
+                count: sql<number>`count(*)`,
+              })
+              .from(applicationFiles)
+              .where(inArray(applicationFiles.applicationId, applicationIds))
+              .groupBy(applicationFiles.applicationId)
+          : []
+
+      const mediaCountByApplicationId = new Map(
+        mediaCounts.map((item) => [item.applicationId, item.count])
+      )
+
+      const total = countResult?.count ?? 0
+
+      return {
+        cat: {
+          id: cat.id,
+          name: cat.name,
+          status: cat.status,
+          photoUrl: photo?.url ?? null,
+        },
+        filterableFields,
+        applications: rows.map((row) => ({
+          ...row,
+          mediaCount: mediaCountByApplicationId.get(row.id) ?? 0,
+        })),
+        pagination: {
+          page: input.page,
+          limit: input.limit,
+          total,
+          totalPages: Math.ceil(total / input.limit),
+        },
+      }
+    }),
+
+  getById: protectedProcedure
+    .input(getByIdSchema)
+    .query(async ({ ctx, input }) => {
+      const orgId = requireOrgId(ctx.session.user)
+
+      const [application] = await db
+        .select({
+          id: applications.id,
+          status: applications.status,
+          applicantName: applications.applicantName,
+          applicantEmail: applications.applicantEmail,
+          applicantWhatsapp: applications.applicantWhatsapp,
+          responses: applications.responses,
+          createdAt: applications.createdAt,
+          confirmedAt: applications.confirmedAt,
+          catId: cats.id,
+          catName: cats.name,
+          catFormId: cats.formId,
+          catFormSnapshot: cats.formSnapshot,
+        })
+        .from(applications)
+        .innerJoin(cats, eq(cats.id, applications.catId))
+        .where(
+          and(
+            eq(applications.id, input.id),
+            eq(applications.orgId, orgId),
+            sql`${applications.confirmedAt} is not null`
+          )
+        )
+        .limit(1)
+
+      if (!application) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Candidatura não encontrada',
+        })
+      }
+
+      const [photo] = await db
+        .select({ url: catPhotos.url })
+        .from(catPhotos)
+        .where(eq(catPhotos.catId, application.catId))
+        .orderBy(asc(catPhotos.order))
+        .limit(1)
+
+      const fields = await getCatApplicationFields({
+        orgId,
+        formId: application.catFormId,
+        formSnapshot: application.catFormSnapshot,
+      })
+
+      const responses = (application.responses ?? {}) as ApplicationResponsesRecord
+      const fieldsById = new Map(fields.map((field) => [field.id, field]))
+
+      const visibleFields = fields.filter((field) => isFieldVisible(field, responses))
+
+      const normalizedResponses = visibleFields.map((field) => ({
+        fieldId: field.id,
+        label: field.label,
+        type: field.type,
+        value:
+          responses[field.id] !== undefined ? (responses[field.id] ?? null) : null,
+      }))
+
+      const orphanResponses = Object.entries(responses)
+        .filter(([fieldId]) => !fieldsById.has(fieldId))
+        .map(([fieldId, value]) => ({
+          fieldId,
+          label: 'Campo removido',
+          type: 'text' as const,
+          value,
+        }))
+
+      const files = await db
+        .select({
+          id: applicationFiles.id,
+          fieldId: applicationFiles.fieldId,
+          url: applicationFiles.url,
+          fileType: applicationFiles.fileType,
+          createdAt: applicationFiles.createdAt,
+        })
+        .from(applicationFiles)
+        .where(eq(applicationFiles.applicationId, application.id))
+        .orderBy(asc(applicationFiles.createdAt))
+
+      return {
+        application: {
+          id: application.id,
+          status: application.status,
+          applicantName: application.applicantName,
+          applicantEmail: application.applicantEmail,
+          applicantWhatsapp: application.applicantWhatsapp,
+          createdAt: application.createdAt,
+          confirmedAt: application.confirmedAt,
+        },
+        cat: {
+          id: application.catId,
+          name: application.catName,
+          photoUrl: photo?.url ?? null,
+        },
+        responses: [...normalizedResponses, ...orphanResponses],
+        files: files.map((file) => ({
+          ...file,
+          fieldLabel: fieldsById.get(file.fieldId)?.label ?? 'Arquivo enviado',
+        })),
+      }
+    }),
+
+  updateStatus: protectedProcedure
+    .input(updateStatusSchema)
+    .mutation(async ({ ctx, input }) => {
+      const orgId = requireOrgId(ctx.session.user)
+
+      const [application] = await db
+        .select({
+          id: applications.id,
+          confirmedAt: applications.confirmedAt,
+        })
+        .from(applications)
+        .where(and(eq(applications.id, input.id), eq(applications.orgId, orgId)))
+        .limit(1)
+
+      if (!application || !application.confirmedAt) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Candidatura não encontrada',
+        })
+      }
+
+      await db
+        .update(applications)
+        .set({
+          status: input.status,
+        })
+        .where(eq(applications.id, input.id))
+
+      return {
+        success: true,
+      }
+    }),
+
   create: publicProcedure
     .input(createApplicationSchema)
     .mutation(async ({ input }) => {
@@ -546,6 +1085,7 @@ export const applicationsRouter = router({
           name: cats.name,
           status: cats.status,
           formId: cats.formId,
+          formSnapshot: cats.formSnapshot,
         })
         .from(cats)
         .where(and(eq(cats.id, catId), eq(cats.orgId, org.id)))
@@ -571,25 +1111,8 @@ export const applicationsRouter = router({
         })
       }
 
-      const [form] = await db
-        .select({ id: forms.id })
-        .from(forms)
-        .where(
-          and(
-            eq(forms.id, cat.formId),
-            eq(forms.orgId, org.id),
-            eq(forms.active, true)
-          )
-        )
-
-      if (!form) {
-        throw new TRPCError({
-          code: 'BAD_REQUEST',
-          message: 'O formulário desta candidatura está inativo ou indisponível',
-        })
-      }
-
       const normalizedApplicantEmail = normalizeEmail(applicantEmail)
+      const normalizedApplicantName = normalizeSearchText(applicantName)
 
       const confirmedApplication = await getConfirmedApplicationByEmail({
         orgId: org.id,
@@ -660,16 +1183,11 @@ export const applicationsRouter = router({
         }
       }
 
-      const fields = await db
-        .select({
-          id: formFields.id,
-          required: formFields.required,
-          label: formFields.label,
-          condition: formFields.condition,
-        })
-        .from(formFields)
-        .where(eq(formFields.formId, cat.formId))
-        .orderBy(asc(formFields.order))
+      const fields = await getCatApplicationFields({
+        orgId: org.id,
+        formId: cat.formId,
+        formSnapshot: cat.formSnapshot,
+      })
 
       for (const field of fields) {
         if (!isFieldVisible(field, responses)) continue
@@ -701,6 +1219,7 @@ export const applicationsRouter = router({
           formId: cat.formId,
           status: 'pending',
           applicantName,
+          applicantNameNormalized: normalizedApplicantName,
           applicantEmail: normalizedApplicantEmail,
           applicantWhatsapp,
           responses,
