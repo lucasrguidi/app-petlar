@@ -456,7 +456,7 @@ export const catsRouter = router({
 
       // Verificar se gato existe e pertence à org
       const [existingCat] = await db
-        .select({ id: cats.id })
+        .select({ id: cats.id, formId: cats.formId })
         .from(cats)
         .where(and(eq(cats.id, input.id), eq(cats.orgId, orgId)))
 
@@ -467,8 +467,15 @@ export const catsRouter = router({
         })
       }
 
-      if (input.cat.formId !== undefined) {
-        await validateFormAccess(input.cat.formId, orgId)
+      if (
+        input.cat.formId !== undefined &&
+        input.cat.formId !== existingCat.formId
+      ) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message:
+            'Não é permitido trocar o formulário após criar o gato',
+        })
       }
 
       await db.transaction(async (tx) => {

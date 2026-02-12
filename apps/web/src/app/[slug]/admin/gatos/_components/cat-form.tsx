@@ -72,6 +72,7 @@ export function CatForm({ mode, initialData, catId }: CatFormProps) {
   const slug = useOrgSlug()
   const router = useRouter()
   const queryClient = useQueryClient()
+  const isEditMode = mode === 'edit'
 
   const normalizedInitialData: Partial<CatFormData> | undefined = initialData
     ? {
@@ -300,7 +301,7 @@ export function CatForm({ mode, initialData, catId }: CatFormProps) {
                         <Select
                           value={field.value}
                           onValueChange={field.onChange}
-                          disabled={isLoadingFormOptions}
+                          disabled={isLoadingFormOptions || isEditMode}
                         >
                           <FormControl>
                             <SelectTrigger className="h-10 rounded-lg">
@@ -324,8 +325,9 @@ export function CatForm({ mode, initialData, catId }: CatFormProps) {
                           </SelectContent>
                         </Select>
                         <p className="text-muted-foreground text-xs">
-                          Esse formulário é obrigatório e será usado quando alguém
-                          clicar em "Quero adotar".
+                          {isEditMode
+                            ? 'Após criar o gato, o formulário não pode ser alterado para manter consistência das candidaturas.'
+                            : 'Esse formulário é obrigatório e será usado quando alguém clicar em "Quero adotar".'}
                         </p>
                         <FormMessage />
                       </FormItem>
