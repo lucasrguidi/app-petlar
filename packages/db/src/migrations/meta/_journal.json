@@ -29,6 +29,20 @@
       "when": 1770778602896,
       "tag": "0003_add-forms-tables",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1770866224499,
+      "tag": "0004_add-applications-table",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1770868692534,
+      "tag": "0005_require-cat-form",
+      "breakpoints": true
     }
   ]
 }

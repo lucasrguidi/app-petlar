@@ -1,6 +1,6 @@
 import { createClient } from '@libsql/client'
 import dotenv from 'dotenv'
-import { eq, sql } from 'drizzle-orm'
+import { and, eq, sql } from 'drizzle-orm'
 import { drizzle } from 'drizzle-orm/libsql'
 import { Scrypt } from 'oslo/password'
 
@@ -100,6 +100,103 @@ async function seed() {
     process.exit(1)
   }
 
+  // Garantir formulário padrão para candidaturas
+  const defaultFormName = 'Formulário padrão de adoção'
+
+  let defaultFormId: string
+
+  const existingDefaultForm = await db.query.forms.findFirst({
+    where: (forms, { and, eq }) =>
+      and(eq(forms.orgId, orgId), eq(forms.name, defaultFormName)),
+  })
+
+  if (existingDefaultForm) {
+    defaultFormId = existingDefaultForm.id
+    console.log(`⏭️  Formulário padrão já existe (id: ${defaultFormId})`)
+  } else {
+    defaultFormId = crypto.randomUUID()
+
+    await db.insert(schema.forms).values({
+      id: defaultFormId,
+      orgId,
+      name: defaultFormName,
+      description:
+        'Modelo inicial para candidatura de adoção no site público.',
+      active: true,
+    })
+
+    console.log(`✅ Formulário padrão criado (id: ${defaultFormId})`)
+  }
+
+  const existingDefaultFormField = await db
+    .select({ id: schema.formFields.id })
+    .from(schema.formFields)
+    .where(eq(schema.formFields.formId, defaultFormId))
+    .limit(1)
+
+  if (existingDefaultFormField.length === 0) {
+    const housingFieldId = crypto.randomUUID()
+    const apartmentVideoFieldId = crypto.randomUUID()
+
+    await db.insert(schema.formFields).values([
+      {
+        id: housingFieldId,
+        formId: defaultFormId,
+        order: 1,
+        type: 'select',
+        label: 'Tipo de moradia',
+        required: true,
+        helpText: 'Selecione a opção que melhor descreve sua casa.',
+        options: ['Casa', 'Apartamento'],
+        condition: null,
+        mediaConfig: null,
+      },
+      {
+        id: apartmentVideoFieldId,
+        formId: defaultFormId,
+        order: 2,
+        type: 'media',
+        label: 'Envie um vídeo mostrando as telas das janelas',
+        required: true,
+        helpText:
+          'Esse campo aparece apenas para apartamentos e ajuda na avaliação de segurança.',
+        options: null,
+        condition: {
+          fieldId: housingFieldId,
+          operator: 'equals',
+          value: 'Apartamento',
+        },
+        mediaConfig: { kind: 'video' },
+      },
+      {
+        id: crypto.randomUUID(),
+        formId: defaultFormId,
+        order: 3,
+        type: 'boolean',
+        label: 'Todos na casa concordam com a adoção?',
+        required: true,
+        helpText: null,
+        options: null,
+        condition: null,
+        mediaConfig: null,
+      },
+      {
+        id: crypto.randomUUID(),
+        formId: defaultFormId,
+        order: 4,
+        type: 'textarea',
+        label: 'Conte um pouco sobre sua rotina com pets',
+        required: true,
+        helpText: 'Inclua horários, companhia e experiência anterior.',
+        options: null,
+        condition: null,
+        mediaConfig: null,
+      },
+    ])
+
+    console.log('✅ Campos padrão do formulário criados')
+  }
+
   // Verificar quantos gatos já existem
   const existingCatsCount = await db
     .select({ id: schema.cats.id })
@@ -175,16 +272,17 @@ async function seed() {
         name,
         ageYears: Math.floor(Math.random() * 10),
         ageMonths: Math.floor(Math.random() * 12),
-        sex: sexOptions[index % 2],
-        fiv: testResults[index % 3],
-        felv: testResults[(index + 1) % 3],
+        sex: sexOptions[index % sexOptions.length]!,
+        fiv: testResults[index % testResults.length]!,
+        felv: testResults[(index + 1) % testResults.length]!,
         castrated: index % 3 !== 0,
         vaccinated: index % 4 !== 0,
         vaccinationNotes: index % 4 !== 0 ? 'Vacinas em dia' : null,
         dewormed: index % 2 === 0,
         dewormingNotes: null,
-        description: descriptions[index % descriptions.length],
-        status: statusOptions[index % 5 === 0 ? 2 : index % 3 === 0 ? 1 : 0],
+        description: descriptions[index % descriptions.length]!,
+        status: statusOptions[index % 5 === 0 ? 2 : index % 3 === 0 ? 1 : 0]!,
+        formId: defaultFormId,
         createdBy: adminUser.id,
       }))
 
@@ -192,6 +290,29 @@ async function seed() {
       await db.insert(schema.cats).values(catsToCreate)
       console.log(`✅ ${catsToCreate.length} gatos criados`)
     }
+  }
+
+  const catsWithoutForm = await db
+    .select({ id: schema.cats.id })
+    .from(schema.cats)
+    .where(
+      and(
+        eq(schema.cats.orgId, orgId),
+        sql`${schema.cats.formId} is null`
+      )
+    )
+
+  if (catsWithoutForm.length > 0) {
+    await db
+      .update(schema.cats)
+      .set({ formId: defaultFormId })
+      .where(
+        and(
+          eq(schema.cats.orgId, orgId),
+          sql`${schema.cats.formId} is null`
+        )
+      )
+    console.log(`✅ ${catsWithoutForm.length} gatos vinculados ao formulário padrão`)
   }
 
   // Garantir que todos os gatos tenham pelo menos 1 foto.

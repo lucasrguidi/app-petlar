@@ -2,6 +2,7 @@ import { relations, sql } from 'drizzle-orm'
 import { index, integer, sqliteTable, text } from 'drizzle-orm/sqlite-core'
 
 import { user } from './auth'
+import { forms } from './forms'
 import { orgs } from './orgs'
 
 export const cats = sqliteTable(
@@ -11,7 +12,9 @@ export const cats = sqliteTable(
     orgId: text('org_id')
       .notNull()
       .references(() => orgs.id, { onDelete: 'cascade' }),
-    formId: text('form_id'), // FK para forms (será criada depois)
+    formId: text('form_id')
+      .notNull()
+      .references(() => forms.id),
 
     // Dados básicos
     name: text('name').notNull(),
@@ -80,6 +83,7 @@ export const catPhotos = sqliteTable(
 
 export const catsRelations = relations(cats, ({ one, many }) => ({
   org: one(orgs, { fields: [cats.orgId], references: [orgs.id] }),
+  form: one(forms, { fields: [cats.formId], references: [forms.id] }),
   createdByUser: one(user, { fields: [cats.createdBy], references: [user.id] }),
   photos: many(catPhotos),
 }))
