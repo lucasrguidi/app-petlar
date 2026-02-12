@@ -128,7 +128,7 @@ export function CatActionsMenu({ cat }: CatActionsMenuProps) {
           dewormed: data.dewormed,
           dewormingNotes: data.dewormingNotes,
           description: data.description,
-          formId: data.formId,
+          formId: data.formId ?? '',
         }
         const encoded = btoa(JSON.stringify(prefillData))
         router.push(

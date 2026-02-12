@@ -73,11 +73,18 @@ export function CatForm({ mode, initialData, catId }: CatFormProps) {
   const router = useRouter()
   const queryClient = useQueryClient()
 
+  const normalizedInitialData: Partial<CatFormData> | undefined = initialData
+    ? {
+        ...initialData,
+        formId: initialData.formId ?? defaultCatFormValues.formId,
+      }
+    : undefined
+
   const form = useForm<CatFormData>({
     resolver: zodResolver(catFormSchema),
     defaultValues: {
       ...defaultCatFormValues,
-      ...initialData,
+      ...normalizedInitialData,
     },
   })
 
@@ -291,10 +298,8 @@ export function CatForm({ mode, initialData, catId }: CatFormProps) {
                       <FormItem className="space-y-1.5">
                         <FormLabel>Formulário de candidatura</FormLabel>
                         <Select
-                          value={field.value ?? 'none'}
-                          onValueChange={(value) =>
-                            field.onChange(value === 'none' ? null : value)
-                          }
+                          value={field.value}
+                          onValueChange={field.onChange}
                           disabled={isLoadingFormOptions}
                         >
                           <FormControl>
@@ -303,9 +308,6 @@ export function CatForm({ mode, initialData, catId }: CatFormProps) {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="none">
-                              Sem formulário (por enquanto)
-                            </SelectItem>
                             {formOptions?.map((option) => {
                               const isCurrent = option.id === field.value
                               return (
@@ -322,8 +324,8 @@ export function CatForm({ mode, initialData, catId }: CatFormProps) {
                           </SelectContent>
                         </Select>
                         <p className="text-muted-foreground text-xs">
-                          Esse modelo será usado quando alguém clicar em "Quero
-                          adotar".
+                          Esse formulário é obrigatório e será usado quando alguém
+                          clicar em "Quero adotar".
                         </p>
                         <FormMessage />
                       </FormItem>
