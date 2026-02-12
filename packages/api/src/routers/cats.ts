@@ -21,7 +21,7 @@ const catInputSchema = z.object({
   dewormed: z.boolean(),
   dewormingNotes: z.string().nullable(),
   description: z.string().nullable(),
-  formId: z.string().nullable(),
+  formId: z.string().min(1),
 })
 
 // Schema para fotos
@@ -69,11 +69,9 @@ function requireOrgId(user: { orgId?: string | null }): string {
  * Valida se o formulário pertence à mesma organização.
  */
 async function validateFormAccess(
-  formId: string | null | undefined,
+  formId: string,
   orgId: string
 ): Promise<void> {
-  if (!formId) return
-
   const [form] = await db
     .select({ id: forms.id })
     .from(forms)
