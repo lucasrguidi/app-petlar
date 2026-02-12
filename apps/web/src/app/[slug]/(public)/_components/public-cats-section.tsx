@@ -3,9 +3,9 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { AlertTriangle, Loader2, PawPrint, Sparkles, X } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useCallback, useMemo, useTransition } from 'react'
-import { toast } from 'sonner'
+import { useCallback, useMemo, useState, useTransition } from 'react'
 
+import { ApplicationSheet } from './application-sheet'
 import {
   PublicCatCard,
   type PublicCatCardData,
@@ -121,6 +121,8 @@ export function PublicCatsSection() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [isPending, startTransition] = useTransition()
+  const [selectedCat, setSelectedCat] = useState<PublicCatCardData | null>(null)
+  const [isApplicationSheetOpen, setIsApplicationSheetOpen] = useState(false)
 
   const filters = useMemo<PublicCatsFilters>(
     () => ({
@@ -182,7 +184,16 @@ export function PublicCatsSection() {
   }, [updateFilters])
 
   const handleAdoptClick = useCallback((cat: PublicCatCardData) => {
-    toast.info(`A candidatura para ${cat.name} será aberta na próxima etapa.`)
+    setSelectedCat(cat)
+    setIsApplicationSheetOpen(true)
+  }, [])
+
+  const handleApplicationSheetOpenChange = useCallback((nextOpen: boolean) => {
+    setIsApplicationSheetOpen(nextOpen)
+
+    if (!nextOpen) {
+      setSelectedCat(null)
+    }
   }, [])
 
   const hasActiveFilters = Boolean(filters.sex || filters.ageRange)
@@ -427,6 +438,12 @@ export function PublicCatsSection() {
           </>
         )}
       </div>
+
+      <ApplicationSheet
+        open={isApplicationSheetOpen}
+        onOpenChange={handleApplicationSheetOpenChange}
+        cat={selectedCat}
+      />
     </section>
   )
 }
