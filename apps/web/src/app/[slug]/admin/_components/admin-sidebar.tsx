@@ -11,6 +11,7 @@ import {
   Users,
   X,
 } from 'lucide-react'
+import { type Route } from 'next'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
@@ -23,7 +24,7 @@ type UserRole = 'admin' | 'volunteer'
 
 interface NavItem {
   title: string
-  href: string
+  href: Route
   icon: React.ElementType
   adminOnly?: boolean
   description: string
@@ -47,32 +48,32 @@ export function AdminSidebar({
   const navItems: NavItem[] = [
     {
       title: 'Dashboard',
-      href: `/${slug}/admin`,
+      href: `/${slug}/admin` as Route,
       icon: LayoutDashboard,
       description: 'Visão geral',
     },
     {
       title: 'Gatos',
-      href: `/${slug}/admin/gatos`,
+      href: `/${slug}/admin/gatos` as Route,
       icon: Cat,
       description: 'Gerenciar felinos',
     },
     {
       title: 'Adotados',
-      href: `/${slug}/admin/adotados`,
+      href: `/${slug}/admin/adotados` as Route,
       icon: Heart,
       description: 'Histórico de adoções',
     },
     {
       title: 'Formulários',
-      href: `/${slug}/admin/formularios`,
+      href: `/${slug}/admin/formularios` as Route,
       icon: FileText,
       adminOnly: true,
       description: 'Configurar formulários',
     },
     {
       title: 'Equipe',
-      href: `/${slug}/admin/usuarios`,
+      href: `/${slug}/admin/usuarios` as Route,
       icon: Users,
       adminOnly: true,
       description: 'Gerenciar usuários',
@@ -95,7 +96,7 @@ export function AdminSidebar({
       {/* Logo Header */}
       <div className="p-4">
         <Link
-          href={`/${slug}/admin`}
+          href={`/${slug}/admin` as Route}
           className="group hover:bg-primary/5 flex items-center gap-3 rounded-xl p-2 transition-colors"
         >
           {/* Logo */}

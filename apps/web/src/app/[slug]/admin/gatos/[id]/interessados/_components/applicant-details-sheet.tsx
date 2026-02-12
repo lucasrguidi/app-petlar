@@ -1,0 +1,363 @@
+'use client'
+
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import {
+  AlertTriangle,
+  ExternalLink,
+  Loader2,
+  Mail,
+  MessageCircle,
+  RefreshCcw,
+  Save,
+  Video,
+} from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
+import { toast } from 'sonner'
+
+import { formatDate, formatDateTime, getStatusLabel, toWhatsappLink } from './helpers'
+
+import type { ApplicationStatus } from './types'
+
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet'
+import { Skeleton } from '@/components/ui/skeleton'
+import { trpc } from '@/utils/trpc'
+
+interface ApplicantDetailsSheetProps {
+  open: boolean
+  applicationId: string | null
+  onOpenChange: (open: boolean) => void
+}
+
+interface ApplicationFile {
+  id: string
+  fieldId: string
+  fieldLabel: string
+  fileType: 'image' | 'video'
+  url: string
+  createdAt: string | Date
+}
+
+function getStatusVariant(status: ApplicationStatus) {
+  if (status === 'pending') return 'warning' as const
+  if (status === 'reviewing') return 'info' as const
+  if (status === 'approved') return 'success' as const
+  return 'destructive' as const
+}
+
+function MediaPreviewCard({ file }: { file: ApplicationFile }) {
+  const [hasError, setHasError] = useState(false)
+  const [retryKey, setRetryKey] = useState(0)
+
+  const retry = () => {
+    setHasError(false)
+    setRetryKey((value) => value + 1)
+  }
+
+  return (
+    <div className="border-border/60 bg-card/95 space-y-3 rounded-xl border p-3">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-sm font-semibold">{file.fieldLabel}</p>
+          <p className="text-muted-foreground text-xs">
+            Enviado em {formatDateTime(file.createdAt)}
+          </p>
+        </div>
+        <a href={file.url} target="_blank" rel="noreferrer">
+          <Button variant="outline" size="sm" className="rounded-lg">
+            <ExternalLink className="mr-1.5 h-3.5 w-3.5" />
+            Abrir
+          </Button>
+        </a>
+      </div>
+
+      {hasError ? (
+        <div className="border-border/60 bg-muted/20 flex min-h-44 flex-col items-center justify-center rounded-xl border px-4 py-6 text-center">
+          <AlertTriangle className="text-warning h-5 w-5" />
+          <p className="mt-2 text-sm font-medium">Não foi possível carregar a mídia</p>
+          <p className="text-muted-foreground mt-1 text-xs">
+            Tente novamente ou abra em nova aba.
+          </p>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={retry}
+            className="mt-3 rounded-lg"
+          >
+            <RefreshCcw className="mr-1.5 h-3.5 w-3.5" />
+            Tentar novamente
+          </Button>
+        </div>
+      ) : file.fileType === 'image' ? (
+        <div className="bg-muted/30 overflow-hidden rounded-xl border border-border/40">
+          <img
+            key={retryKey}
+            src={file.url}
+            alt={file.fieldLabel}
+            loading="lazy"
+            onError={() => setHasError(true)}
+            className="h-auto max-h-96 w-full object-contain"
+          />
+        </div>
+      ) : (
+        <div className="bg-muted/30 overflow-hidden rounded-xl border border-border/40">
+          <video
+            key={retryKey}
+            controls
+            preload="metadata"
+            onError={() => setHasError(true)}
+            className="max-h-96 w-full"
+          >
+            <source src={file.url} />
+          </video>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function DetailsLoadingState() {
+  return (
+    <div className="space-y-5 p-5">
+      <Skeleton className="h-20 w-full rounded-xl" />
+      <Skeleton className="h-24 w-full rounded-xl" />
+      <Skeleton className="h-56 w-full rounded-xl" />
+    </div>
+  )
+}
+
+function renderResponseValue(value: string | boolean | null): string {
+  if (value === null) return '-'
+  if (typeof value === 'boolean') {
+    return value ? 'Sim' : 'Não'
+  }
+
+  const trimmed = value.trim()
+  if (!trimmed) return '-'
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+    return formatDate(trimmed)
+  }
+
+  return trimmed
+}
+
+export function ApplicantDetailsSheet({
+  open,
+  applicationId,
+  onOpenChange,
+}: ApplicantDetailsSheetProps) {
+  const queryClient = useQueryClient()
+  const [selectedStatus, setSelectedStatus] = useState<ApplicationStatus>('pending')
+
+  const detailsQuery = useQuery({
+    ...trpc.applications.getById.queryOptions({ id: applicationId ?? '' }),
+    enabled: open && Boolean(applicationId),
+  })
+
+  const updateStatusMutation = useMutation(
+    trpc.applications.updateStatus.mutationOptions({
+      onSuccess: () => {
+        toast.success('Status atualizado com sucesso')
+        queryClient.invalidateQueries({ queryKey: [['applications']] })
+      },
+      onError: (error) => {
+        toast.error(error.message || 'Não foi possível atualizar o status')
+      },
+    })
+  )
+
+  const data = detailsQuery.data
+
+  useEffect(() => {
+    if (data?.application.status) {
+      setSelectedStatus(data.application.status)
+    }
+  }, [data?.application.status])
+
+  const visibleResponses = useMemo(
+    () =>
+      (data?.responses ?? []).filter(
+        (response) => response.type !== 'media' && response.value !== null
+      ),
+    [data?.responses]
+  )
+
+  const hasStatusChange = data && selectedStatus !== data.application.status
+
+  return (
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent
+        side="right"
+        className="w-full overflow-y-auto border-border/60 p-0 sm:max-w-2xl"
+      >
+        <SheetHeader className="border-border/50 bg-card/95 sticky top-0 z-20 border-b px-5 py-4">
+          <SheetTitle className="text-display text-lg">Detalhes da candidatura</SheetTitle>
+          <SheetDescription>
+            Visualize respostas, mídias enviadas e status da candidatura.
+          </SheetDescription>
+        </SheetHeader>
+
+        {detailsQuery.isLoading ? (
+          <DetailsLoadingState />
+        ) : detailsQuery.isError ? (
+          <div className="p-5">
+            <div className="border-destructive/30 bg-destructive/5 rounded-xl border p-4">
+              <p className="text-destructive text-sm font-medium">
+                Não foi possível carregar os detalhes.
+              </p>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="mt-3 rounded-lg"
+                onClick={() => detailsQuery.refetch()}
+              >
+                Tentar novamente
+              </Button>
+            </div>
+          </div>
+        ) : !data ? null : (
+          <div className="space-y-5 p-5">
+            <div className="border-border/60 bg-card/95 rounded-xl border p-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div className="space-y-1">
+                  <p className="text-lg font-semibold">{data.application.applicantName}</p>
+                  <p className="text-muted-foreground inline-flex items-center gap-1.5 text-sm">
+                    <Mail className="h-4 w-4" />
+                    {data.application.applicantEmail}
+                  </p>
+                  <a
+                    href={toWhatsappLink(data.application.applicantWhatsapp)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-primary inline-flex items-center gap-1.5 text-sm hover:underline"
+                  >
+                    <MessageCircle className="h-4 w-4" />
+                    {data.application.applicantWhatsapp}
+                  </a>
+                  <p className="text-muted-foreground text-xs">
+                    Confirmada em {formatDateTime(data.application.confirmedAt ?? data.application.createdAt)}
+                  </p>
+                </div>
+
+                <Badge
+                  variant={getStatusVariant(data.application.status)}
+                  className="w-fit rounded-full px-2.5 py-1"
+                >
+                  {getStatusLabel(data.application.status)}
+                </Badge>
+              </div>
+            </div>
+
+            <div className="border-border/60 bg-card/95 space-y-3 rounded-xl border p-4">
+              <Label className="text-sm font-semibold">Atualizar status</Label>
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <Select
+                  value={selectedStatus}
+                  onValueChange={(value) =>
+                    setSelectedStatus(value as ApplicationStatus)
+                  }
+                >
+                  <SelectTrigger className="h-10 rounded-xl sm:w-56">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pending">Pendente</SelectItem>
+                    <SelectItem value="reviewing">Em análise</SelectItem>
+                    <SelectItem value="approved">Aprovado</SelectItem>
+                    <SelectItem value="rejected">Recusado</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                <Button
+                  type="button"
+                  onClick={() =>
+                    updateStatusMutation.mutate({
+                      id: data.application.id,
+                      status: selectedStatus,
+                    })
+                  }
+                  disabled={!hasStatusChange || updateStatusMutation.isPending}
+                  className="shadow-primary-glow rounded-xl"
+                >
+                  {updateStatusMutation.isPending ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Salvando...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="mr-2 h-4 w-4" />
+                      Salvar status
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+
+            <div className="border-border/60 bg-card/95 space-y-3 rounded-xl border p-4">
+              <h3 className="text-sm font-semibold">Respostas do formulário</h3>
+              {visibleResponses.length === 0 ? (
+                <p className="text-muted-foreground text-sm">
+                  Não há respostas textuais para esta candidatura.
+                </p>
+              ) : (
+                <div className="space-y-2">
+                  {visibleResponses.map((response) => (
+                    <div
+                      key={response.fieldId}
+                      className="border-border/60 bg-muted/20 rounded-lg border p-3"
+                    >
+                      <p className="text-sm font-medium">{response.label}</p>
+                      <p className="text-muted-foreground mt-1 text-sm whitespace-pre-wrap">
+                        {renderResponseValue(
+                          response.value as string | boolean | null
+                        )}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="border-border/60 bg-card/95 space-y-3 rounded-xl border p-4">
+              <div className="flex items-center gap-2">
+                <Video className="text-primary h-4 w-4" />
+                <h3 className="text-sm font-semibold">Mídias enviadas</h3>
+              </div>
+
+              {data.files.length === 0 ? (
+                <p className="text-muted-foreground text-sm">
+                  Nenhuma mídia foi enviada nesta candidatura.
+                </p>
+              ) : (
+                <div className="space-y-3">
+                  {data.files.map((file) => (
+                    <MediaPreviewCard key={file.id} file={file} />
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </SheetContent>
+    </Sheet>
+  )
+}

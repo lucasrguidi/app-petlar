@@ -7,6 +7,7 @@ import {
   TrendingUp,
   Users,
 } from 'lucide-react'
+import { type Route } from 'next'
 import Link from 'next/link'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -18,7 +19,7 @@ interface AdminPageProps {
 interface QuickLink {
   title: string
   description: string
-  href: string
+  href: Route
   icon: React.ElementType
   gradient: string
   iconBg: string
@@ -71,7 +72,7 @@ export default async function AdminPage({ params }: AdminPageProps) {
     {
       title: 'Gatos',
       description: 'Cadastrar e gerenciar gatos disponíveis para adoção',
-      href: `/${slug}/admin/gatos`,
+      href: `/${slug}/admin/gatos` as Route,
       icon: Cat,
       gradient: 'from-primary/10 via-primary/5 to-transparent',
       iconBg: 'bg-primary/15 text-primary',
@@ -80,7 +81,7 @@ export default async function AdminPage({ params }: AdminPageProps) {
     {
       title: 'Adotados',
       description: 'Acompanhar histórico e termos de adoção',
-      href: `/${slug}/admin/adotados`,
+      href: `/${slug}/admin/adotados` as Route,
       icon: Heart,
       gradient: 'from-success/10 via-success/5 to-transparent',
       iconBg: 'bg-success/15 text-success',
@@ -89,7 +90,7 @@ export default async function AdminPage({ params }: AdminPageProps) {
     {
       title: 'Formulários',
       description: 'Configurar perguntas para candidatos',
-      href: `/${slug}/admin/formularios`,
+      href: `/${slug}/admin/formularios` as Route,
       icon: FileText,
       gradient: 'from-info/10 via-info/5 to-transparent',
       iconBg: 'bg-info/15 text-info',
@@ -98,7 +99,7 @@ export default async function AdminPage({ params }: AdminPageProps) {
     {
       title: 'Equipe',
       description: 'Gerenciar voluntários e administradores',
-      href: `/${slug}/admin/usuarios`,
+      href: `/${slug}/admin/usuarios` as Route,
       icon: Users,
       gradient: 'from-warning/10 via-warning/5 to-transparent',
       iconBg: 'bg-warning/15 text-warning',

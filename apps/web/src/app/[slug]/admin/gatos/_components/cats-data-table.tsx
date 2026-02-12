@@ -12,6 +12,7 @@ import {
   Venus,
   X,
 } from 'lucide-react'
+import { type Route } from 'next'
 import Link from 'next/link'
 import { useCallback, useMemo, useState } from 'react'
 
@@ -409,7 +410,9 @@ function getColumns(
         return (
           <div className="hidden sm:block">
             <Link
-              href={`/${slug}/admin/gatos/${row.original.id}/interessados`}
+              href={
+                `/${slug}/admin/gatos/${row.original.id}/interessados` as Route
+              }
               className={cn(
                 'group/int relative inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-medium transition-all duration-200',
                 hasInterested
