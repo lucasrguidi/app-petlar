@@ -1,8 +1,8 @@
 'use client'
 
 import { useMutation } from '@tanstack/react-query'
-import { Loader2, Upload, X } from 'lucide-react'
-import { useRef, useState, type ChangeEvent } from 'react'
+import { CheckCircle2, Image, Loader2, Upload, Video, X } from 'lucide-react'
+import { useRef, useState, type ChangeEvent, type DragEvent } from 'react'
 
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -72,6 +72,7 @@ export function ApplicationMediaUpload({
 }: ApplicationMediaUploadProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [isUploading, setIsUploading] = useState(false)
+  const [isDragging, setIsDragging] = useState(false)
   const [progress, setProgress] = useState(0)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
@@ -83,8 +84,8 @@ export function ApplicationMediaUpload({
   )
 
   const limit = MEDIA_LIMITS[kind]
-
   const isDisabled = disabled || isUploading
+  const MediaIcon = kind === 'image' ? Image : Video
 
   const validateFile = async (file: File) => {
     if (!(limit.acceptedTypes as readonly string[]).includes(file.type)) {
@@ -142,16 +143,11 @@ export function ApplicationMediaUpload({
     })
   }
 
-  const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = event.target.files?.[0]
-    event.target.value = ''
-
-    if (!selectedFile) return
-
+  const processFile = async (file: File) => {
     setErrorMessage(null)
     setProgress(0)
 
-    const validationError = await validateFile(selectedFile)
+    const validationError = await validateFile(file)
     if (validationError) {
       setErrorMessage(validationError)
       return
@@ -161,12 +157,12 @@ export function ApplicationMediaUpload({
 
     try {
       const { presignedUrl, key } = await getPresignedUrlMutation.mutateAsync({
-        filename: selectedFile.name,
-        contentType: selectedFile.type,
-        fileSize: selectedFile.size,
+        filename: file.name,
+        contentType: file.type,
+        fileSize: file.size,
       })
 
-      await uploadWithProgress(selectedFile, presignedUrl)
+      await uploadWithProgress(file, presignedUrl)
 
       const { publicUrl } = await confirmUploadMutation.mutateAsync({ key })
 
@@ -188,6 +184,46 @@ export function ApplicationMediaUpload({
     }
   }
 
+  const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = event.target.files?.[0]
+    event.target.value = ''
+    if (selectedFile) {
+      await processFile(selectedFile)
+    }
+  }
+
+  const handleDragEnter = (event: DragEvent<HTMLButtonElement>) => {
+    event.preventDefault()
+    event.stopPropagation()
+    if (!isDisabled) {
+      setIsDragging(true)
+    }
+  }
+
+  const handleDragLeave = (event: DragEvent<HTMLButtonElement>) => {
+    event.preventDefault()
+    event.stopPropagation()
+    setIsDragging(false)
+  }
+
+  const handleDragOver = (event: DragEvent<HTMLButtonElement>) => {
+    event.preventDefault()
+    event.stopPropagation()
+  }
+
+  const handleDrop = async (event: DragEvent<HTMLButtonElement>) => {
+    event.preventDefault()
+    event.stopPropagation()
+    setIsDragging(false)
+
+    if (isDisabled) return
+
+    const droppedFile = event.dataTransfer.files[0]
+    if (droppedFile) {
+      await processFile(droppedFile)
+    }
+  }
+
   const handleSelectFile = () => {
     fileInputRef.current?.click()
   }
@@ -199,7 +235,7 @@ export function ApplicationMediaUpload({
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       <input
         ref={fileInputRef}
         type="file"
@@ -213,87 +249,158 @@ export function ApplicationMediaUpload({
         <button
           type="button"
           onClick={handleSelectFile}
+          onDragEnter={handleDragEnter}
+          onDragLeave={handleDragLeave}
+          onDragOver={handleDragOver}
+          onDrop={handleDrop}
           disabled={isDisabled}
           className={cn(
-            'w-full rounded-xl border border-dashed border-[#AEC7E2] p-4 text-left',
-            'bg-white/70 transition-colors',
-            'hover:border-[#E35915]/40 hover:bg-white',
-            'disabled:cursor-not-allowed disabled:opacity-60'
+            'group relative w-full overflow-hidden rounded-2xl',
+            'border-2 border-dashed',
+            'bg-gradient-to-br from-white to-[#F8FBFF]',
+            'min-h-[140px] p-6',
+            'flex flex-col items-center justify-center gap-3',
+            'cursor-pointer transition-all duration-300',
+            'hover:border-[#E35915]/50 hover:bg-white',
+            isDragging && [
+              'border-[#E35915] bg-[#E35915]/5',
+              'scale-[1.01]',
+            ],
+            isDisabled && 'cursor-not-allowed opacity-60',
+            !isDragging && !isDisabled && 'border-[#AEC7E2]'
           )}
         >
-          <div className="flex items-center gap-3">
-            <div className="rounded-lg bg-[#E35915]/10 p-2 text-[#E35915]">
-              {isUploading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Upload className="h-4 w-4" />
-              )}
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium text-[#783201]">
-                {isUploading
-                  ? `Enviando arquivo (${progress}%)`
-                  : `Enviar ${kind === 'image' ? 'imagem' : 'vídeo'}`}
-              </p>
-              <p className="text-xs text-[#8B5A2B]/70">
-                {kind === 'image'
-                  ? 'JPG, PNG ou WEBP • até 5MB'
-                  : 'MP4, MOV ou WEBM • até 50MB e 30 segundos'}
-              </p>
-            </div>
+          {/* Background decoration */}
+          <div
+            className={cn(
+              'absolute inset-0 opacity-0 transition-opacity duration-300',
+              'bg-gradient-to-br from-[#E35915]/5 via-transparent to-[#F07B3D]/5',
+              (isDragging || isUploading) && 'opacity-100'
+            )}
+            aria-hidden="true"
+          />
+
+          {/* Icon */}
+          <div
+            className={cn(
+              'relative flex h-14 w-14 items-center justify-center rounded-2xl',
+              'bg-gradient-to-br from-[#E35915]/15 to-[#F07B3D]/10',
+              'ring-1 ring-[#E35915]/20',
+              'transition-all duration-300',
+              'group-hover:scale-110 group-hover:shadow-lg group-hover:shadow-[#E35915]/20',
+              isDragging && 'scale-110 shadow-lg shadow-[#E35915]/20'
+            )}
+          >
+            {isUploading ? (
+              <Loader2 className="h-7 w-7 animate-spin text-[#E35915]" />
+            ) : (
+              <Upload className="h-7 w-7 text-[#E35915]" />
+            )}
           </div>
+
+          {/* Text */}
+          <div className="relative text-center">
+            <p className="font-medium text-[#783201]">
+              {isUploading
+                ? `Enviando... ${progress}%`
+                : isDragging
+                  ? 'Solte o arquivo aqui'
+                  : `Arraste ou clique para enviar ${kind === 'image' ? 'imagem' : 'vídeo'}`}
+            </p>
+            <p className="mt-1 flex items-center justify-center gap-2 text-sm text-[#8B5A2B]/70">
+              <MediaIcon className="h-4 w-4" />
+              {kind === 'image'
+                ? 'JPG, PNG ou WEBP • até 5MB'
+                : 'MP4, MOV ou WEBM • até 50MB e 30s'}
+            </p>
+          </div>
+
+          {/* Progress bar during upload */}
+          {isUploading && (
+            <div className="relative mt-2 w-full max-w-xs">
+              <div className="h-2 overflow-hidden rounded-full bg-[#AEC7E2]/35">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-[#E35915] to-[#F07B3D] transition-all duration-200"
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
+            </div>
+          )}
         </button>
       ) : (
-        <div className="overflow-hidden rounded-xl border border-[#AEC7E2]/40 bg-white/80">
-          {kind === 'image' ? (
-            <img
-              src={value}
-              alt={`Arquivo enviado para ${label}`}
-              className="h-44 w-full bg-[#AEC7E2]/15 object-contain"
-              loading="lazy"
-            />
-          ) : (
-            <video
-              src={value}
-              controls
-              className="h-56 w-full bg-black/10 object-contain"
-              preload="metadata"
-            />
+        <div
+          className={cn(
+            'overflow-hidden rounded-2xl',
+            'border border-emerald-200/60',
+            'bg-gradient-to-br from-white to-emerald-50/30',
+            'shadow-sm'
           )}
+        >
+          {/* Preview */}
+          <div className="relative">
+            {kind === 'image' ? (
+              <img
+                src={value}
+                alt={`Arquivo enviado para ${label}`}
+                className="h-48 w-full bg-[#AEC7E2]/10 object-contain"
+                loading="lazy"
+              />
+            ) : (
+              <video
+                src={value}
+                controls
+                className="h-56 w-full bg-black/5 object-contain"
+                preload="metadata"
+              />
+            )}
+          </div>
 
-          <div className="flex items-center justify-between gap-2 border-t border-[#AEC7E2]/30 px-3 py-2">
-            <p className="truncate text-xs font-medium text-emerald-700">
-              Arquivo enviado com sucesso
-            </p>
+          {/* Success footer */}
+          <div
+            className={cn(
+              'flex items-center justify-between gap-3',
+              'border-t border-emerald-200/40',
+              'bg-gradient-to-r from-emerald-50/80 to-white',
+              'px-4 py-3'
+            )}
+          >
+            <div className="flex items-center gap-2">
+              <div className="rounded-full bg-emerald-100 p-1.5">
+                <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+              </div>
+              <span className="text-sm font-medium text-emerald-700">
+                Enviado com sucesso
+              </span>
+            </div>
             <Button
               type="button"
               variant="ghost"
               size="sm"
               onClick={handleClear}
               disabled={isDisabled}
-              className="h-8 rounded-lg px-2 text-[#783201]/70 hover:bg-[#AEC7E2]/30 hover:text-[#783201]"
+              className={cn(
+                'h-9 rounded-xl px-3',
+                'text-[#783201]/70 hover:bg-red-50 hover:text-red-600'
+              )}
             >
-              <X className="mr-1 h-3.5 w-3.5" />
+              <X className="mr-1.5 h-4 w-4" />
               Remover
             </Button>
           </div>
         </div>
       )}
 
-      {isUploading && (
-        <div className="space-y-1">
-          <div className="h-2 overflow-hidden rounded-full bg-[#AEC7E2]/35">
-            <div
-              className="h-full rounded-full bg-gradient-to-r from-[#E35915] to-[#F07B3D] transition-all duration-200"
-              style={{ width: `${progress}%` }}
-            />
-          </div>
-          <p className="text-right text-xs text-[#8B5A2B]/70">{progress}%</p>
-        </div>
-      )}
-
       {errorMessage && (
-        <p className="text-sm font-medium text-red-600">{errorMessage}</p>
+        <div
+          className={cn(
+            'flex items-center gap-2 rounded-xl',
+            'bg-red-50 px-4 py-3',
+            'border border-red-200/60'
+          )}
+        >
+          <span className="shrink-0 text-red-500">⚠️</span>
+          <p className="text-sm font-medium text-red-700">{errorMessage}</p>
+        </div>
       )}
     </div>
   )

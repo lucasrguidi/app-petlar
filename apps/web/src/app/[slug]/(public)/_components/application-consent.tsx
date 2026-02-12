@@ -1,96 +1,242 @@
 'use client'
 
+import { MessageCircle, Shield, ShieldCheck } from 'lucide-react'
+
 import type { ApplicationFormValues } from './application-form-schema'
+import type { ReactNode } from 'react'
 import type { UseFormReturn } from 'react-hook-form'
 
 
-import { Checkbox } from '@/components/ui/checkbox'
-import {
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form'
+import { FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form'
 import { cn } from '@/lib/utils'
 
 interface ApplicationConsentProps {
   form: UseFormReturn<ApplicationFormValues>
   disabled?: boolean
+  showValidation?: boolean
 }
 
-const consentBoxClassName = cn(
-  'rounded-xl border border-[#AEC7E2]/40 bg-white/65 p-4',
-  'space-y-2'
-)
+interface ConsentCardProps {
+  icon: ReactNode
+  iconChecked: ReactNode
+  title: string
+  description: string
+  checked: boolean
+  onCheckedChange: (checked: boolean) => void
+  disabled: boolean
+  hasError?: boolean
+}
 
-const checkboxClassName = cn(
-  'mt-0.5 h-5 w-5 rounded-md border-[#AEC7E2]',
-  'data-[state=checked]:border-[#E35915] data-[state=checked]:bg-[#E35915]',
-  'focus-visible:ring-[#E35915]/25'
-)
+function ConsentCard({
+  icon,
+  iconChecked,
+  title,
+  description,
+  checked,
+  onCheckedChange,
+  disabled,
+  hasError,
+}: ConsentCardProps) {
+  const handleClick = () => {
+    if (!disabled) {
+      onCheckedChange(!checked)
+    }
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      handleClick()
+    }
+  }
+
+  return (
+    <div
+      role="button"
+      tabIndex={disabled ? -1 : 0}
+      onClick={handleClick}
+      onKeyDown={handleKeyDown}
+      aria-disabled={disabled}
+      aria-pressed={checked}
+      className={cn(
+        'w-full rounded-2xl p-4 text-left',
+        'border-2 transition-all duration-200',
+        'group cursor-pointer select-none',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E35915]/30 focus-visible:ring-offset-2',
+        checked
+          ? 'border-emerald-300 bg-gradient-to-br from-emerald-50/80 to-white'
+          : 'border-[#AEC7E2]/40 bg-white/65 hover:border-[#AEC7E2]/60 hover:bg-white/80',
+        hasError && !checked && 'border-red-300 bg-red-50/30',
+        disabled && 'cursor-not-allowed opacity-60'
+      )}
+    >
+      <div className="flex items-start gap-4">
+        {/* Icon */}
+        <div
+          className={cn(
+            'shrink-0 rounded-xl p-3 transition-all duration-200',
+            checked
+              ? 'bg-emerald-100 text-emerald-600'
+              : 'bg-[#AEC7E2]/25 text-[#8B5A2B]/60 group-hover:bg-[#AEC7E2]/35'
+          )}
+        >
+          {checked ? iconChecked : icon}
+        </div>
+
+        {/* Content */}
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-3">
+            {/* Visual checkbox indicator (not interactive) */}
+            <div
+              className={cn(
+                'flex h-6 w-6 shrink-0 items-center justify-center rounded-lg',
+                'border-2 transition-all duration-200',
+                checked
+                  ? 'border-emerald-500 bg-emerald-500'
+                  : 'border-[#AEC7E2] bg-white'
+              )}
+            >
+              {checked && (
+                <svg
+                  className="h-4 w-4 text-white"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={3}
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              )}
+            </div>
+            <span
+              className={cn(
+                'text-sm font-semibold transition-colors',
+                checked ? 'text-emerald-700' : 'text-[#783201]'
+              )}
+            >
+              {title}
+            </span>
+          </div>
+          <p
+            className={cn(
+              'mt-2 text-sm leading-relaxed',
+              checked ? 'text-emerald-700/80' : 'text-[#8B5A2B]/70'
+            )}
+          >
+            {description}
+          </p>
+        </div>
+      </div>
+    </div>
+  )
+}
 
 export function ApplicationConsent({
   form,
   disabled = false,
+  showValidation = false,
 }: ApplicationConsentProps) {
+  const lgpdValue = form.watch('lgpdConsent')
+  const whatsappValue = form.watch('whatsappConsent')
+  const bothChecked = lgpdValue && whatsappValue
+
   return (
-    <div className="space-y-4">
-      <div className="space-y-1">
-        <h4 className="text-base font-semibold text-[#783201]">Consentimentos</h4>
-        <p className="text-sm text-[#8B5A2B]/70">
-          Precisamos da sua autorização para continuar.
-        </p>
+    <div className="space-y-5">
+      {/* Section Header */}
+      <div className="flex items-center gap-3">
+        <div
+          className={cn(
+            'flex h-10 w-10 items-center justify-center rounded-xl transition-all duration-300',
+            bothChecked
+              ? 'bg-gradient-to-br from-emerald-100 to-emerald-50 ring-1 ring-emerald-200'
+              : 'bg-gradient-to-br from-[#AEC7E2]/30 to-[#AEC7E2]/10 ring-1 ring-[#AEC7E2]/40'
+          )}
+        >
+          {bothChecked ? (
+            <ShieldCheck className="h-5 w-5 text-emerald-600" />
+          ) : (
+            <Shield className="h-5 w-5 text-[#783201]/70" />
+          )}
+        </div>
+        <div>
+          <h4
+            className={cn(
+              'text-base font-semibold transition-colors',
+              bothChecked ? 'text-emerald-700' : 'text-[#783201]'
+            )}
+            style={{ fontFamily: 'var(--font-display)' }}
+          >
+            {bothChecked ? 'Tudo certo!' : 'Quase lá!'}
+          </h4>
+          <p className="text-sm text-[#8B5A2B]/70">
+            {bothChecked
+              ? 'Você autorizou os termos necessários'
+              : 'Precisamos da sua autorização para continuar'}
+          </p>
+        </div>
       </div>
 
-      <FormField
-        control={form.control}
-        name="lgpdConsent"
-        render={({ field }) => (
-          <FormItem className={consentBoxClassName}>
-            <div className="flex items-start gap-3">
-              <FormControl>
-                <Checkbox
-                  checked={field.value}
-                  onCheckedChange={(checked) => field.onChange(checked === true)}
-                  disabled={disabled}
-                  className={checkboxClassName}
-                />
-              </FormControl>
-              <FormLabel className="cursor-pointer text-sm leading-relaxed font-medium text-[#783201]">
-                Autorizo o compartilhamento dos meus dados pessoais com a ONG para
-                fins de avaliação da minha candidatura à adoção, conforme a Lei
-                Geral de Proteção de Dados (LGPD).
-              </FormLabel>
-            </div>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+      {/* Consent Cards */}
+      <div className="space-y-3">
+        <FormField
+          control={form.control}
+          name="lgpdConsent"
+          render={({ field, fieldState }) => {
+            // Only show error after user tried to submit
+            const showError = Boolean(fieldState.error) && showValidation
+            return (
+              <FormItem>
+                <FormControl>
+                  <ConsentCard
+                    icon={<Shield className="h-5 w-5" />}
+                    iconChecked={<ShieldCheck className="h-5 w-5" />}
+                    title="Proteção de dados (LGPD)"
+                    description="Autorizo o compartilhamento dos meus dados pessoais com a ONG para avaliação da minha candidatura à adoção."
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                    disabled={disabled}
+                    hasError={showError}
+                  />
+                </FormControl>
+                {showError && <FormMessage className="ml-4 mt-1" />}
+              </FormItem>
+            )
+          }}
+        />
 
-      <FormField
-        control={form.control}
-        name="whatsappConsent"
-        render={({ field }) => (
-          <FormItem className={consentBoxClassName}>
-            <div className="flex items-start gap-3">
-              <FormControl>
-                <Checkbox
-                  checked={field.value}
-                  onCheckedChange={(checked) => field.onChange(checked === true)}
-                  disabled={disabled}
-                  className={checkboxClassName}
-                />
-              </FormControl>
-              <FormLabel className="cursor-pointer text-sm leading-relaxed font-medium text-[#783201]">
-                Autorizo o contato via WhatsApp para acompanhamento do processo de
-                adoção e comunicações relacionadas.
-              </FormLabel>
-            </div>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+        <FormField
+          control={form.control}
+          name="whatsappConsent"
+          render={({ field, fieldState }) => {
+            // Only show error after user tried to submit
+            const showError = Boolean(fieldState.error) && showValidation
+            return (
+              <FormItem>
+                <FormControl>
+                  <ConsentCard
+                    icon={<MessageCircle className="h-5 w-5" />}
+                    iconChecked={<MessageCircle className="h-5 w-5" />}
+                    title="Contato via WhatsApp"
+                    description="Autorizo o contato via WhatsApp para acompanhamento do processo de adoção e comunicações relacionadas."
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                    disabled={disabled}
+                    hasError={showError}
+                  />
+                </FormControl>
+                {showError && <FormMessage className="ml-4 mt-1" />}
+              </FormItem>
+            )
+          }}
+        />
+      </div>
+
+      {/* Helper text */}
+      {!bothChecked && (
+        <p className="text-center text-xs text-[#8B5A2B]/60">
+          Marque ambas as autorizações para enviar sua candidatura
+        </p>
+      )}
     </div>
   )
 }
