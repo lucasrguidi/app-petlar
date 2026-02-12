@@ -54,6 +54,16 @@ export const applications = sqliteTable(
 
     // Email confirmation (for phase 4.5)
     confirmationToken: text('confirmation_token').unique(),
+    confirmationCodeHash: text('confirmation_code_hash'),
+    confirmationCodeExpiresAt: integer('confirmation_code_expires_at', {
+      mode: 'timestamp_ms',
+    }),
+    confirmationResendCount: integer('confirmation_resend_count')
+      .notNull()
+      .default(0),
+    confirmationLastSentAt: integer('confirmation_last_sent_at', {
+      mode: 'timestamp_ms',
+    }),
     confirmedAt: integer('confirmed_at', { mode: 'timestamp_ms' }),
 
     // Timestamps
@@ -70,6 +80,11 @@ export const applications = sqliteTable(
     index('applications_catId_idx').on(table.catId),
     index('applications_status_idx').on(table.status),
     index('applications_confirmationToken_idx').on(table.confirmationToken),
+    index('applications_catId_email_confirmedAt_idx').on(
+      table.catId,
+      table.applicantEmail,
+      table.confirmedAt
+    ),
   ]
 )
 
