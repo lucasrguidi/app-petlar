@@ -227,24 +227,102 @@ async function sendApplicationConfirmationEmail(params: {
     `Seu código de confirmação é: ${params.code}`,
     '',
     `Esse código expira em ${CONFIRMATION_CODE_EXPIRATION_MINUTES} minutos.`,
+    'Digite o código no formulário para concluir sua candidatura.',
     '',
     'Se você não solicitou essa candidatura, ignore este e-mail.',
   ].join('\n')
 
   const html = `
-    <div style="font-family: Arial, sans-serif; color: #1f2937; line-height: 1.6;">
-      <p>Olá, <strong>${safeApplicantName}</strong>!</p>
-      <p>
-        Você iniciou uma candidatura para adoção de <strong>${safeCatName}</strong>
-        na <strong>${safeOrgName}</strong>.
-      </p>
-      <p>Seu código de confirmação é:</p>
-      <p style="font-size: 32px; letter-spacing: 6px; font-weight: 700; margin: 8px 0 16px;">
-        ${safeCode}
-      </p>
-      <p>Esse código expira em <strong>${CONFIRMATION_CODE_EXPIRATION_MINUTES} minutos</strong>.</p>
-      <p style="color: #6b7280;">Se você não solicitou essa candidatura, ignore este e-mail.</p>
-    </div>
+    <!doctype html>
+    <html lang="pt-BR">
+      <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Confirmação de candidatura</title>
+      </head>
+      <body style="margin:0;padding:0;background:#aec7e2;">
+        <span style="display:none!important;visibility:hidden;opacity:0;color:transparent;height:0;width:0;overflow:hidden;">
+          Seu código de confirmação da candidatura de ${safeCatName} é ${safeCode}.
+        </span>
+
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+          <tr>
+            <td align="center" style="padding:24px 12px;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width:560px;background:#ffffff;border:1px solid #9ab4d1;border-radius:22px;overflow:hidden;">
+                <tr>
+                  <td style="padding:0;">
+                    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:linear-gradient(135deg,#e35915 0%,#f07b3d 100%);">
+                      <tr>
+                        <td style="padding:22px 24px 18px 24px;">
+                          <div style="display:inline-block;background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.45);border-radius:999px;padding:6px 10px;color:#ffffff;font-family:'DM Sans',Segoe UI,Arial,sans-serif;font-size:12px;font-weight:700;letter-spacing:0.3px;">
+                            PETLAR • Candidatura
+                          </div>
+                          <h1 style="margin:14px 0 8px 0;color:#ffffff;font-family:'Outfit','DM Sans',Segoe UI,Arial,sans-serif;font-size:28px;line-height:1.15;font-weight:700;letter-spacing:-0.3px;">
+                            Confirme sua candidatura
+                          </h1>
+                          <p style="margin:0;color:#fff6ef;font-family:'DM Sans',Segoe UI,Arial,sans-serif;font-size:14px;line-height:1.55;">
+                            Você iniciou a candidatura para adoção de <strong>${safeCatName}</strong> na <strong>${safeOrgName}</strong>.
+                          </p>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+
+                <tr>
+                  <td style="padding:24px;">
+                    <p style="margin:0 0 14px 0;color:#783201;font-family:'DM Sans',Segoe UI,Arial,sans-serif;font-size:15px;line-height:1.6;">
+                      Olá, <strong>${safeApplicantName}</strong>!
+                    </p>
+                    <p style="margin:0 0 16px 0;color:#8b5a2b;font-family:'DM Sans',Segoe UI,Arial,sans-serif;font-size:14px;line-height:1.6;">
+                      Digite este código no formulário para concluir a confirmação da sua candidatura:
+                    </p>
+
+                    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:0 0 16px 0;">
+                      <tr>
+                        <td style="border:1px solid #f7b58d;background:#fff7ed;border-radius:16px;padding:14px 16px;text-align:center;">
+                          <p style="margin:0 0 6px 0;color:#8b5a2b;font-family:'DM Sans',Segoe UI,Arial,sans-serif;font-size:12px;font-weight:700;letter-spacing:0.35px;text-transform:uppercase;">
+                            Código de confirmação
+                          </p>
+                          <p style="margin:0;color:#e35915;font-family:'Courier New',Consolas,monospace;font-size:34px;line-height:1.1;font-weight:700;letter-spacing:7px;">
+                            ${safeCode}
+                          </p>
+                        </td>
+                      </tr>
+                    </table>
+
+                    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                      <tr>
+                        <td style="padding:0 0 8px 0;color:#783201;font-family:'DM Sans',Segoe UI,Arial,sans-serif;font-size:14px;line-height:1.55;">
+                          ⏱️ Este código expira em <strong>${CONFIRMATION_CODE_EXPIRATION_MINUTES} minutos</strong>.
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding:0;color:#8b5a2b;font-family:'DM Sans',Segoe UI,Arial,sans-serif;font-size:13px;line-height:1.55;">
+                          🔒 Não compartilhe este código com outras pessoas.
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+
+                <tr>
+                  <td style="border-top:1px solid #e8f0f8;background:#f8fbff;padding:16px 24px;">
+                    <p style="margin:0;color:#8b5a2b;font-family:'DM Sans',Segoe UI,Arial,sans-serif;font-size:12px;line-height:1.6;">
+                      Se você não iniciou essa candidatura, ignore este e-mail com segurança.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+
+              <p style="margin:12px 0 0 0;color:#6f4f35;font-family:'DM Sans',Segoe UI,Arial,sans-serif;font-size:11px;line-height:1.4;">
+                PetLar • Sistema de adoção responsável
+              </p>
+            </td>
+          </tr>
+        </table>
+      </body>
+    </html>
   `
 
   const response = await fetch('https://api.resend.com/emails', {
