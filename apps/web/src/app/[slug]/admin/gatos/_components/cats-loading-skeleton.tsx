@@ -55,6 +55,7 @@ export function CatsLoadingSkeleton() {
                     <div className="min-w-0 space-y-1">
                       <Skeleton className="h-4 w-16" />
                       <Skeleton className="h-3 w-20 sm:hidden" />
+                      <Skeleton className="h-5 w-24 rounded-lg sm:hidden" />
                     </div>
                   </div>
                 </TableCell>

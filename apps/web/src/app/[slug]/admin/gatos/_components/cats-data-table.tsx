@@ -290,6 +290,8 @@ function getColumns(
       cell: ({ row }) => {
         const cat = row.original
         const photoCount = resolveCatPhotos(cat).length
+        const interestedCount = cat.interestedCount ?? 0
+        const hasInterested = interestedCount > 0
 
         return (
           <div className="flex items-center gap-3">
@@ -337,6 +339,22 @@ function getColumns(
                   <Venus className="h-3 w-3 text-pink-500" />
                 )}
               </p>
+
+              <Link
+                href={`/${slug}/admin/gatos/${cat.id}/interessados` as Route}
+                className={cn(
+                  'mt-1 inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-[11px] font-medium sm:hidden',
+                  hasInterested
+                    ? 'bg-primary/10 text-primary'
+                    : 'bg-muted/60 text-muted-foreground'
+                )}
+              >
+                <Users className="h-3 w-3" />
+                <span>Interessados</span>
+                <span className="rounded-md bg-black/10 px-1 tabular-nums">
+                  {interestedCount}
+                </span>
+              </Link>
             </div>
           </div>
         )

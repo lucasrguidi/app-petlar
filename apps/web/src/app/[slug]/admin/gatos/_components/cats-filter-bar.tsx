@@ -61,7 +61,7 @@ export function CatsFilterBar({
           }
           disabled={isPending}
         >
-          <SelectTrigger className="h-10 w-full rounded-xl sm:w-[180px]">
+          <SelectTrigger className="h-10 w-full rounded-xl sm:w-[190px]">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
@@ -84,14 +84,14 @@ export function CatsFilterBar({
 
         <Button
           variant="outline"
-          size="icon"
           onClick={onOpenAdvanced}
           disabled={isPending}
-          className="border-border/60 bg-card hover:bg-sidebar-accent relative h-10 w-10 shrink-0 rounded-xl"
+          className="border-border/60 bg-card hover:bg-sidebar-accent relative h-10 gap-2 rounded-xl px-3"
         >
           <SlidersHorizontal className="h-4 w-4" />
+          Filtros
           {activeAdvancedFiltersCount > 0 && (
-            <span className="bg-primary text-primary-foreground absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full text-[10px] font-bold">
+            <span className="bg-primary text-primary-foreground absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full text-[10px] font-bold">
               {activeAdvancedFiltersCount}
             </span>
           )}
