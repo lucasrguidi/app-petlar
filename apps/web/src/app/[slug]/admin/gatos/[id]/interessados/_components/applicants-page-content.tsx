@@ -13,9 +13,14 @@ import {
   getDynamicFilterSummary,
   parseApplicantsFilters,
   serializeDynamicFilters,
+  getStatusLabel,
 } from './helpers'
 
-import type { ApplicantsFilters, DynamicFilterInput } from './types'
+import type {
+  ApplicantsFilters,
+  ApplicationStatus,
+  DynamicFilterInput,
+} from './types'
 
 import { Button } from '@/components/ui/button'
 import { trpc } from '@/utils/trpc'
@@ -64,6 +69,13 @@ export function ApplicantsPageContent({
   })
 
   const activeDynamicFiltersCount = filters.dynamicFilters.length
+
+  const statusOrder: ApplicationStatus[] = [
+    'pending',
+    'reviewing',
+    'approved',
+    'rejected',
+  ]
 
   const updateFilters = useCallback(
     (newFilters: Partial<ApplicantsFilters>, resetPage = true) => {
@@ -154,6 +166,51 @@ export function ApplicantsPageContent({
           isPending={isPending}
         />
       </div>
+
+      {listQuery.data && (
+        <div className="border-border/60 bg-card/95 shadow-warm-sm flex flex-wrap items-center gap-2 rounded-xl border px-3 py-2">
+          <Button
+            type="button"
+            variant={filters.status ? 'outline' : 'default'}
+            size="sm"
+            className="h-8 rounded-lg px-3"
+            onClick={() => updateFilters({ status: undefined })}
+            disabled={isPending}
+          >
+            Todos
+            <span className="rounded-md bg-black/10 px-1.5 py-0.5 text-[11px] tabular-nums">
+              {Object.values(listQuery.data.statusCounts).reduce(
+                (acc, count) => acc + count,
+                0
+              )}
+            </span>
+          </Button>
+
+          {statusOrder.map((status) => {
+            const isActive = filters.status === status
+            return (
+              <Button
+                key={status}
+                type="button"
+                variant={isActive ? 'default' : 'outline'}
+                size="sm"
+                className="h-8 rounded-lg px-3"
+                onClick={() =>
+                  updateFilters({
+                    status: isActive ? undefined : status,
+                  })
+                }
+                disabled={isPending}
+              >
+                {getStatusLabel(status)}
+                <span className="rounded-md bg-black/10 px-1.5 py-0.5 text-[11px] tabular-nums">
+                  {listQuery.data.statusCounts[status] ?? 0}
+                </span>
+              </Button>
+            )
+          })}
+        </div>
+      )}
 
       {filters.dynamicFilters.length > 0 && (
         <div className="border-border/60 bg-card/95 shadow-warm-sm flex flex-wrap items-center gap-2 rounded-xl border px-3 py-2">

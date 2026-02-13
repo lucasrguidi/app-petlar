@@ -827,20 +827,16 @@ export const applicationsRouter = router({
         filterableFields.map((field) => [field.id, field])
       )
 
-      const whereConditions: SQL[] = [
+      const baseWhereConditions: SQL[] = [
         eq(applications.orgId, orgId),
         eq(applications.catId, input.catId),
         sql`${applications.confirmedAt} is not null`,
       ]
 
-      if (input.status) {
-        whereConditions.push(eq(applications.status, input.status))
-      }
-
       if (input.search) {
         const normalizedSearch = normalizeSearchText(input.search)
         if (normalizedSearch.length > 0) {
-          whereConditions.push(
+          baseWhereConditions.push(
             sql`coalesce(${applications.applicantNameNormalized}, '') like ${`%${normalizedSearch}%`}`
           )
         }
@@ -852,13 +848,19 @@ export const applicationsRouter = router({
           continue
         }
 
-        whereConditions.push(
+        baseWhereConditions.push(
           getDynamicFilterCondition({
             field,
             operator: dynamicFilter.operator,
             value: dynamicFilter.value,
           })
         )
+      }
+
+      const whereConditions = [...baseWhereConditions]
+
+      if (input.status) {
+        whereConditions.push(eq(applications.status, input.status))
       }
 
       const [countResult] = await db
@@ -880,22 +882,35 @@ export const applicationsRouter = router({
         .limit(input.limit)
         .offset(offset)
 
-      const applicationIds = rows.map((row) => row.id)
-      const mediaCounts =
-        applicationIds.length > 0
-          ? await db
-              .select({
-                applicationId: applicationFiles.applicationId,
-                count: sql<number>`count(*)`,
-              })
-              .from(applicationFiles)
-              .where(inArray(applicationFiles.applicationId, applicationIds))
-              .groupBy(applicationFiles.applicationId)
-          : []
+      const statusCountRows = await db
+        .select({
+          status: applications.status,
+          count: sql<number>`count(*)`,
+        })
+        .from(applications)
+        .where(and(...baseWhereConditions))
+        .groupBy(applications.status)
 
-      const mediaCountByApplicationId = new Map(
-        mediaCounts.map((item) => [item.applicationId, item.count])
-      )
+      const statusCounts = {
+        pending: 0,
+        reviewing: 0,
+        approved: 0,
+        rejected: 0,
+      } satisfies Record<
+        'pending' | 'reviewing' | 'approved' | 'rejected',
+        number
+      >
+
+      for (const row of statusCountRows) {
+        if (
+          row.status === 'pending' ||
+          row.status === 'reviewing' ||
+          row.status === 'approved' ||
+          row.status === 'rejected'
+        ) {
+          statusCounts[row.status] = row.count ?? 0
+        }
+      }
 
       const total = countResult?.count ?? 0
 
@@ -907,10 +922,8 @@ export const applicationsRouter = router({
           photoUrl: photo?.url ?? null,
         },
         filterableFields,
-        applications: rows.map((row) => ({
-          ...row,
-          mediaCount: mediaCountByApplicationId.get(row.id) ?? 0,
-        })),
+        statusCounts,
+        applications: rows,
         pagination: {
           page: input.page,
           limit: input.limit,

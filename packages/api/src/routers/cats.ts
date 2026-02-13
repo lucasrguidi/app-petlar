@@ -1,5 +1,6 @@
 import { db } from '@app-petlar/db'
 import {
+  applications,
   catPhotos,
   cats,
   formFields,
@@ -8,7 +9,7 @@ import {
   type CatFormFieldSnapshot,
 } from '@app-petlar/db/schema'
 import { TRPCError } from '@trpc/server'
-import { and, asc, desc, eq, like, sql } from 'drizzle-orm'
+import { and, asc, desc, eq, inArray, like, sql } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
 import { z } from 'zod'
 
@@ -352,6 +353,28 @@ export const catsRouter = router({
         return acc
       }, {})
 
+      const interestedCounts =
+        catIds.length > 0
+          ? await db
+              .select({
+                catId: applications.catId,
+                count: sql<number>`count(*)`,
+              })
+              .from(applications)
+              .where(
+                and(
+                  eq(applications.orgId, orgId),
+                  inArray(applications.catId, catIds),
+                  sql`${applications.confirmedAt} is not null`
+                )
+              )
+              .groupBy(applications.catId)
+          : []
+
+      const interestedCountByCatId = new Map(
+        interestedCounts.map((item) => [item.catId, item.count])
+      )
+
       // Contar total para paginação
       const [countResult] = await db
         .select({ count: sql<number>`count(*)` })
@@ -367,6 +390,7 @@ export const catsRouter = router({
             ...cat,
             photoUrl: catPhotosList[0]?.url ?? null,
             photos: catPhotosList,
+            interestedCount: interestedCountByCatId.get(cat.id) ?? 0,
           }
         }),
         pagination: {
