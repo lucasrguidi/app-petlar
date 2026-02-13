@@ -543,10 +543,10 @@ export function FormBuilder({ mode, formId, initialData }: FormBuilderProps) {
                         setSelectedFieldId(field.id)
                       }
                     }}
-                    className={`w-full rounded-lg border px-3 py-2 text-left transition-colors ${
+                    className={`w-full rounded-lg border px-3 py-2 text-left transition-all duration-200 ${
                       isSelected
                         ? 'border-primary/40 bg-primary/5'
-                        : 'border-border/60 hover:bg-muted/20'
+                        : 'border-border/60 hover:border-border hover:bg-muted/20'
                     }`}
                   >
                     <div className="flex items-start justify-between gap-3">
@@ -1112,7 +1112,7 @@ export function FormBuilder({ mode, formId, initialData }: FormBuilderProps) {
       <div className="bg-background/90 sticky bottom-0 z-10 -mx-4 border-t border-border/40 px-4 py-3 backdrop-blur sm:static sm:mx-0 sm:flex sm:justify-end sm:border-0 sm:bg-transparent sm:p-0">
         <Button
           type="button"
-          className="shadow-primary-glow hover:shadow-primary-glow-hover w-full rounded-xl transition-all duration-200 sm:w-auto"
+          className="w-full rounded-xl shadow-primary-glow transition-all duration-200 hover:shadow-primary-glow-hover sm:w-auto"
           disabled={isPending}
           onClick={saveForm}
         >
@@ -1144,7 +1144,7 @@ export function FormBuilder({ mode, formId, initialData }: FormBuilderProps) {
                 key={option.type}
                 type="button"
                 onClick={() => addField(option.type)}
-                className="hover:bg-muted/30 w-full rounded-lg border border-border/60 px-3 py-2.5 text-left transition-colors"
+                className="w-full rounded-lg border border-border/60 px-3 py-2.5 text-left transition-all duration-200 hover:border-border hover:bg-muted/30"
               >
                 <p className="text-sm font-medium">{option.title}</p>
                 <p className="text-muted-foreground mt-0.5 text-xs">

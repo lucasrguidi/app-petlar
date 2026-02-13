@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { AlertCircle } from 'lucide-react'
 
 import { FormBuilder } from '../../_components/form-builder'
-import { FormsLoadingSkeleton } from '../../_components/forms-loading-skeleton'
+import { FormBuilderSkeleton } from '../../_components/form-builder-skeleton'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -20,7 +20,7 @@ export function FormBuilderLoader({ formId }: FormBuilderLoaderProps) {
   )
 
   if (isLoading) {
-    return <FormsLoadingSkeleton />
+    return <FormBuilderSkeleton />
   }
 
   if (isError) {

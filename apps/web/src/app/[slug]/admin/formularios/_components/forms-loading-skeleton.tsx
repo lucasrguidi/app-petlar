@@ -1,30 +1,67 @@
 import { Skeleton } from '@/components/ui/skeleton'
 
-export function FormsLoadingSkeleton() {
+function FormsCardsSkeleton() {
   return (
-    <div className="space-y-3">
-      {Array.from({ length: 4 }).map((_, index) => (
-        <div
-          key={index}
-          className="border-border/60 bg-card/95 shadow-warm-sm rounded-xl border p-4"
-        >
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex-1 space-y-2">
-              <Skeleton className="h-5 w-52 rounded-md" />
-              <Skeleton className="h-4 w-40 rounded-md" />
-              <div className="flex gap-2 pt-1">
-                <Skeleton className="h-6 w-24 rounded-full" />
-                <Skeleton className="h-6 w-24 rounded-full" />
+    <>
+      {/* Results count skeleton */}
+      <div className="shrink-0 rounded-xl border border-border/60 bg-card/95 px-3 py-2 shadow-warm-sm">
+        <Skeleton className="h-5 w-44" />
+      </div>
+
+      {/* Form cards skeleton */}
+      <div className="min-h-0 flex-1 space-y-3 overflow-auto">
+        {Array.from({ length: 4 }).map((_, index) => (
+          <div
+            key={index}
+            className="rounded-xl border border-border/60 bg-card/95 p-4 shadow-warm-sm"
+          >
+            <div className="flex items-start gap-3">
+              {/* Icon */}
+              <Skeleton className="h-10 w-10 shrink-0 rounded-xl" />
+
+              {/* Content */}
+              <div className="flex-1 space-y-2">
+                <div className="flex items-center gap-2">
+                  <Skeleton className="h-5 w-48" />
+                  <Skeleton className="h-2 w-2 rounded-full" />
+                </div>
+                <Skeleton className="h-4 w-36" />
+                <div className="flex gap-2">
+                  <Skeleton className="h-5 w-20 rounded-md" />
+                  <Skeleton className="h-5 w-16 rounded-md" />
+                </div>
               </div>
-            </div>
-            <div className="flex gap-2">
-              <Skeleton className="h-9 w-20 rounded-lg" />
-              <Skeleton className="h-9 w-20 rounded-lg" />
-              <Skeleton className="h-9 w-20 rounded-lg" />
+
+              {/* Actions */}
+              <Skeleton className="h-8 w-8 shrink-0 rounded-lg" />
             </div>
           </div>
+        ))}
+      </div>
+    </>
+  )
+}
+
+export function FormsListSkeleton() {
+  return (
+    <div className="flex min-h-0 flex-1 flex-col gap-3">
+      <FormsCardsSkeleton />
+    </div>
+  )
+}
+
+export function FormsLoadingSkeleton() {
+  return (
+    <div className="flex min-h-0 flex-1 flex-col gap-3">
+      {/* Filter bar skeleton */}
+      <div className="shrink-0 rounded-xl border border-border/60 bg-card/95 p-2.5 shadow-warm-sm sm:p-3">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <Skeleton className="h-10 w-full rounded-xl sm:w-[180px]" />
+          <Skeleton className="h-10 flex-1 rounded-xl" />
         </div>
-      ))}
+      </div>
+
+      <FormsCardsSkeleton />
     </div>
   )
 }

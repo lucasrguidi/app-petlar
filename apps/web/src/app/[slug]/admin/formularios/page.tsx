@@ -1,7 +1,4 @@
-'use client'
-
 import { FileText, Plus } from 'lucide-react'
-import { type Route } from 'next'
 import Link from 'next/link'
 import { Suspense } from 'react'
 
@@ -9,10 +6,15 @@ import { FormsLoadingSkeleton } from './_components/forms-loading-skeleton'
 import { FormsPageContent } from './_components/forms-page-content'
 
 import { Button } from '@/components/ui/button'
-import { useOrgSlug } from '@/hooks/use-org-slug'
 
-export default function FormulariosPage() {
-  const slug = useOrgSlug()
+interface FormulariosPageProps {
+  params: Promise<{ slug: string }>
+}
+
+export default async function FormulariosPage({
+  params,
+}: FormulariosPageProps) {
+  const { slug } = await params
 
   return (
     <div className="mx-auto flex h-full w-full max-w-6xl flex-col">
@@ -31,7 +33,7 @@ export default function FormulariosPage() {
           asChild
           className="shadow-primary-glow hover:shadow-primary-glow-hover hidden gap-2 rounded-xl sm:flex"
         >
-          <Link href={`/${slug}/admin/formularios/novo` as Route}>
+          <Link href={`/${slug}/admin/formularios/novo`}>
             <Plus className="h-4 w-4" />
             Criar novo formulário
           </Link>
@@ -43,7 +45,7 @@ export default function FormulariosPage() {
       </Suspense>
 
       <Link
-        href={`/${slug}/admin/formularios/novo` as Route}
+        href={`/${slug}/admin/formularios/novo`}
         className="bg-primary text-primary-foreground shadow-primary-glow fixed right-6 bottom-6 z-50 flex h-14 w-14 items-center justify-center rounded-xl transition-transform hover:scale-105 active:scale-95 sm:hidden"
       >
         <Plus className="h-6 w-6" />

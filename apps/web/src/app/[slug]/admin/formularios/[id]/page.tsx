@@ -1,6 +1,6 @@
 import { Suspense } from 'react'
 
-import { FormsLoadingSkeleton } from '../_components/forms-loading-skeleton'
+import { FormBuilderSkeleton } from '../_components/form-builder-skeleton'
 
 import { FormBuilderLoader } from './_components/form-builder-loader'
 
@@ -30,7 +30,7 @@ export default async function EditarFormularioPage({
         </p>
       </div>
 
-      <Suspense fallback={<FormsLoadingSkeleton />}>
+      <Suspense fallback={<FormBuilderSkeleton />}>
         <FormBuilderLoader formId={id} />
       </Suspense>
     </div>
