@@ -4,6 +4,7 @@ import {
   CalendarClock,
   Check,
   Eye,
+  Loader2,
   MessageCircle,
   UserRound,
   Video,
@@ -19,11 +20,21 @@ import type { ColumnDef } from '@tanstack/react-table'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { DataTable } from '@/components/ui/data-table'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { cn } from '@/lib/utils'
 
 interface ApplicantsDataTableProps {
   applicants: ApplicantRow[]
   onOpenDetails: (applicationId: string) => void
+  onUpdateStatus?: (applicationId: string, status: ApplicationStatus) => void
+  isUpdatingStatus?: boolean
+  updatingApplicationId?: string | null
 }
 
 function getStatusConfig(status: ApplicationStatus) {
@@ -54,7 +65,10 @@ function getStatusConfig(status: ApplicationStatus) {
 }
 
 function getColumns(
-  onOpenDetails: (applicationId: string) => void
+  onOpenDetails: (applicationId: string) => void,
+  onUpdateStatus?: (applicationId: string, status: ApplicationStatus) => void,
+  isUpdatingStatus?: boolean,
+  updatingApplicationId?: string | null
 ): ColumnDef<ApplicantRow>[] {
   return [
     {
@@ -125,19 +139,80 @@ function getColumns(
         </span>
       ),
       cell: ({ row }) => {
-        const config = getStatusConfig(row.original.status)
+        const applicant = row.original
+        const config = getStatusConfig(applicant.status)
+        const isThisUpdating =
+          isUpdatingStatus && updatingApplicationId === applicant.id
+
+        if (!onUpdateStatus) {
+          return (
+            <Badge
+              variant={config.variant}
+              className="hidden gap-1.5 whitespace-nowrap px-2 py-0.5 text-[11px] font-medium sm:inline-flex"
+            >
+              <span
+                className={cn('h-1.5 w-1.5 rounded-full', config.dotClass)}
+              />
+              {config.label}
+            </Badge>
+          )
+        }
 
         return (
-          <Badge
-            variant={config.variant}
-            className="hidden gap-1.5 whitespace-nowrap px-2 py-0.5 text-[11px] font-medium sm:inline-flex"
-          >
-            <span className={cn('h-1.5 w-1.5 rounded-full', config.dotClass)} />
-            {config.label}
-          </Badge>
+          <div className="hidden sm:block">
+            <Select
+              value={applicant.status}
+              onValueChange={(status: ApplicationStatus) =>
+                onUpdateStatus(applicant.id, status)
+              }
+              disabled={isThisUpdating}
+            >
+              <SelectTrigger className="h-8 w-[130px] rounded-lg border-border/60 text-xs">
+                {isThisUpdating ? (
+                  <span className="flex items-center gap-1.5">
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                    <span>Salvando...</span>
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-1.5">
+                    <span
+                      className={cn('h-1.5 w-1.5 rounded-full', config.dotClass)}
+                    />
+                    <SelectValue />
+                  </span>
+                )}
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="pending">
+                  <span className="flex items-center gap-1.5">
+                    <span className="h-1.5 w-1.5 rounded-full bg-warning" />
+                    Pendente
+                  </span>
+                </SelectItem>
+                <SelectItem value="reviewing">
+                  <span className="flex items-center gap-1.5">
+                    <span className="h-1.5 w-1.5 rounded-full bg-info" />
+                    Em análise
+                  </span>
+                </SelectItem>
+                <SelectItem value="approved">
+                  <span className="flex items-center gap-1.5">
+                    <span className="h-1.5 w-1.5 rounded-full bg-success" />
+                    Aprovado
+                  </span>
+                </SelectItem>
+                <SelectItem value="rejected">
+                  <span className="flex items-center gap-1.5">
+                    <span className="h-1.5 w-1.5 rounded-full bg-destructive" />
+                    Recusado
+                  </span>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         )
       },
-      meta: { className: 'hidden sm:table-cell w-32' },
+      meta: { className: 'hidden sm:table-cell w-36' },
     },
     {
       id: 'createdAt',
@@ -211,8 +286,20 @@ function getColumns(
 export function ApplicantsDataTable({
   applicants,
   onOpenDetails,
+  onUpdateStatus,
+  isUpdatingStatus,
+  updatingApplicationId,
 }: ApplicantsDataTableProps) {
-  const columns = useMemo(() => getColumns(onOpenDetails), [onOpenDetails])
+  const columns = useMemo(
+    () =>
+      getColumns(
+        onOpenDetails,
+        onUpdateStatus,
+        isUpdatingStatus,
+        updatingApplicationId
+      ),
+    [onOpenDetails, onUpdateStatus, isUpdatingStatus, updatingApplicationId]
+  )
 
   return (
     <DataTable

@@ -1,15 +1,19 @@
 'use client'
 
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { AlertTriangle, Loader2, PawPrint, Users } from 'lucide-react'
+import { useState } from 'react'
+import { toast } from 'sonner'
 
 import { ApplicantsDataTable } from './applicants-data-table'
 import { ApplicantsEmptyState } from './applicants-empty-state'
 import { ApplicantsLoadingSkeleton } from './applicants-loading-skeleton'
 import { ApplicantsPagination } from './applicants-pagination'
 
-import type { ApplicantsListData } from './types'
+import type { ApplicationStatus, ApplicantsListData } from './types'
 
 import { Badge } from '@/components/ui/badge'
+import { trpc } from '@/utils/trpc'
 
 interface ApplicantsListProps {
   data: ApplicantsListData | undefined
@@ -46,6 +50,36 @@ export function ApplicantsList({
   onPageChange,
   onOpenDetails,
 }: ApplicantsListProps) {
+  const queryClient = useQueryClient()
+  const [updatingApplicationId, setUpdatingApplicationId] = useState<
+    string | null
+  >(null)
+
+  const updateStatusMutation = useMutation(
+    trpc.applications.updateStatus.mutationOptions({
+      onMutate: ({ id }) => {
+        setUpdatingApplicationId(id)
+      },
+      onSuccess: () => {
+        toast.success('Status atualizado com sucesso')
+        queryClient.invalidateQueries({ queryKey: [['applications']] })
+      },
+      onError: (error) => {
+        toast.error(error.message || 'Não foi possível atualizar o status')
+      },
+      onSettled: () => {
+        setUpdatingApplicationId(null)
+      },
+    })
+  )
+
+  const handleUpdateStatus = (
+    applicationId: string,
+    status: ApplicationStatus
+  ) => {
+    updateStatusMutation.mutate({ id: applicationId, status })
+  }
+
   if (isLoading && !data) {
     return <ApplicantsLoadingSkeleton />
   }
@@ -127,6 +161,9 @@ export function ApplicantsList({
         <ApplicantsDataTable
           applicants={data.applications}
           onOpenDetails={onOpenDetails}
+          onUpdateStatus={handleUpdateStatus}
+          isUpdatingStatus={updateStatusMutation.isPending}
+          updatingApplicationId={updatingApplicationId}
         />
       </div>
 

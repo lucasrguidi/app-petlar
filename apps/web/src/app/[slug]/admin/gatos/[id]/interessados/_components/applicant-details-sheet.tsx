@@ -4,11 +4,13 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   AlertTriangle,
   ExternalLink,
+  FileText,
   Loader2,
   Mail,
   MessageCircle,
   RefreshCcw,
   Save,
+  UserRound,
   Video,
 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
@@ -36,6 +38,7 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet'
 import { Skeleton } from '@/components/ui/skeleton'
+import { cn } from '@/lib/utils'
 import { trpc } from '@/utils/trpc'
 
 interface ApplicantDetailsSheetProps {
@@ -53,11 +56,39 @@ interface ApplicationFile {
   createdAt: string | Date
 }
 
-function getStatusVariant(status: ApplicationStatus) {
-  if (status === 'pending') return 'warning' as const
-  if (status === 'reviewing') return 'info' as const
-  if (status === 'approved') return 'success' as const
-  return 'destructive' as const
+function getStatusConfig(status: ApplicationStatus) {
+  const config = {
+    pending: {
+      label: getStatusLabel(status),
+      variant: 'warning' as const,
+      dotClass: 'bg-warning',
+    },
+    reviewing: {
+      label: getStatusLabel(status),
+      variant: 'info' as const,
+      dotClass: 'bg-info',
+    },
+    approved: {
+      label: getStatusLabel(status),
+      variant: 'success' as const,
+      dotClass: 'bg-success',
+    },
+    rejected: {
+      label: getStatusLabel(status),
+      variant: 'destructive' as const,
+      dotClass: 'bg-destructive',
+    },
+  }
+  return config[status]
+}
+
+function getInitials(name: string): string {
+  return name
+    .split(' ')
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join('')
+    .toUpperCase()
 }
 
 function MediaPreviewCard({ file }: { file: ApplicationFile }) {
@@ -207,11 +238,20 @@ export function ApplicantDetailsSheet({
         side="right"
         className="w-full overflow-y-auto border-border/60 p-0 sm:max-w-2xl"
       >
-        <SheetHeader className="border-border/50 bg-card/95 sticky top-0 z-20 border-b px-5 py-4">
-          <SheetTitle className="text-display text-lg">Detalhes da candidatura</SheetTitle>
-          <SheetDescription>
-            Visualize respostas, mídias enviadas e status da candidatura.
-          </SheetDescription>
+        <SheetHeader className="sticky top-0 z-20 border-b border-border/40 bg-gradient-to-b from-card to-card/95 px-5 py-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
+              <UserRound className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <SheetTitle className="font-display text-lg">
+                Detalhes da candidatura
+              </SheetTitle>
+              <SheetDescription className="text-xs">
+                Visualize e gerencie esta candidatura
+              </SheetDescription>
+            </div>
+          </div>
         </SheetHeader>
 
         {detailsQuery.isLoading ? (
@@ -235,38 +275,70 @@ export function ApplicantDetailsSheet({
           </div>
         ) : !data ? null : (
           <div className="space-y-5 p-5">
-            <div className="border-border/60 bg-card/95 rounded-xl border p-4">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                <div className="space-y-1">
-                  <p className="text-lg font-semibold">{data.application.applicantName}</p>
-                  <p className="text-muted-foreground inline-flex items-center gap-1.5 text-sm">
-                    <Mail className="h-4 w-4" />
-                    {data.application.applicantEmail}
-                  </p>
-                  <a
-                    href={toWhatsappLink(data.application.applicantWhatsapp)}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-primary inline-flex items-center gap-1.5 text-sm hover:underline"
-                  >
-                    <MessageCircle className="h-4 w-4" />
-                    {data.application.applicantWhatsapp}
-                  </a>
-                  <p className="text-muted-foreground text-xs">
-                    Confirmada em {formatDateTime(data.application.confirmedAt ?? data.application.createdAt)}
-                  </p>
+            <div className="rounded-xl border border-border/60 bg-card/95 p-4 shadow-warm-sm">
+              <div className="flex gap-4">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10">
+                  <span className="text-lg font-semibold text-primary">
+                    {getInitials(data.application.applicantName)}
+                  </span>
                 </div>
 
-                <Badge
-                  variant={getStatusVariant(data.application.status)}
-                  className="w-fit rounded-full px-2.5 py-1"
-                >
-                  {getStatusLabel(data.application.status)}
-                </Badge>
+                <div className="flex-1 space-y-2">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <h3 className="text-lg font-semibold">
+                        {data.application.applicantName}
+                      </h3>
+                      <p className="text-xs text-muted-foreground">
+                        Confirmada em{' '}
+                        {formatDateTime(
+                          data.application.confirmedAt ??
+                            data.application.createdAt
+                        )}
+                      </p>
+                    </div>
+                    {(() => {
+                      const config = getStatusConfig(data.application.status)
+                      return (
+                        <Badge
+                          variant={config.variant}
+                          className="gap-1.5 whitespace-nowrap px-2 py-0.5 text-[11px] font-medium"
+                        >
+                          <span
+                            className={cn(
+                              'h-1.5 w-1.5 rounded-full',
+                              config.dotClass
+                            )}
+                          />
+                          {config.label}
+                        </Badge>
+                      )
+                    })()}
+                  </div>
+
+                  <div className="flex flex-wrap gap-x-4 gap-y-1">
+                    <a
+                      href={`mailto:${data.application.applicantEmail}`}
+                      className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
+                    >
+                      <Mail className="h-3.5 w-3.5" />
+                      {data.application.applicantEmail}
+                    </a>
+                    <a
+                      href={toWhatsappLink(data.application.applicantWhatsapp)}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
+                    >
+                      <MessageCircle className="h-3.5 w-3.5" />
+                      WhatsApp
+                    </a>
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div className="border-border/60 bg-card/95 space-y-3 rounded-xl border p-4">
+            <div className="space-y-3 rounded-xl border border-border/60 bg-card/95 p-4 shadow-warm-sm">
               <Label className="text-sm font-semibold">Atualizar status</Label>
               <div className="flex flex-col gap-2 sm:flex-row">
                 <Select
@@ -312,8 +384,11 @@ export function ApplicantDetailsSheet({
               </div>
             </div>
 
-            <div className="border-border/60 bg-card/95 space-y-3 rounded-xl border p-4">
-              <h3 className="text-sm font-semibold">Respostas do formulário</h3>
+            <div className="space-y-3 rounded-xl border border-border/60 bg-card/95 p-4">
+              <div className="flex items-center gap-2">
+                <FileText className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold">Respostas do formulário</h3>
+              </div>
               {visibleResponses.length === 0 ? (
                 <p className="text-muted-foreground text-sm">
                   Não há respostas textuais para esta candidatura.
@@ -337,9 +412,9 @@ export function ApplicantDetailsSheet({
               )}
             </div>
 
-            <div className="border-border/60 bg-card/95 space-y-3 rounded-xl border p-4">
+            <div className="space-y-3 rounded-xl border border-border/60 bg-card/95 p-4">
               <div className="flex items-center gap-2">
-                <Video className="text-primary h-4 w-4" />
+                <Video className="h-4 w-4 text-primary" />
                 <h3 className="text-sm font-semibold">Mídias enviadas</h3>
               </div>
 

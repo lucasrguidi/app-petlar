@@ -95,7 +95,7 @@ export function ApplicantsFilterBar({
           <SlidersHorizontal className="h-4 w-4" />
           Filtros
           {activeDynamicFiltersCount > 0 && (
-            <span className="bg-primary text-primary-foreground absolute -top-1 -right-1 flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-[10px] font-bold">
+            <span className="bg-primary text-primary-foreground absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full text-[10px] font-bold">
               {activeDynamicFiltersCount}
             </span>
           )}
