@@ -1,7 +1,7 @@
 'use client'
 
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { AlertTriangle, Loader2, PawPrint, Users } from 'lucide-react'
+import { AlertTriangle, Loader2, PawPrint } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
@@ -146,15 +146,6 @@ export function ApplicantsList({
             </span>
           )}
         </div>
-      </div>
-
-      <div className="border-border/60 bg-card/95 shadow-warm-sm flex shrink-0 items-center justify-between rounded-xl border px-3 py-2">
-        <p className="text-muted-foreground inline-flex items-center gap-2 text-sm font-medium">
-          <Users className="text-primary h-4 w-4" />
-          {data.pagination.total} candidatura
-          {data.pagination.total === 1 ? '' : 's'} confirmada
-          {data.pagination.total === 1 ? '' : 's'}
-        </p>
       </div>
 
       <div className="min-h-0 flex-1">

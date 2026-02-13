@@ -37,7 +37,6 @@ export interface ApplicantsListData {
     status: 'available' | 'in_progress' | 'adopted'
     photoUrl: string | null
   }
-  statusCounts: Record<ApplicationStatus, number>
   filterableFields: FilterableField[]
   applications: ApplicantRow[]
   pagination: {

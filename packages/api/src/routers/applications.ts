@@ -882,36 +882,6 @@ export const applicationsRouter = router({
         .limit(input.limit)
         .offset(offset)
 
-      const statusCountRows = await db
-        .select({
-          status: applications.status,
-          count: sql<number>`count(*)`,
-        })
-        .from(applications)
-        .where(and(...baseWhereConditions))
-        .groupBy(applications.status)
-
-      const statusCounts = {
-        pending: 0,
-        reviewing: 0,
-        approved: 0,
-        rejected: 0,
-      } satisfies Record<
-        'pending' | 'reviewing' | 'approved' | 'rejected',
-        number
-      >
-
-      for (const row of statusCountRows) {
-        if (
-          row.status === 'pending' ||
-          row.status === 'reviewing' ||
-          row.status === 'approved' ||
-          row.status === 'rejected'
-        ) {
-          statusCounts[row.status] = row.count ?? 0
-        }
-      }
-
       const total = countResult?.count ?? 0
 
       return {
@@ -922,7 +892,6 @@ export const applicationsRouter = router({
           photoUrl: photo?.url ?? null,
         },
         filterableFields,
-        statusCounts,
         applications: rows,
         pagination: {
           page: input.page,
