@@ -12,6 +12,7 @@ import {
   Save,
   UserRound,
   Video,
+  X,
 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
@@ -239,18 +240,31 @@ export function ApplicantDetailsSheet({
         className="w-full overflow-y-auto border-border/60 p-0 sm:max-w-2xl"
       >
         <SheetHeader className="sticky top-0 z-20 border-b border-border/40 bg-gradient-to-b from-card to-card/95 px-5 py-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
-              <UserRound className="h-5 w-5 text-primary" />
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex min-w-0 items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
+                <UserRound className="h-5 w-5 text-primary" />
+              </div>
+              <div className="min-w-0">
+                <SheetTitle className="font-display text-lg">
+                  Detalhes da candidatura
+                </SheetTitle>
+                <SheetDescription className="text-xs">
+                  Visualize e gerencie esta candidatura
+                </SheetDescription>
+              </div>
             </div>
-            <div>
-              <SheetTitle className="font-display text-lg">
-                Detalhes da candidatura
-              </SheetTitle>
-              <SheetDescription className="text-xs">
-                Visualize e gerencie esta candidatura
-              </SheetDescription>
-            </div>
+
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="h-9 w-9 rounded-lg sm:hidden"
+              onClick={() => onOpenChange(false)}
+              aria-label="Fechar detalhes"
+            >
+              <X className="h-4 w-4" />
+            </Button>
           </div>
         </SheetHeader>
 

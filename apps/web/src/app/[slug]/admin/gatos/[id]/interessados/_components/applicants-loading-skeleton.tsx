@@ -26,16 +26,13 @@ export function ApplicantsLoadingSkeleton() {
               <TableHead className="bg-muted/50 hidden w-36 sm:table-cell">
                 <Skeleton className="h-3 w-14" />
               </TableHead>
-              <TableHead className="bg-muted/50 hidden w-28 sm:table-cell">
+              <TableHead className="bg-muted/50 w-[122px] sm:w-36">
                 <Skeleton className="h-3 w-12" />
               </TableHead>
               <TableHead className="bg-muted/50 hidden w-32 md:table-cell">
                 <Skeleton className="h-3 w-16" />
               </TableHead>
-              <TableHead className="bg-muted/50 hidden w-20 md:table-cell">
-                <Skeleton className="h-3 w-10" />
-              </TableHead>
-              <TableHead className="bg-muted/50 w-28 text-right">
+              <TableHead className="bg-muted/50 w-20 text-right sm:w-28">
                 <Skeleton className="ml-auto h-3 w-12" />
               </TableHead>
             </TableRow>
@@ -52,17 +49,14 @@ export function ApplicantsLoadingSkeleton() {
                 <TableCell className="hidden sm:table-cell">
                   <Skeleton className="h-8 w-28 rounded-xl" />
                 </TableCell>
-                <TableCell className="hidden sm:table-cell">
-                  <Skeleton className="h-5 w-20 rounded-full" />
+                <TableCell>
+                  <Skeleton className="h-8 w-[110px] rounded-lg sm:w-28" />
                 </TableCell>
                 <TableCell className="hidden md:table-cell">
                   <Skeleton className="h-4 w-24" />
                 </TableCell>
-                <TableCell className="hidden md:table-cell">
-                  <Skeleton className="h-5 w-10 rounded-full" />
-                </TableCell>
                 <TableCell>
-                  <Skeleton className="ml-auto h-9 w-24 rounded-xl" />
+                  <Skeleton className="ml-auto h-8 w-14 rounded-lg sm:w-24" />
                 </TableCell>
               </TableRow>
             ))}

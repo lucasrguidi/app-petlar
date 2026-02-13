@@ -28,7 +28,6 @@ export interface ApplicantRow {
   applicantWhatsapp: string
   status: ApplicationStatus
   createdAt: string | Date
-  mediaCount: number
 }
 
 export interface ApplicantsListData {
@@ -38,6 +37,7 @@ export interface ApplicantsListData {
     status: 'available' | 'in_progress' | 'adopted'
     photoUrl: string | null
   }
+  statusCounts: Record<ApplicationStatus, number>
   filterableFields: FilterableField[]
   applications: ApplicantRow[]
   pagination: {

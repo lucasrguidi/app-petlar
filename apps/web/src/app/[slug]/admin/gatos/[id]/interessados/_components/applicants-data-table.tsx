@@ -2,13 +2,10 @@
 
 import {
   CalendarClock,
-  Check,
   Eye,
   Loader2,
   MessageCircle,
   UserRound,
-  Video,
-  X,
 } from 'lucide-react'
 import { useMemo } from 'react'
 
@@ -92,10 +89,10 @@ function getColumns(
               href={toWhatsappLink(applicant.applicantWhatsapp)}
               target="_blank"
               rel="noreferrer"
-              className="text-primary inline-flex items-center gap-1.5 text-xs hover:underline sm:hidden"
+              className="text-primary inline-flex items-center gap-1.5 text-xs font-medium hover:underline sm:hidden"
             >
               <MessageCircle className="h-3.5 w-3.5" />
-              WhatsApp
+              Abrir no WhatsApp
             </a>
           </div>
         )
@@ -121,9 +118,13 @@ function getColumns(
             rel="noreferrer"
             className="hidden sm:inline-flex"
           >
-            <Button variant="outline" size="sm" className="rounded-xl">
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 rounded-xl border-emerald-200/80 bg-emerald-50/70 px-2.5 text-xs text-emerald-700 hover:bg-emerald-100/80 hover:text-emerald-800"
+            >
               <MessageCircle className="mr-1.5 h-3.5 w-3.5" />
-              Abrir chat
+              Abrir no WhatsApp
             </Button>
           </a>
         )
@@ -134,7 +135,7 @@ function getColumns(
       id: 'status',
       accessorKey: 'status',
       header: () => (
-        <span className="text-muted-foreground hidden text-xs font-medium sm:inline">
+        <span className="text-muted-foreground text-xs font-medium">
           Status
         </span>
       ),
@@ -148,7 +149,7 @@ function getColumns(
           return (
             <Badge
               variant={config.variant}
-              className="hidden gap-1.5 whitespace-nowrap px-2 py-0.5 text-[11px] font-medium sm:inline-flex"
+              className="gap-1.5 whitespace-nowrap px-2 py-0.5 text-[11px] font-medium"
             >
               <span
                 className={cn('h-1.5 w-1.5 rounded-full', config.dotClass)}
@@ -159,7 +160,7 @@ function getColumns(
         }
 
         return (
-          <div className="hidden sm:block">
+          <div>
             <Select
               value={applicant.status}
               onValueChange={(status: ApplicationStatus) =>
@@ -167,7 +168,7 @@ function getColumns(
               }
               disabled={isThisUpdating}
             >
-              <SelectTrigger className="h-8 w-[130px] rounded-lg border-border/60 text-xs">
+              <SelectTrigger className="h-8 w-[118px] rounded-lg border-border/60 text-xs sm:w-[130px]">
                 {isThisUpdating ? (
                   <span className="flex items-center gap-1.5">
                     <Loader2 className="h-3 w-3 animate-spin" />
@@ -212,7 +213,7 @@ function getColumns(
           </div>
         )
       },
-      meta: { className: 'hidden sm:table-cell w-36' },
+      meta: { className: 'w-[122px] sm:w-36' },
     },
     {
       id: 'createdAt',
@@ -220,7 +221,7 @@ function getColumns(
       header: () => (
         <span className="text-muted-foreground hidden items-center gap-1.5 text-xs font-medium md:inline-flex">
           <CalendarClock className="h-3.5 w-3.5 opacity-70" />
-          Confirmada em
+          Candidatura em
         </span>
       ),
       cell: ({ row }) => (
@@ -229,34 +230,6 @@ function getColumns(
         </span>
       ),
       meta: { className: 'hidden md:table-cell w-40' },
-    },
-    {
-      id: 'mediaCount',
-      accessorKey: 'mediaCount',
-      header: () => (
-        <span className="text-muted-foreground hidden text-xs font-medium md:inline">
-          Mídia
-        </span>
-      ),
-      cell: ({ row }) => {
-        const count = row.original.mediaCount
-
-        return (
-          <Badge
-            variant={count > 0 ? 'info' : 'secondary'}
-            className="hidden gap-1.5 rounded-full px-2 py-0.5 text-[11px] md:inline-flex"
-          >
-            {count > 0 ? (
-              <Check className="h-3 w-3" />
-            ) : (
-              <X className="h-3 w-3" />
-            )}
-            <Video className="h-3 w-3" />
-            {count}
-          </Badge>
-        )
-      },
-      meta: { className: 'hidden md:table-cell w-20' },
     },
     {
       id: 'actions',
@@ -268,16 +241,17 @@ function getColumns(
             variant="outline"
             size="sm"
             onClick={() => onOpenDetails(row.original.id)}
-            className="rounded-xl"
+            className="h-8 rounded-lg px-2 text-xs sm:px-3"
           >
-            <Eye className="mr-1.5 h-3.5 w-3.5" />
-            Detalhes
+            <Eye className="h-3.5 w-3.5 sm:mr-1.5" />
+            <span className="ml-1 sm:hidden">Ver</span>
+            <span className="hidden sm:inline">Detalhes</span>
           </Button>
         </div>
       ),
       meta: {
-        className: 'w-28',
-        headerClassName: 'w-28',
+        className: 'w-20 sm:w-28',
+        headerClassName: 'w-20 sm:w-28',
       },
     },
   ]
