@@ -33,7 +33,10 @@ function formatAge(years: number | null, months: number | null): string {
   return 'Idade não informada'
 }
 
-export function ApplicationSheetHeader({ cat, className }: ApplicationSheetHeaderProps) {
+export function ApplicationSheetHeader({
+  cat,
+  className,
+}: ApplicationSheetHeaderProps) {
   return (
     <div
       className={cn(
@@ -48,7 +51,7 @@ export function ApplicationSheetHeader({ cat, className }: ApplicationSheetHeade
     >
       {/* Decorative background pattern */}
       <div
-        className="pointer-events-none absolute -right-4 -top-4 h-24 w-24 rounded-full bg-gradient-to-br from-[#E35915]/10 to-transparent blur-2xl"
+        className="pointer-events-none absolute -top-4 -right-4 h-24 w-24 rounded-full bg-gradient-to-br from-[#E35915]/10 to-transparent blur-2xl"
         aria-hidden="true"
       />
 
@@ -86,7 +89,7 @@ export function ApplicationSheetHeader({ cat, className }: ApplicationSheetHeade
           {/* Small heart badge */}
           <div
             className={cn(
-              'absolute -bottom-1 -right-1',
+              'absolute -right-1 -bottom-1',
               'flex h-7 w-7 items-center justify-center rounded-full',
               'bg-gradient-to-br from-[#E35915] to-[#F07B3D]',
               'ring-2 ring-white',

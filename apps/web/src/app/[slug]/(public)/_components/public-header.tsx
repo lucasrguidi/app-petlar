@@ -218,9 +218,7 @@ export function PublicHeader({ orgName, orgLogo }: PublicHeaderProps) {
             className={cn(
               'space-y-3 border-t border-[#AEC7E2]/50 p-6',
               'transform transition-all duration-300',
-              menuOpen
-                ? 'translate-y-0 opacity-100'
-                : 'translate-y-4 opacity-0'
+              menuOpen ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
             )}
             style={{ transitionDelay: menuOpen ? '250ms' : '0ms' }}
           >

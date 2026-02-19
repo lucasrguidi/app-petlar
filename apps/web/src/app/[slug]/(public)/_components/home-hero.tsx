@@ -74,8 +74,16 @@ export function HomeHero({ slug }: HomeHeroProps) {
                         y2="0"
                       >
                         <stop stopColor="#E35915" stopOpacity="0.4" />
-                        <stop offset="0.5" stopColor="#F07B3D" stopOpacity="0.6" />
-                        <stop offset="1" stopColor="#E35915" stopOpacity="0.4" />
+                        <stop
+                          offset="0.5"
+                          stopColor="#F07B3D"
+                          stopOpacity="0.6"
+                        />
+                        <stop
+                          offset="1"
+                          stopColor="#E35915"
+                          stopOpacity="0.4"
+                        />
                       </linearGradient>
                     </defs>
                   </svg>
@@ -187,7 +195,6 @@ export function HomeHero({ slug }: HomeHeroProps) {
                     </div>
                   ))}
                 </div>
-
               </div>
             </div>
           </div>

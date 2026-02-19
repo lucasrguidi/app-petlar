@@ -60,7 +60,10 @@ function OtpInput({ value, onChange, disabled }: OtpInputProps) {
     }
   }, [])
 
-  const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = (
+    index: number,
+    e: React.KeyboardEvent<HTMLInputElement>
+  ) => {
     if (e.key === 'Backspace') {
       e.preventDefault()
       if (digits[index]) {
@@ -78,7 +81,10 @@ function OtpInput({ value, onChange, disabled }: OtpInputProps) {
     }
   }
 
-  const handleInput = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInput = (
+    index: number,
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const inputValue = e.target.value.replace(/\D/g, '')
     if (!inputValue) return
 
@@ -99,7 +105,10 @@ function OtpInput({ value, onChange, disabled }: OtpInputProps) {
 
   const handlePaste = (e: React.ClipboardEvent) => {
     e.preventDefault()
-    const pastedData = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6)
+    const pastedData = e.clipboardData
+      .getData('text')
+      .replace(/\D/g, '')
+      .slice(0, 6)
     if (pastedData) {
       onChange(pastedData)
       focusInput(Math.min(pastedData.length, 5))
@@ -113,7 +122,10 @@ function OtpInput({ value, onChange, disabled }: OtpInputProps) {
   }, [focusInput, value.length])
 
   return (
-    <div className="flex items-center justify-center gap-2" onPaste={handlePaste}>
+    <div
+      className="flex items-center justify-center gap-2"
+      onPaste={handlePaste}
+    >
       {[0, 1, 2].map((index) => (
         <input
           key={index}
@@ -137,7 +149,7 @@ function OtpInput({ value, onChange, disabled }: OtpInputProps) {
             digits[index]
               ? 'border-[#E35915]/50 bg-[#E35915]/5'
               : 'border-[#AEC7E2]',
-            'focus:outline-none focus:border-[#E35915] focus:ring-2 focus:ring-[#E35915]/20',
+            'focus:border-[#E35915] focus:ring-2 focus:ring-[#E35915]/20 focus:outline-none',
             'disabled:cursor-not-allowed disabled:opacity-50',
             'placeholder:text-[#8B5A2B]/30'
           )}
@@ -171,7 +183,7 @@ function OtpInput({ value, onChange, disabled }: OtpInputProps) {
             digits[index]
               ? 'border-[#E35915]/50 bg-[#E35915]/5'
               : 'border-[#AEC7E2]',
-            'focus:outline-none focus:border-[#E35915] focus:ring-2 focus:ring-[#E35915]/20',
+            'focus:border-[#E35915] focus:ring-2 focus:ring-[#E35915]/20 focus:outline-none',
             'disabled:cursor-not-allowed disabled:opacity-50',
             'placeholder:text-[#8B5A2B]/30'
           )}
@@ -219,7 +231,7 @@ export function ApplicationCodeConfirmation({
   const isTimeLow = expiresInSeconds < 300 && expiresInSeconds > 0
 
   return (
-    <div className="space-y-5 animate-fade-in">
+    <div className="animate-fade-in space-y-5">
       {/* Header */}
       <div className="text-center">
         <div
@@ -254,7 +266,9 @@ export function ApplicationCodeConfirmation({
             <AlertTriangle className="h-4 w-4 text-amber-600" />
           </div>
           <div className="text-sm">
-            <p className="font-medium text-amber-800">Candidatura já iniciada</p>
+            <p className="font-medium text-amber-800">
+              Candidatura já iniciada
+            </p>
             <p className="mt-0.5 text-amber-700/80">
               Use o código enviado anteriormente para concluir.
             </p>
@@ -274,8 +288,12 @@ export function ApplicationCodeConfirmation({
             <Mail className="h-5 w-5 text-[#E35915]" />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-xs font-medium text-[#8B5A2B]/60">Código enviado para</p>
-            <p className="truncate font-medium text-[#783201]">{pending.applicantEmail}</p>
+            <p className="text-xs font-medium text-[#8B5A2B]/60">
+              Código enviado para
+            </p>
+            <p className="truncate font-medium text-[#783201]">
+              {pending.applicantEmail}
+            </p>
           </div>
         </div>
       </div>
@@ -292,7 +310,9 @@ export function ApplicationCodeConfirmation({
         {isCodeComplete && !hasExpired && (
           <div className="flex items-center justify-center gap-2 text-sm">
             <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-            <span className="font-medium text-emerald-600">Código completo</span>
+            <span className="font-medium text-emerald-600">
+              Código completo
+            </span>
           </div>
         )}
       </div>
@@ -310,7 +330,7 @@ export function ApplicationCodeConfirmation({
           <Clock3
             className={cn(
               'h-5 w-5',
-              isTimeLow ? 'text-amber-500 animate-pulse' : 'text-[#8B5A2B]/50'
+              isTimeLow ? 'animate-pulse text-amber-500' : 'text-[#8B5A2B]/50'
             )}
           />
           <div className="text-center">
@@ -347,7 +367,9 @@ export function ApplicationCodeConfirmation({
           </div>
           <div className="text-sm">
             <p className="font-medium text-red-700">Código expirado</p>
-            <p className="text-red-600/80">Solicite um novo código para continuar.</p>
+            <p className="text-red-600/80">
+              Solicite um novo código para continuar.
+            </p>
           </div>
         </div>
       )}
@@ -389,7 +411,9 @@ export function ApplicationCodeConfirmation({
           <div className="text-sm">
             <span className="text-[#8B5A2B]/60">Não recebeu? </span>
             <span className="font-medium text-[#783201]">
-              {pending.resendRemaining} tentativa{pending.resendRemaining !== 1 ? 's' : ''} restante{pending.resendRemaining !== 1 ? 's' : ''}
+              {pending.resendRemaining} tentativa
+              {pending.resendRemaining !== 1 ? 's' : ''} restante
+              {pending.resendRemaining !== 1 ? 's' : ''}
             </span>
           </div>
           <Button
@@ -405,10 +429,7 @@ export function ApplicationCodeConfirmation({
             )}
           >
             <RefreshCw
-              className={cn(
-                'mr-1.5 h-4 w-4',
-                isResending && 'animate-spin'
-              )}
+              className={cn('mr-1.5 h-4 w-4', isResending && 'animate-spin')}
             />
             {isResending
               ? 'Enviando...'

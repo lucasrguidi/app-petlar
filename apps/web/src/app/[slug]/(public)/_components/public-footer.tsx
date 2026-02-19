@@ -22,7 +22,7 @@ export function PublicFooter({ orgName, slug }: PublicFooterProps) {
       {/* Main footer content */}
       <div className="relative bg-white/50 pt-16 pb-8 backdrop-blur-sm">
         {/* Decorative top wave */}
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[#E35915]/20 to-transparent" />
+        <div className="absolute top-0 right-0 left-0 h-1 bg-gradient-to-r from-transparent via-[#E35915]/20 to-transparent" />
 
         <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
           {/* Top section */}
@@ -102,9 +102,7 @@ export function PublicFooter({ orgName, slug }: PublicFooterProps) {
                   'hover:border-[#E35915]/30 hover:bg-[#E35915]/5 hover:text-[#E35915]'
                 )}
               >
-                <Link href={`/${slug}/login` as Route}>
-                  Acessar painel
-                </Link>
+                <Link href={`/${slug}/login` as Route}>Acessar painel</Link>
               </Button>
             </div>
           </div>
@@ -137,7 +135,7 @@ export function PublicFooter({ orgName, slug }: PublicFooterProps) {
       </div>
 
       {/* Floating paw prints decoration */}
-      <div className="pointer-events-none absolute bottom-0 left-0 right-0 overflow-hidden opacity-[0.04]">
+      <div className="pointer-events-none absolute right-0 bottom-0 left-0 overflow-hidden opacity-[0.04]">
         <svg
           className="absolute -bottom-2 left-[10%] h-20 w-20 rotate-[-20deg] text-[#783201]"
           viewBox="0 0 24 24"
@@ -146,7 +144,7 @@ export function PublicFooter({ orgName, slug }: PublicFooterProps) {
           <path d="M12 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0-4c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm4 4c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-8 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm4 6c-2.2 0-4 1.8-4 4h8c0-2.2-1.8-4-4-4z" />
         </svg>
         <svg
-          className="absolute -bottom-4 right-[15%] h-24 w-24 rotate-[15deg] text-[#783201]"
+          className="absolute right-[15%] -bottom-4 h-24 w-24 rotate-[15deg] text-[#783201]"
           viewBox="0 0 24 24"
           fill="currentColor"
         >

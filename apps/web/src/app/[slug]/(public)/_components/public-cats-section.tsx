@@ -6,10 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useCallback, useMemo, useState, useTransition } from 'react'
 
 import { ApplicationSheet } from './application-sheet'
-import {
-  PublicCatCard,
-  type PublicCatCardData,
-} from './public-cat-card'
+import { PublicCatCard, type PublicCatCardData } from './public-cat-card'
 import { PublicCatsPagination } from './public-cats-pagination'
 
 import { Button } from '@/components/ui/button'
@@ -246,7 +243,7 @@ export function PublicCatsSection() {
             <div className="flex flex-1 flex-col gap-4 sm:flex-row">
               {/* Sex filter */}
               <div className="flex-1 space-y-1.5">
-                <label className="text-xs font-semibold uppercase tracking-wide text-[#783201]/60">
+                <label className="text-xs font-semibold tracking-wide text-[#783201]/60 uppercase">
                   Sexo
                 </label>
                 <Select
@@ -286,7 +283,7 @@ export function PublicCatsSection() {
 
               {/* Age filter */}
               <div className="flex-1 space-y-1.5">
-                <label className="text-xs font-semibold uppercase tracking-wide text-[#783201]/60">
+                <label className="text-xs font-semibold tracking-wide text-[#783201]/60 uppercase">
                   Faixa etária
                 </label>
                 <Select
@@ -433,7 +430,9 @@ export function PublicCatsSection() {
             <PublicCatsPagination
               page={data.pagination.page}
               totalPages={data.pagination.totalPages}
-              onPageChange={(newPage) => updateFilters({ page: newPage }, false)}
+              onPageChange={(newPage) =>
+                updateFilters({ page: newPage }, false)
+              }
             />
           </>
         )}

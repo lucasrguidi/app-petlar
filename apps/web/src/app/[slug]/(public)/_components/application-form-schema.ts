@@ -60,7 +60,9 @@ export const defaultApplicationFormValues: ApplicationFormValues = {
   whatsappConsent: false,
 }
 
-export function hasResponseValue(value: ApplicationResponseValue | undefined): boolean {
+export function hasResponseValue(
+  value: ApplicationResponseValue | undefined
+): boolean {
   if (typeof value === 'string') {
     return value.trim().length > 0
   }
@@ -82,7 +84,9 @@ export function isFieldVisible(
   return parentValue === field.condition.value
 }
 
-export function getValidOptions(options: string[] | null | undefined): string[] {
+export function getValidOptions(
+  options: string[] | null | undefined
+): string[] {
   if (!options || options.length === 0) return []
 
   const unique = new Set<string>()
@@ -99,10 +103,13 @@ export function getValidOptions(options: string[] | null | undefined): string[] 
 export function createInitialResponses(
   fields: ApplicationFormField[]
 ): Record<string, ApplicationResponseValue> {
-  return fields.reduce<Record<string, ApplicationResponseValue>>((acc, field) => {
-    acc[field.id] = null
-    return acc
-  }, {})
+  return fields.reduce<Record<string, ApplicationResponseValue>>(
+    (acc, field) => {
+      acc[field.id] = null
+      return acc
+    },
+    {}
+  )
 }
 
 export function createApplicationFormSchema(fields: ApplicationFormField[]) {
@@ -122,7 +129,10 @@ export function createApplicationFormSchema(fields: ApplicationFormField[]) {
           const digits = value.replace(phoneDigitsRegex, '')
           return digits.length >= 10 && digits.length <= 11
         }, 'WhatsApp inválido'),
-      responses: z.record(z.string(), z.union([z.string(), z.boolean(), z.null()])),
+      responses: z.record(
+        z.string(),
+        z.union([z.string(), z.boolean(), z.null()])
+      ),
       files: z.array(
         z.object({
           fieldId: z.string().min(1),
@@ -214,10 +224,7 @@ export function createApplicationFormSchema(fields: ApplicationFormField[]) {
           }
 
           const expectedFileType = field.mediaConfig?.kind
-          if (
-            expectedFileType &&
-            uploadedFile.fileType !== expectedFileType
-          ) {
+          if (expectedFileType && uploadedFile.fileType !== expectedFileType) {
             ctx.addIssue({
               code: z.ZodIssueCode.custom,
               path: ['responses', field.id],

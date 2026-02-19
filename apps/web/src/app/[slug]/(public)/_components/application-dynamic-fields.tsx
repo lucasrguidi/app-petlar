@@ -1,6 +1,12 @@
 'use client'
 
-import { Calendar, FileQuestion, List, MessageSquare, ToggleLeft } from 'lucide-react'
+import {
+  Calendar,
+  FileQuestion,
+  List,
+  MessageSquare,
+  ToggleLeft,
+} from 'lucide-react'
 import { useEffect, useMemo } from 'react'
 import { useWatch, type FieldErrors, type UseFormReturn } from 'react-hook-form'
 
@@ -90,7 +96,9 @@ function upsertFileByFieldId(
   files: ApplicationFormFileInput[],
   nextFile: ApplicationFormFileInput
 ) {
-  const existingIndex = files.findIndex((file) => file.fieldId === nextFile.fieldId)
+  const existingIndex = files.findIndex(
+    (file) => file.fieldId === nextFile.fieldId
+  )
   if (existingIndex === -1) {
     return [...files, nextFile]
   }
@@ -146,7 +154,9 @@ export function ApplicationDynamicFields({
     }
 
     const currentFiles = form.getValues('files')
-    const filteredFiles = currentFiles.filter((file) => visibleIds.has(file.fieldId))
+    const filteredFiles = currentFiles.filter((file) =>
+      visibleIds.has(file.fieldId)
+    )
     if (filteredFiles.length !== currentFiles.length) {
       form.setValue('files', filteredFiles, {
         shouldDirty: true,
@@ -194,7 +204,9 @@ export function ApplicationDynamicFields({
 
   const removeFileValue = (fieldId: string) => {
     const currentFiles = form.getValues('files')
-    const filteredFiles = currentFiles.filter((file) => file.fieldId !== fieldId)
+    const filteredFiles = currentFiles.filter(
+      (file) => file.fieldId !== fieldId
+    )
 
     form.setValue('files', filteredFiles, {
       shouldDirty: true,
@@ -227,7 +239,9 @@ export function ApplicationDynamicFields({
             Perguntas da ONG
           </h4>
           <p className="text-sm text-[#8B5A2B]/70">
-            {visibleFields.length} {visibleFields.length === 1 ? 'pergunta' : 'perguntas'} para responder
+            {visibleFields.length}{' '}
+            {visibleFields.length === 1 ? 'pergunta' : 'perguntas'} para
+            responder
           </p>
         </div>
       </div>
@@ -236,9 +250,14 @@ export function ApplicationDynamicFields({
       <div className="space-y-4">
         {visibleFields.map((field, index) => {
           const responseValue = responseValues[field.id]
-          const fieldError = getResponseErrorMessage(form.formState.errors, field.id)
-          const shouldShowError = Boolean(fieldError) &&
-            (form.formState.submitCount > 0 || isResponseTouched(touchedResponses, field.id))
+          const fieldError = getResponseErrorMessage(
+            form.formState.errors,
+            field.id
+          )
+          const shouldShowError =
+            Boolean(fieldError) &&
+            (form.formState.submitCount > 0 ||
+              isResponseTouched(touchedResponses, field.id))
           const FieldIcon = getFieldIcon(field.type)
 
           return (
@@ -249,7 +268,7 @@ export function ApplicationDynamicFields({
                 'bg-gradient-to-br from-white to-[#F8FBFF]',
                 'border border-[#AEC7E2]/40',
                 'shadow-sm transition-all duration-200',
-                'hover:shadow-md hover:border-[#AEC7E2]/60',
+                'hover:border-[#AEC7E2]/60 hover:shadow-md',
                 'animate-fade-in'
               )}
               style={{ animationDelay: `${index * 50}ms` }}
@@ -257,7 +276,7 @@ export function ApplicationDynamicFields({
               {/* Required indicator bar */}
               {field.required && (
                 <div
-                  className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-[#E35915] to-[#F07B3D]"
+                  className="absolute top-0 bottom-0 left-0 w-1 bg-gradient-to-b from-[#E35915] to-[#F07B3D]"
                   aria-hidden="true"
                 />
               )}
@@ -288,7 +307,9 @@ export function ApplicationDynamicFields({
                       {field.label}
                     </label>
                     {field.helpText && (
-                      <p className="mt-0.5 text-xs text-[#8B5A2B]/65">{field.helpText}</p>
+                      <p className="mt-0.5 text-xs text-[#8B5A2B]/65">
+                        {field.helpText}
+                      </p>
                     )}
                   </div>
                 </div>
@@ -297,7 +318,9 @@ export function ApplicationDynamicFields({
                 <div className="mt-3">
                   {field.type === 'text' && (
                     <Input
-                      value={typeof responseValue === 'string' ? responseValue : ''}
+                      value={
+                        typeof responseValue === 'string' ? responseValue : ''
+                      }
                       onChange={(event) =>
                         setResponseValue(field.id, event.target.value)
                       }
@@ -312,7 +335,9 @@ export function ApplicationDynamicFields({
 
                   {field.type === 'textarea' && (
                     <Textarea
-                      value={typeof responseValue === 'string' ? responseValue : ''}
+                      value={
+                        typeof responseValue === 'string' ? responseValue : ''
+                      }
                       onChange={(event) =>
                         setResponseValue(field.id, event.target.value)
                       }
@@ -333,7 +358,9 @@ export function ApplicationDynamicFields({
                   {field.type === 'date' && (
                     <Input
                       type="date"
-                      value={typeof responseValue === 'string' ? responseValue : ''}
+                      value={
+                        typeof responseValue === 'string' ? responseValue : ''
+                      }
                       onChange={(event) =>
                         setResponseValue(field.id, event.target.value)
                       }
@@ -372,7 +399,9 @@ export function ApplicationDynamicFields({
                         <SelectValue placeholder="Selecione" />
                       </SelectTrigger>
                       <SelectContent className="rounded-xl border-[#AEC7E2]/40">
-                        <SelectItem value={emptySelectValue}>Selecione</SelectItem>
+                        <SelectItem value={emptySelectValue}>
+                          Selecione
+                        </SelectItem>
                         <SelectItem value="yes">Sim</SelectItem>
                         <SelectItem value="no">Não</SelectItem>
                       </SelectContent>
@@ -393,7 +422,8 @@ export function ApplicationDynamicFields({
                       return (
                         <Select
                           value={
-                            typeof responseValue === 'string' && responseValue.length > 0
+                            typeof responseValue === 'string' &&
+                            responseValue.length > 0
                               ? responseValue
                               : emptySelectValue
                           }
@@ -414,7 +444,9 @@ export function ApplicationDynamicFields({
                             <SelectValue placeholder="Selecione uma opção" />
                           </SelectTrigger>
                           <SelectContent className="rounded-xl border-[#AEC7E2]/40">
-                            <SelectItem value={emptySelectValue}>Selecione</SelectItem>
+                            <SelectItem value={emptySelectValue}>
+                              Selecione
+                            </SelectItem>
                             {options.map((option) => (
                               <SelectItem key={option} value={option}>
                                 {option}
@@ -430,20 +462,25 @@ export function ApplicationDynamicFields({
                       fieldId={field.id}
                       label={field.label}
                       kind={field.mediaConfig?.kind ?? 'image'}
-                      value={typeof responseValue === 'string' ? responseValue : null}
+                      value={
+                        typeof responseValue === 'string' ? responseValue : null
+                      }
                       disabled={disabled}
                       onUploaded={({ fieldId, url, fileType }) => {
                         setResponseValue(fieldId, url, {
                           shouldValidate: false,
                           shouldTouch: true,
                         })
-                        setFileValue({
-                          fieldId,
-                          url,
-                          fileType,
-                        }, {
-                          shouldValidate: false,
-                        })
+                        setFileValue(
+                          {
+                            fieldId,
+                            url,
+                            fileType,
+                          },
+                          {
+                            shouldValidate: false,
+                          }
+                        )
                         form.clearErrors(`responses.${fieldId}`)
                         void form.trigger(`responses.${fieldId}`)
                       }}
@@ -455,7 +492,7 @@ export function ApplicationDynamicFields({
                   )}
 
                   {shouldShowError && fieldError && (
-                    <p className="mt-2 animate-fade-in text-sm font-medium text-red-600">
+                    <p className="animate-fade-in mt-2 text-sm font-medium text-red-600">
                       {fieldError}
                     </p>
                   )}

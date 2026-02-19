@@ -64,8 +64,10 @@ function formatTestResult(result: 'positive' | 'negative' | 'not_tested'): {
   text: string
   color: string
 } {
-  if (result === 'positive') return { text: 'Positivo', color: 'text-amber-600' }
-  if (result === 'negative') return { text: 'Negativo', color: 'text-emerald-600' }
+  if (result === 'positive')
+    return { text: 'Positivo', color: 'text-amber-600' }
+  if (result === 'negative')
+    return { text: 'Negativo', color: 'text-emerald-600' }
   return { text: 'Não testado', color: 'text-[#8B5A2B]/60' }
 }
 
@@ -205,7 +207,7 @@ export function PublicCatCard({ cat, onAdoptClick }: PublicCatCardProps) {
           className={cn(
             'absolute top-3 right-3 z-20',
             'inline-flex items-center gap-1 rounded-full px-2.5 py-1',
-            'backdrop-blur-sm shadow-sm',
+            'shadow-sm backdrop-blur-sm',
             cat.sex === 'male'
               ? 'bg-blue-500/90 text-white'
               : 'bg-pink-500/90 text-white'
@@ -343,8 +345,16 @@ export function PublicCatCard({ cat, onAdoptClick }: PublicCatCardProps) {
 
           {/* Health indicators */}
           <div className="flex flex-wrap gap-1.5">
-            <HealthBadge icon={Scissors} label="Castrado" value={cat.castrated} />
-            <HealthBadge icon={Syringe} label="Vacinado" value={cat.vaccinated} />
+            <HealthBadge
+              icon={Scissors}
+              label="Castrado"
+              value={cat.castrated}
+            />
+            <HealthBadge
+              icon={Syringe}
+              label="Vacinado"
+              value={cat.vaccinated}
+            />
             <HealthBadge icon={Bug} label="Vermifugado" value={cat.dewormed} />
           </div>
 

@@ -2,7 +2,13 @@
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { AlertTriangle, ArrowLeft, ArrowRight, Loader2, SendHorizontal } from 'lucide-react'
+import {
+  AlertTriangle,
+  ArrowLeft,
+  ArrowRight,
+  Loader2,
+  SendHorizontal,
+} from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
@@ -67,7 +73,9 @@ const pendingStoragePrefix = 'petlar:pending-application'
 const confirmedDuplicateMessage =
   'Já existe uma candidatura confirmada para este gato com este e-mail'
 
-function mapCardCatToSheetSummary(cat: PublicCatCardData): ApplicationSheetCatSummary {
+function mapCardCatToSheetSummary(
+  cat: PublicCatCardData
+): ApplicationSheetCatSummary {
   return {
     id: cat.id,
     name: cat.name,
@@ -86,7 +94,9 @@ function isPendingSource(value: unknown): value is PendingSource {
   return value === 'created' || value === 'pending_exists'
 }
 
-function parsePendingFromStorage(rawValue: string | null): PendingConfirmationState | null {
+function parsePendingFromStorage(
+  rawValue: string | null
+): PendingConfirmationState | null {
   if (!rawValue) return null
 
   try {
@@ -112,7 +122,9 @@ function parsePendingFromStorage(rawValue: string | null): PendingConfirmationSt
           : null,
       resendRemaining: parsed.resendRemaining,
       resendAvailableAt:
-        typeof parsed.resendAvailableAt === 'number' ? parsed.resendAvailableAt : null,
+        typeof parsed.resendAvailableAt === 'number'
+          ? parsed.resendAvailableAt
+          : null,
       catId: parsed.catId,
       source: isPendingSource(parsed.source) ? parsed.source : 'pending_exists',
     }
@@ -121,7 +133,11 @@ function parsePendingFromStorage(rawValue: string | null): PendingConfirmationSt
   }
 }
 
-export function ApplicationSheet({ open, onOpenChange, cat }: ApplicationSheetProps) {
+export function ApplicationSheet({
+  open,
+  onOpenChange,
+  cat,
+}: ApplicationSheetProps) {
   const slug = useOrgSlug()
   const [step, setStep] = useState<ApplicationSheetStep>('form')
   const [formStep, setFormStep] = useState<FormStep>(1)
@@ -131,7 +147,8 @@ export function ApplicationSheet({ open, onOpenChange, cat }: ApplicationSheetPr
     useState<ConfirmedApplicationContactState | null>(null)
   const [confirmationCode, setConfirmationCode] = useState('')
   const [nowMs, setNowMs] = useState(() => Date.now())
-  const [consentValidationAttempted, setConsentValidationAttempted] = useState(false)
+  const [consentValidationAttempted, setConsentValidationAttempted] =
+    useState(false)
 
   const catId = cat?.id ?? 'cat-unset'
   const pendingStorageKey = useMemo(() => getPendingStorageKey(slug), [slug])
@@ -245,7 +262,9 @@ export function ApplicationSheet({ open, onOpenChange, cat }: ApplicationSheetPr
           return
         }
 
-        toast.success('Candidatura recebida! Enviamos um código para seu e-mail.')
+        toast.success(
+          'Candidatura recebida! Enviamos um código para seu e-mail.'
+        )
       },
       onError: (error, variables) => {
         const isAlreadyConfirmedError =
@@ -396,7 +415,11 @@ export function ApplicationSheet({ open, onOpenChange, cat }: ApplicationSheetPr
 
   // Validate current step fields for navigation
   const canGoToStep2 = async () => {
-    const result = await form.trigger(['applicantName', 'applicantEmail', 'applicantWhatsapp'])
+    const result = await form.trigger([
+      'applicantName',
+      'applicantEmail',
+      'applicantWhatsapp',
+    ])
     return result
   }
 
@@ -448,7 +471,7 @@ export function ApplicationSheet({ open, onOpenChange, cat }: ApplicationSheetPr
         className={cn(
           'w-full overflow-hidden border-l border-[#AEC7E2]/40 p-0',
           'bg-gradient-to-b from-white via-white to-[#F0F7FF]',
-          'sm:max-w-lg rounded-l-2xl',
+          'rounded-l-2xl sm:max-w-lg',
           'flex flex-col'
         )}
       >
@@ -492,7 +515,9 @@ export function ApplicationSheet({ open, onOpenChange, cat }: ApplicationSheetPr
               </div>
               <div>
                 <p className="font-medium text-[#783201]">Carregando...</p>
-                <p className="text-sm text-[#8B5A2B]/70">Preparando o formulário</p>
+                <p className="text-sm text-[#8B5A2B]/70">
+                  Preparando o formulário
+                </p>
               </div>
             </div>
           ) : formQuery.isError ? (
@@ -543,7 +568,9 @@ export function ApplicationSheet({ open, onOpenChange, cat }: ApplicationSheetPr
                   pending={pendingConfirmation}
                   code={confirmationCode}
                   nowMs={nowMs}
-                  isPendingExists={pendingConfirmation.source === 'pending_exists'}
+                  isPendingExists={
+                    pendingConfirmation.source === 'pending_exists'
+                  }
                   isSubmitting={confirmCodeMutation.isPending}
                   isResending={resendCodeMutation.isPending}
                   onCodeChange={setConfirmationCode}
@@ -554,7 +581,10 @@ export function ApplicationSheet({ open, onOpenChange, cat }: ApplicationSheetPr
             </div>
           ) : (
             <Form {...form}>
-              <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
+              <form
+                onSubmit={handleSubmit}
+                className="flex min-h-0 flex-1 flex-col"
+              >
                 {/* Stepper */}
                 <div
                   className={cn(

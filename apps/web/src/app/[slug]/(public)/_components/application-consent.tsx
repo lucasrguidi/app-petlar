@@ -6,8 +6,12 @@ import type { ApplicationFormValues } from './application-form-schema'
 import type { ReactNode } from 'react'
 import type { UseFormReturn } from 'react-hook-form'
 
-
-import { FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form'
+import {
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
+} from '@/components/ui/form'
 import { cn } from '@/lib/utils'
 
 interface ApplicationConsentProps {
@@ -62,7 +66,7 @@ function ConsentCard({
         'w-full rounded-2xl p-4 text-left',
         'border-2 transition-all duration-200',
         'group cursor-pointer select-none',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E35915]/30 focus-visible:ring-offset-2',
+        'focus-visible:ring-2 focus-visible:ring-[#E35915]/30 focus-visible:ring-offset-2 focus-visible:outline-none',
         checked
           ? 'border-emerald-300 bg-gradient-to-br from-emerald-50/80 to-white'
           : 'border-[#AEC7E2]/40 bg-white/65 hover:border-[#AEC7E2]/60 hover:bg-white/80',
@@ -104,7 +108,11 @@ function ConsentCard({
                   stroke="currentColor"
                   strokeWidth={3}
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M5 13l4 4L19 7"
+                  />
                 </svg>
               )}
             </div>
@@ -198,7 +206,7 @@ export function ApplicationConsent({
                     hasError={showError}
                   />
                 </FormControl>
-                {showError && <FormMessage className="ml-4 mt-1" />}
+                {showError && <FormMessage className="mt-1 ml-4" />}
               </FormItem>
             )
           }}
@@ -224,7 +232,7 @@ export function ApplicationConsent({
                     hasError={showError}
                   />
                 </FormControl>
-                {showError && <FormMessage className="ml-4 mt-1" />}
+                {showError && <FormMessage className="mt-1 ml-4" />}
               </FormItem>
             )
           }}

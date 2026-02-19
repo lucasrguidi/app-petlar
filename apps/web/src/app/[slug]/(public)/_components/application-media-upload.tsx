@@ -262,10 +262,7 @@ export function ApplicationMediaUpload({
             'flex flex-col items-center justify-center gap-3',
             'cursor-pointer transition-all duration-300',
             'hover:border-[#E35915]/50 hover:bg-white',
-            isDragging && [
-              'border-[#E35915] bg-[#E35915]/5',
-              'scale-[1.01]',
-            ],
+            isDragging && ['border-[#E35915] bg-[#E35915]/5', 'scale-[1.01]'],
             isDisabled && 'cursor-not-allowed opacity-60',
             !isDragging && !isDisabled && 'border-[#AEC7E2]'
           )}

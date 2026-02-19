@@ -39,10 +39,7 @@ export function ApplicationStepper({
           return (
             <div
               key={step.id}
-              className={cn(
-                'flex items-center',
-                !isLast && 'flex-1'
-              )}
+              className={cn('flex items-center', !isLast && 'flex-1')}
             >
               {/* Step Circle + Label */}
               <div className="relative flex flex-col items-center">
@@ -52,7 +49,7 @@ export function ApplicationStepper({
                     className={cn(
                       'absolute -inset-1 rounded-full',
                       'bg-gradient-to-r from-[#E35915]/30 to-[#F07B3D]/30',
-                      'blur-md animate-pulse'
+                      'animate-pulse blur-md'
                     )}
                     aria-hidden="true"
                   />
@@ -98,12 +95,14 @@ export function ApplicationStepper({
                     'transition-all duration-300',
                     'hidden min-[400px]:block',
                     isCompleted && 'text-emerald-600',
-                    isActive && 'text-[#783201] font-semibold',
+                    isActive && 'font-semibold text-[#783201]',
                     isPending && 'text-[#8B5A2B]/50'
                   )}
                 >
                   <span className="hidden sm:inline">{step.label}</span>
-                  <span className="sm:hidden">{step.shortLabel || step.label}</span>
+                  <span className="sm:hidden">
+                    {step.shortLabel || step.label}
+                  </span>
                 </span>
               </div>
 
@@ -157,7 +156,7 @@ export function ApplicationStepper({
           Etapa {currentStep} de {steps.length}:
         </span>
         <span className="ml-1 text-xs font-semibold text-[#783201]">
-          {steps.find(s => s.id === currentStep)?.label}
+          {steps.find((s) => s.id === currentStep)?.label}
         </span>
       </div>
     </div>

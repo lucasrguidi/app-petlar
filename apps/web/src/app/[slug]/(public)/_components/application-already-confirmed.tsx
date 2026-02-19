@@ -1,6 +1,13 @@
 'use client'
 
-import { CheckCircle2, Heart, Mail, MessageCircle, PartyPopper, Sparkles } from 'lucide-react'
+import {
+  CheckCircle2,
+  Heart,
+  Mail,
+  MessageCircle,
+  PartyPopper,
+  Sparkles,
+} from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -17,7 +24,7 @@ export function ApplicationAlreadyConfirmed({
   onClose,
 }: ApplicationAlreadyConfirmedProps) {
   return (
-    <div className="space-y-5 animate-fade-in">
+    <div className="animate-fade-in space-y-5">
       {/* Celebration header */}
       <div className="relative overflow-hidden rounded-2xl">
         {/* Background decoration */}
@@ -29,11 +36,11 @@ export function ApplicationAlreadyConfirmed({
           aria-hidden="true"
         />
         <div
-          className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-emerald-400/10 blur-2xl"
+          className="absolute -top-6 -right-6 h-24 w-24 rounded-full bg-emerald-400/10 blur-2xl"
           aria-hidden="true"
         />
         <div
-          className="absolute -left-4 -bottom-4 h-20 w-20 rounded-full bg-teal-400/10 blur-2xl"
+          className="absolute -bottom-4 -left-4 h-20 w-20 rounded-full bg-teal-400/10 blur-2xl"
           aria-hidden="true"
         />
 
@@ -52,11 +59,11 @@ export function ApplicationAlreadyConfirmed({
             </div>
             {/* Floating decorations */}
             <Sparkles
-              className="absolute -right-2 -top-2 h-6 w-6 text-amber-400 animate-pulse"
+              className="absolute -top-2 -right-2 h-6 w-6 animate-pulse text-amber-400"
               aria-hidden="true"
             />
             <Heart
-              className="absolute -left-1 top-1/2 h-4 w-4 fill-pink-400 text-pink-400 animate-pulse animation-delay-200"
+              className="animation-delay-200 absolute top-1/2 -left-1 h-4 w-4 animate-pulse fill-pink-400 text-pink-400"
               aria-hidden="true"
             />
           </div>
@@ -98,7 +105,9 @@ export function ApplicationAlreadyConfirmed({
               1
             </div>
             <div className="pt-0.5">
-              <p className="text-sm font-medium text-[#783201]">Análise da candidatura</p>
+              <p className="text-sm font-medium text-[#783201]">
+                Análise da candidatura
+              </p>
               <p className="text-xs text-[#8B5A2B]/70">
                 Nossa equipe vai avaliar suas respostas
               </p>
@@ -114,7 +123,9 @@ export function ApplicationAlreadyConfirmed({
               2
             </div>
             <div className="pt-0.5">
-              <p className="text-sm font-medium text-[#783201]">Contato via WhatsApp</p>
+              <p className="text-sm font-medium text-[#783201]">
+                Contato via WhatsApp
+              </p>
               <p className="text-xs text-[#8B5A2B]/70">
                 Entraremos em contato para os próximos passos
               </p>
@@ -130,7 +141,9 @@ export function ApplicationAlreadyConfirmed({
               3
             </div>
             <div className="pt-0.5">
-              <p className="text-sm font-medium text-[#783201]">Conhecer o gatinho</p>
+              <p className="text-sm font-medium text-[#783201]">
+                Conhecer o gatinho
+              </p>
               <p className="text-xs text-[#8B5A2B]/70">
                 Agendaremos uma visita para vocês se conhecerem
               </p>
@@ -157,7 +170,9 @@ export function ApplicationAlreadyConfirmed({
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-xs text-[#8B5A2B]/60">E-mail</p>
-              <p className="truncate text-sm font-medium text-[#783201]">{applicantEmail}</p>
+              <p className="truncate text-sm font-medium text-[#783201]">
+                {applicantEmail}
+              </p>
             </div>
           </div>
 
@@ -167,7 +182,9 @@ export function ApplicationAlreadyConfirmed({
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-xs text-[#8B5A2B]/60">WhatsApp</p>
-              <p className="truncate text-sm font-medium text-[#783201]">{applicantWhatsapp}</p>
+              <p className="truncate text-sm font-medium text-[#783201]">
+                {applicantWhatsapp}
+              </p>
             </div>
           </div>
         </div>

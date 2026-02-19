@@ -8,8 +8,6 @@ import { usePhoneMask } from '../_hooks/use-phone-mask'
 import type { ApplicationFormValues } from './application-form-schema'
 import type { UseFormReturn } from 'react-hook-form'
 
-
-
 import {
   FormControl,
   FormField,
@@ -34,12 +32,12 @@ interface IconInputProps {
 function IconInput({ icon, isValid, children }: IconInputProps) {
   return (
     <div className="relative">
-      <div className="pointer-events-none absolute left-4 top-1/2 z-10 -translate-y-1/2 text-[#783201]">
+      <div className="pointer-events-none absolute top-1/2 left-4 z-10 -translate-y-1/2 text-[#783201]">
         {icon}
       </div>
       {children}
       {isValid && (
-        <div className="pointer-events-none absolute right-4 top-1/2 z-10 -translate-y-1/2">
+        <div className="pointer-events-none absolute top-1/2 right-4 z-10 -translate-y-1/2">
           <CheckCircle2 className="h-5 w-5 text-emerald-500" />
         </div>
       )}
@@ -124,7 +122,8 @@ export function ApplicationFixedFields({
                     className={cn(
                       baseInputClassName,
                       isNameValid && !fieldState.error && validInputClassName,
-                      fieldState.error && 'border-red-300 focus-visible:border-red-400'
+                      fieldState.error &&
+                        'border-red-300 focus-visible:border-red-400'
                     )}
                     disabled={disabled}
                     autoComplete="name"
@@ -158,8 +157,11 @@ export function ApplicationFixedFields({
                       placeholder="seu@email.com"
                       className={cn(
                         baseInputClassName,
-                        isEmailValid && !fieldState.error && validInputClassName,
-                        fieldState.error && 'border-red-300 focus-visible:border-red-400'
+                        isEmailValid &&
+                          !fieldState.error &&
+                          validInputClassName,
+                        fieldState.error &&
+                          'border-red-300 focus-visible:border-red-400'
                       )}
                       disabled={disabled}
                       autoComplete="email"
@@ -194,8 +196,11 @@ export function ApplicationFixedFields({
                       placeholder="(11) 99999-9999"
                       className={cn(
                         baseInputClassName,
-                        isWhatsappValid && !fieldState.error && validInputClassName,
-                        fieldState.error && 'border-red-300 focus-visible:border-red-400'
+                        isWhatsappValid &&
+                          !fieldState.error &&
+                          validInputClassName,
+                        fieldState.error &&
+                          'border-red-300 focus-visible:border-red-400'
                       )}
                       disabled={disabled}
                       autoComplete="tel"
