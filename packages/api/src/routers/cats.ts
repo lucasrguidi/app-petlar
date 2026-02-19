@@ -314,10 +314,7 @@ export const catsRouter = router({
           createdAt: cats.createdAt,
         })
         .from(cats)
-        .leftJoin(
-          forms,
-          and(eq(cats.formId, forms.id), eq(forms.orgId, orgId))
-        )
+        .leftJoin(forms, and(eq(cats.formId, forms.id), eq(forms.orgId, orgId)))
         .where(and(...conditions))
         .orderBy(desc(cats.createdAt))
         .limit(limit)
@@ -434,10 +431,7 @@ export const catsRouter = router({
           updatedAt: cats.updatedAt,
         })
         .from(cats)
-        .leftJoin(
-          forms,
-          and(eq(cats.formId, forms.id), eq(forms.orgId, orgId))
-        )
+        .leftJoin(forms, and(eq(cats.formId, forms.id), eq(forms.orgId, orgId)))
         .where(and(eq(cats.id, input.id), eq(cats.orgId, orgId)))
 
       if (!cat) {
@@ -538,8 +532,7 @@ export const catsRouter = router({
       ) {
         throw new TRPCError({
           code: 'BAD_REQUEST',
-          message:
-            'Não é permitido trocar o formulário após criar o gato',
+          message: 'Não é permitido trocar o formulário após criar o gato',
         })
       }
 
@@ -620,7 +613,8 @@ export const catsRouter = router({
 
       const newCatId = nanoid()
       const formSnapshot =
-        originalCat.formSnapshot ?? (await buildCatFormSnapshot(originalCat.formId))
+        originalCat.formSnapshot ??
+        (await buildCatFormSnapshot(originalCat.formId))
 
       // Criar cópia com novo ID e nome modificado
       await db.insert(cats).values({
