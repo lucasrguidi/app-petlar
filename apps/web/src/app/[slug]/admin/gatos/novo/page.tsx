@@ -1,4 +1,3 @@
-
 import { CatForm } from '../_components/cat-form'
 
 import type { CatFormData } from '../_components/cat-form-schema'
@@ -12,7 +11,9 @@ interface NovoGatoPageProps {
   searchParams: Promise<{ prefill?: string }>
 }
 
-export default async function NovoGatoPage({ searchParams }: NovoGatoPageProps) {
+export default async function NovoGatoPage({
+  searchParams,
+}: NovoGatoPageProps) {
   const { prefill } = await searchParams
 
   let initialData: Partial<CatFormData> | undefined = undefined

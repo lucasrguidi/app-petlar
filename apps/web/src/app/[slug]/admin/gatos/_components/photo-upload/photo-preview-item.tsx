@@ -10,7 +10,6 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
-
 interface PhotoPreviewItemProps {
   photo: PhotoState
   isPrimary: boolean
@@ -41,8 +40,8 @@ export function PhotoPreviewItem({
       ref={setNodeRef}
       style={style}
       className={cn(
-        'group relative aspect-square overflow-hidden rounded-lg border bg-muted',
-        isDragging && 'z-50 shadow-lg ring-2 ring-primary'
+        'group bg-muted relative aspect-square overflow-hidden rounded-lg border',
+        isDragging && 'ring-primary z-50 shadow-lg ring-2'
       )}
     >
       {/* Image */}
@@ -57,17 +56,17 @@ export function PhotoPreviewItem({
 
       {/* Uploading overlay */}
       {photo.status === 'uploading' && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/80">
-          <Loader2 className="h-6 w-6 animate-spin text-primary" />
+        <div className="bg-background/80 absolute inset-0 flex flex-col items-center justify-center">
+          <Loader2 className="text-primary h-6 w-6 animate-spin" />
           <span className="mt-2 text-xs font-medium">{photo.progress}%</span>
         </div>
       )}
 
       {/* Error overlay */}
       {photo.status === 'error' && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center bg-destructive/20">
-          <AlertCircle className="h-6 w-6 text-destructive" />
-          <span className="mt-2 text-xs font-medium text-destructive">
+        <div className="bg-destructive/20 absolute inset-0 flex flex-col items-center justify-center">
+          <AlertCircle className="text-destructive h-6 w-6" />
+          <span className="text-destructive mt-2 text-xs font-medium">
             Erro no upload
           </span>
         </div>
@@ -77,7 +76,7 @@ export function PhotoPreviewItem({
       {isPrimary && photo.status === 'uploaded' && (
         <Badge
           variant="secondary"
-          className="absolute left-2 top-2 text-xs shadow-sm"
+          className="absolute top-2 left-2 text-xs shadow-sm"
         >
           Principal
         </Badge>
@@ -87,13 +86,13 @@ export function PhotoPreviewItem({
       <button
         type="button"
         className={cn(
-          'absolute left-2 bottom-2 flex h-8 w-8 cursor-grab items-center justify-center rounded-lg bg-background/90 opacity-0 shadow-sm backdrop-blur-sm transition-opacity group-hover:opacity-100',
+          'bg-background/90 absolute bottom-2 left-2 flex h-8 w-8 cursor-grab items-center justify-center rounded-lg opacity-0 shadow-sm backdrop-blur-sm transition-opacity group-hover:opacity-100',
           isDragging && 'cursor-grabbing'
         )}
         {...attributes}
         {...listeners}
       >
-        <GripVertical className="h-4 w-4 text-muted-foreground" />
+        <GripVertical className="text-muted-foreground h-4 w-4" />
       </button>
 
       {/* Remove button */}
@@ -101,7 +100,7 @@ export function PhotoPreviewItem({
         type="button"
         variant="secondary"
         size="icon"
-        className="absolute right-2 top-2 h-7 w-7 opacity-0 shadow-sm transition-opacity group-hover:opacity-100"
+        className="absolute top-2 right-2 h-7 w-7 opacity-0 shadow-sm transition-opacity group-hover:opacity-100"
         onClick={() => onRemove(photo.id)}
         disabled={photo.status === 'uploading'}
       >

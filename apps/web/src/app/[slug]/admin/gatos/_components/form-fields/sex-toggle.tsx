@@ -13,7 +13,6 @@ import {
 } from '@/components/ui/form'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 
-
 interface SexToggleProps {
   control: Control<CatFormData>
 }
@@ -31,17 +30,17 @@ export function SexToggle({ control }: SexToggleProps) {
               type="single"
               value={field.value}
               onValueChange={(value) => value && field.onChange(value)}
-              className="grid grid-cols-2 gap-1 rounded-lg bg-muted/35 p-1"
+              className="bg-muted/35 grid grid-cols-2 gap-1 rounded-lg p-1"
             >
               <ToggleGroupItem
                 value="male"
-                className="h-8 rounded-md border border-transparent px-3 text-xs data-[state=on]:border-primary/30 data-[state=on]:bg-primary/10 data-[state=on]:text-primary"
+                className="data-[state=on]:border-primary/30 data-[state=on]:bg-primary/10 data-[state=on]:text-primary h-8 rounded-md border border-transparent px-3 text-xs"
               >
                 Macho
               </ToggleGroupItem>
               <ToggleGroupItem
                 value="female"
-                className="h-8 rounded-md border border-transparent px-3 text-xs data-[state=on]:border-primary/30 data-[state=on]:bg-primary/10 data-[state=on]:text-primary"
+                className="data-[state=on]:border-primary/30 data-[state=on]:bg-primary/10 data-[state=on]:text-primary h-8 rounded-md border border-transparent px-3 text-xs"
               >
                 Fêmea
               </ToggleGroupItem>

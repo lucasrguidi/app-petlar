@@ -10,7 +10,6 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { trpc } from '@/utils/trpc'
 
-
 interface CatFormLoaderProps {
   catId: string
 }
@@ -28,10 +27,10 @@ export function CatFormLoader({ catId }: CatFormLoaderProps) {
     return (
       <Card className="rounded-xl">
         <CardContent className="flex flex-col items-center justify-center gap-4 py-12">
-          <AlertCircle className="h-12 w-12 text-destructive" />
+          <AlertCircle className="text-destructive h-12 w-12" />
           <div className="text-center">
             <p className="font-medium">Erro ao carregar dados do gato</p>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               {error?.message || 'Tente novamente mais tarde'}
             </p>
           </div>
@@ -47,7 +46,7 @@ export function CatFormLoader({ catId }: CatFormLoaderProps) {
     return (
       <Card className="rounded-xl">
         <CardContent className="flex flex-col items-center justify-center gap-4 py-12">
-          <AlertCircle className="h-12 w-12 text-muted-foreground" />
+          <AlertCircle className="text-muted-foreground h-12 w-12" />
           <p className="text-muted-foreground">Gato não encontrado</p>
         </CardContent>
       </Card>

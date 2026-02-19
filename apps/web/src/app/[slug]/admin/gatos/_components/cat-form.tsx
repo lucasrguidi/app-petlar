@@ -23,11 +23,7 @@ import {
   type CatFormData,
 } from './cat-form-schema'
 import { CatFormSuccess } from './cat-form-success'
-import {
-  HealthToggle,
-  SexToggle,
-  TestResultToggle,
-} from './form-fields'
+import { HealthToggle, SexToggle, TestResultToggle } from './form-fields'
 import { PhotoSection } from './photo-upload/photo-section'
 
 import { Button } from '@/components/ui/button'
@@ -250,7 +246,9 @@ export function CatForm({ mode, initialData, catId }: CatFormProps) {
                                   value={field.value ?? ''}
                                   onChange={(e) => {
                                     const val = e.target.value
-                                    field.onChange(val === '' ? null : Number(val))
+                                    field.onChange(
+                                      val === '' ? null : Number(val)
+                                    )
                                   }}
                                 />
                                 <span className="text-muted-foreground pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-xs">
@@ -278,7 +276,9 @@ export function CatForm({ mode, initialData, catId }: CatFormProps) {
                                   value={field.value ?? ''}
                                   onChange={(e) => {
                                     const val = e.target.value
-                                    field.onChange(val === '' ? null : Number(val))
+                                    field.onChange(
+                                      val === '' ? null : Number(val)
+                                    )
                                   }}
                                 />
                                 <span className="text-muted-foreground pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-xs">
@@ -423,7 +423,7 @@ export function CatForm({ mode, initialData, catId }: CatFormProps) {
             </Card>
           </div>
 
-          <div className="bg-background/90 sticky bottom-0 z-10 -mx-4 border-t border-border/40 px-4 py-3 backdrop-blur sm:static sm:mx-0 sm:flex sm:justify-end sm:border-0 sm:bg-transparent sm:p-0">
+          <div className="bg-background/90 border-border/40 sticky bottom-0 z-10 -mx-4 border-t px-4 py-3 backdrop-blur sm:static sm:mx-0 sm:flex sm:justify-end sm:border-0 sm:bg-transparent sm:p-0">
             <Button
               type="submit"
               className="shadow-primary-glow hover:shadow-primary-glow-hover w-full rounded-xl transition-all duration-200 sm:w-auto"

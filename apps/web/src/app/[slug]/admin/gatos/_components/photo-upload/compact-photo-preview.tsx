@@ -40,8 +40,8 @@ export function CompactPhotoPreview({
       ref={setNodeRef}
       style={style}
       className={cn(
-        'shadow-warm-sm group relative h-24 w-24 shrink-0 overflow-hidden rounded-xl border border-border/60 bg-muted/25',
-        isDragging && 'shadow-warm-lg z-50 ring-2 ring-primary/40'
+        'shadow-warm-sm group border-border/60 bg-muted/25 relative h-24 w-24 shrink-0 overflow-hidden rounded-xl border',
+        isDragging && 'shadow-warm-lg ring-primary/40 z-50 ring-2'
       )}
     >
       <img
@@ -54,16 +54,16 @@ export function CompactPhotoPreview({
       />
 
       {photo.status === 'uploading' && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/80">
-          <Loader2 className="h-5 w-5 animate-spin text-primary" />
+        <div className="bg-background/80 absolute inset-0 flex flex-col items-center justify-center">
+          <Loader2 className="text-primary h-5 w-5 animate-spin" />
           <span className="mt-1 text-xs font-medium">{photo.progress}%</span>
         </div>
       )}
 
       {photo.status === 'error' && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center bg-destructive/20">
-          <AlertCircle className="h-5 w-5 text-destructive" />
-          <span className="mt-1 text-xs font-medium text-destructive">
+        <div className="bg-destructive/20 absolute inset-0 flex flex-col items-center justify-center">
+          <AlertCircle className="text-destructive h-5 w-5" />
+          <span className="text-destructive mt-1 text-xs font-medium">
             Erro
           </span>
         </div>
@@ -72,7 +72,7 @@ export function CompactPhotoPreview({
       {isPrimary && photo.status === 'uploaded' && (
         <Badge
           variant="secondary"
-          className="absolute left-1 top-1 border-border/60 bg-card/90 px-1.5 py-0.5 text-[10px] shadow-sm"
+          className="border-border/60 bg-card/90 absolute top-1 left-1 px-1.5 py-0.5 text-[10px] shadow-sm"
         >
           Capa
         </Badge>
@@ -81,20 +81,20 @@ export function CompactPhotoPreview({
       <button
         type="button"
         className={cn(
-          'absolute bottom-1 left-1 flex h-6 w-6 cursor-grab items-center justify-center rounded-md bg-background/90 opacity-0 shadow-sm backdrop-blur-sm transition-opacity group-hover:opacity-100',
+          'bg-background/90 absolute bottom-1 left-1 flex h-6 w-6 cursor-grab items-center justify-center rounded-md opacity-0 shadow-sm backdrop-blur-sm transition-opacity group-hover:opacity-100',
           isDragging && 'cursor-grabbing'
         )}
         {...attributes}
         {...listeners}
       >
-        <GripVertical className="h-3 w-3 text-muted-foreground" />
+        <GripVertical className="text-muted-foreground h-3 w-3" />
       </button>
 
       <Button
         type="button"
         variant="secondary"
         size="icon"
-        className="absolute right-1 top-1 h-6 w-6 rounded-md opacity-0 shadow-sm transition-opacity group-hover:opacity-100"
+        className="absolute top-1 right-1 h-6 w-6 rounded-md opacity-0 shadow-sm transition-opacity group-hover:opacity-100"
         onClick={() => onRemove(photo.id)}
         disabled={photo.status === 'uploading'}
       >

@@ -24,9 +24,7 @@ export default async function EditarGatoPage({ params }: EditarGatoPageProps) {
         <h1 className="text-display text-2xl font-bold tracking-tight">
           Editar Gato
         </h1>
-        <p className="text-muted-foreground">
-          Atualize as informações do gato
-        </p>
+        <p className="text-muted-foreground">Atualize as informações do gato</p>
       </div>
 
       {/* Form with loader */}

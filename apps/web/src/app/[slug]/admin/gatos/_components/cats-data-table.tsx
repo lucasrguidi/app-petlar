@@ -166,13 +166,7 @@ function ColumnHeader({
 }
 
 // Care indicator component
-function CareIndicator({
-  label,
-  active,
-}: {
-  label: string
-  active: boolean
-}) {
+function CareIndicator({ label, active }: { label: string; active: boolean }) {
   return (
     <span
       className={cn(
@@ -195,7 +189,7 @@ function CareIndicator({
 // Expanded row content
 function ExpandedContent({ cat }: { cat: Cat }) {
   return (
-    <div className="border-border/40 bg-gradient-to-b from-muted/30 to-muted/10 animate-in fade-in-0 slide-in-from-top-1 border-t px-4 py-3 duration-200">
+    <div className="border-border/40 from-muted/30 to-muted/10 animate-in fade-in-0 slide-in-from-top-1 border-t bg-gradient-to-b px-4 py-3 duration-200">
       <div className="grid gap-4 text-xs sm:grid-cols-2 lg:grid-cols-4">
         {/* Health Info */}
         <div className="space-y-2">
@@ -296,12 +290,12 @@ function getColumns(
         return (
           <div className="flex items-center gap-3">
             {/* Photo thumbnail */}
-            <div className="bg-muted relative h-11 w-11 shrink-0 overflow-hidden rounded-xl border border-border/40 shadow-sm">
+            <div className="bg-muted border-border/40 relative h-11 w-11 shrink-0 overflow-hidden rounded-xl border shadow-sm">
               {cat.photoUrl ? (
                 <button
                   type="button"
                   onClick={() => onOpenPhotoPreview(cat)}
-                  className="group/photo relative h-full w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1"
+                  className="group/photo focus-visible:ring-primary relative h-full w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1"
                   aria-label={`Ver fotos de ${cat.name}`}
                 >
                   <img
@@ -312,7 +306,7 @@ function getColumns(
                   />
                   {/* Photo count overlay */}
                   {photoCount > 1 && (
-                    <span className="absolute right-0.5 bottom-0.5 flex h-4 min-w-4 items-center justify-center rounded-md bg-foreground/70 px-1 text-[9px] font-semibold text-white backdrop-blur-sm">
+                    <span className="bg-foreground/70 absolute right-0.5 bottom-0.5 flex h-4 min-w-4 items-center justify-center rounded-md px-1 text-[9px] font-semibold text-white backdrop-blur-sm">
                       {photoCount}
                     </span>
                   )}
@@ -326,7 +320,7 @@ function getColumns(
 
             {/* Name and mobile info */}
             <div className="min-w-0 space-y-0.5">
-              <p className="text-foreground truncate text-sm font-semibold leading-tight">
+              <p className="text-foreground truncate text-sm leading-tight font-semibold">
                 {cat.name}
               </p>
               {/* Mobile-only: age + sex indicator */}
@@ -470,10 +464,13 @@ function getColumns(
         return (
           <Badge
             variant={config.variant}
-            className="hidden gap-1.5 whitespace-nowrap px-2 py-0.5 text-[11px] font-medium sm:inline-flex"
+            className="hidden gap-1.5 px-2 py-0.5 text-[11px] font-medium whitespace-nowrap sm:inline-flex"
           >
             <span
-              className={cn('h-1.5 w-1.5 shrink-0 rounded-full', config.dotClass)}
+              className={cn(
+                'h-1.5 w-1.5 shrink-0 rounded-full',
+                config.dotClass
+              )}
             />
             {config.label}
           </Badge>
@@ -616,7 +613,7 @@ export function CatsDataTable({ cats }: CatsDataTableProps) {
 
               {/* Photo viewer */}
               <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-4">
-                <div className="bg-muted/30 relative overflow-hidden rounded-2xl border border-border/40">
+                <div className="bg-muted/30 border-border/40 relative overflow-hidden rounded-2xl border">
                   <div className="aspect-[4/3] w-full">
                     {activePhoto ? (
                       <img
@@ -640,7 +637,7 @@ export function CatsDataTable({ cats }: CatsDataTableProps) {
                         variant="secondary"
                         size="icon"
                         onClick={goToPreviousPhoto}
-                        className="absolute top-1/2 left-3 h-9 w-9 -translate-y-1/2 rounded-full border border-border/40 shadow-md backdrop-blur-sm transition-transform hover:scale-105"
+                        className="border-border/40 absolute top-1/2 left-3 h-9 w-9 -translate-y-1/2 rounded-full border shadow-md backdrop-blur-sm transition-transform hover:scale-105"
                         aria-label="Foto anterior"
                       >
                         <ChevronLeft className="h-5 w-5" />
@@ -650,7 +647,7 @@ export function CatsDataTable({ cats }: CatsDataTableProps) {
                         variant="secondary"
                         size="icon"
                         onClick={goToNextPhoto}
-                        className="absolute top-1/2 right-3 h-9 w-9 -translate-y-1/2 rounded-full border border-border/40 shadow-md backdrop-blur-sm transition-transform hover:scale-105"
+                        className="border-border/40 absolute top-1/2 right-3 h-9 w-9 -translate-y-1/2 rounded-full border shadow-md backdrop-blur-sm transition-transform hover:scale-105"
                         aria-label="Próxima foto"
                       >
                         <ChevronRight className="h-5 w-5" />

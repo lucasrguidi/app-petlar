@@ -91,7 +91,7 @@ export function CompactDropzone({
       />
 
       {isUploading ? (
-        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+        <Loader2 className="text-primary h-6 w-6 animate-spin" />
       ) : (
         <>
           <ImagePlus className="text-muted-foreground h-5 w-5" />

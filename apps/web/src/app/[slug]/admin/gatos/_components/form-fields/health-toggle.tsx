@@ -13,7 +13,6 @@ import {
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 
-
 interface HealthToggleProps {
   control: Control<CatFormData>
   name: 'castrated' | 'vaccinated' | 'dewormed'
