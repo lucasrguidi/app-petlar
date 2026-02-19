@@ -133,7 +133,12 @@ const TYPE_LABELS: Record<FieldType, string> = {
 
 const MEDIA_LIMITS: Record<
   MediaKind,
-  { maxSizeMb: number; maxDurationSec?: number; acceptText: string; accept: string }
+  {
+    maxSizeMb: number
+    maxDurationSec?: number
+    acceptText: string
+    accept: string
+  }
 > = {
   image: {
     maxSizeMb: 5,
@@ -227,7 +232,10 @@ function normalizeFieldsOrder(fields: BuilderField[]): BuilderField[] {
       return { ...field, condition: null }
     }
 
-    if (parent.type === 'boolean' && typeof field.condition.value !== 'boolean') {
+    if (
+      parent.type === 'boolean' &&
+      typeof field.condition.value !== 'boolean'
+    ) {
       return { ...field, condition: null }
     }
 
@@ -272,9 +280,9 @@ export function FormBuilder({ mode, formId, initialData }: FormBuilderProps) {
     initialData?.fields?.[0]?.id ?? null
   )
   const [isAddQuestionOpen, setIsAddQuestionOpen] = useState(false)
-  const [previewValues, setPreviewValues] = useState<Record<string, string | boolean>>(
-    {}
-  )
+  const [previewValues, setPreviewValues] = useState<
+    Record<string, string | boolean>
+  >({})
 
   const selectedField = useMemo(
     () => fields.find((field) => field.id === selectedFieldId) ?? null,
@@ -290,14 +298,18 @@ export function FormBuilder({ mode, formId, initialData }: FormBuilderProps) {
     if (selectedIndex <= 0) return []
     return fields.slice(0, selectedIndex).filter((field) => {
       if (field.type === 'media') return false
-      if (field.type === 'select') return getValidOptions(field.options).length > 0
+      if (field.type === 'select')
+        return getValidOptions(field.options).length > 0
       return true
     })
   }, [fields, selectedIndex])
 
   const conditionParentField = useMemo(() => {
     if (!selectedField?.condition) return null
-    return fields.find((field) => field.id === selectedField.condition?.fieldId) ?? null
+    return (
+      fields.find((field) => field.id === selectedField.condition?.fieldId) ??
+      null
+    )
   }, [fields, selectedField])
 
   const createMutation = useMutation(
@@ -320,7 +332,10 @@ export function FormBuilder({ mode, formId, initialData }: FormBuilderProps) {
         queryClient.invalidateQueries({ queryKey: [['forms']] })
         if (formId) {
           queryClient.invalidateQueries({
-            queryKey: [['forms', 'getById'], { input: { id: formId }, type: 'query' }],
+            queryKey: [
+              ['forms', 'getById'],
+              { input: { id: formId }, type: 'query' },
+            ],
           })
         }
       },
@@ -340,11 +355,15 @@ export function FormBuilder({ mode, formId, initialData }: FormBuilderProps) {
     setIsAddQuestionOpen(false)
   }
 
-  const updateSelectedField = (updater: (field: BuilderField) => BuilderField) => {
+  const updateSelectedField = (
+    updater: (field: BuilderField) => BuilderField
+  ) => {
     if (!selectedFieldId) return
     setFields((current) =>
       normalizeFieldsOrder(
-        current.map((field) => (field.id === selectedFieldId ? updater(field) : field))
+        current.map((field) =>
+          field.id === selectedFieldId ? updater(field) : field
+        )
       )
     )
   }
@@ -359,7 +378,9 @@ export function FormBuilder({ mode, formId, initialData }: FormBuilderProps) {
       fields
         .filter((field) => field.id !== fieldId)
         .map((field) =>
-          field.condition?.fieldId === fieldId ? { ...field, condition: null } : field
+          field.condition?.fieldId === fieldId
+            ? { ...field, condition: null }
+            : field
         )
     )
 
@@ -393,25 +414,29 @@ export function FormBuilder({ mode, formId, initialData }: FormBuilderProps) {
       return
     }
 
-    const normalizedFields = normalizeFieldsOrder(fields).map((field, index) => ({
-      id: field.id,
-      type: field.type,
-      label: field.label.trim(),
-      required: field.required,
-      helpText: field.helpText?.trim() || null,
-      options:
-        field.type === 'select'
-          ? (field.options ?? []).map((option) => option.trim()).filter(Boolean)
-          : null,
-      mediaConfig:
-        field.type === 'media'
-          ? {
-              kind: field.mediaConfig?.kind ?? 'image',
-            }
-          : null,
-      condition: field.condition,
-      order: index + 1,
-    }))
+    const normalizedFields = normalizeFieldsOrder(fields).map(
+      (field, index) => ({
+        id: field.id,
+        type: field.type,
+        label: field.label.trim(),
+        required: field.required,
+        helpText: field.helpText?.trim() || null,
+        options:
+          field.type === 'select'
+            ? (field.options ?? [])
+                .map((option) => option.trim())
+                .filter(Boolean)
+            : null,
+        mediaConfig:
+          field.type === 'media'
+            ? {
+                kind: field.mediaConfig?.kind ?? 'image',
+              }
+            : null,
+        condition: field.condition,
+        order: index + 1,
+      })
+    )
 
     const payload = {
       form: {
@@ -474,7 +499,7 @@ export function FormBuilder({ mode, formId, initialData }: FormBuilderProps) {
             </div>
           </div>
 
-          <div className="flex items-center justify-between rounded-lg border border-border/60 px-3 py-2">
+          <div className="border-border/60 flex items-center justify-between rounded-lg border px-3 py-2">
             <div>
               <p className="text-sm font-medium">Formulário ativo</p>
               <p className="text-muted-foreground text-xs">
@@ -555,7 +580,10 @@ export function FormBuilder({ mode, formId, initialData }: FormBuilderProps) {
                           {index + 1}. {field.label}
                         </p>
                         <div className="flex flex-wrap gap-1">
-                          <Badge variant="secondary" className="rounded-md text-[10px]">
+                          <Badge
+                            variant="secondary"
+                            className="rounded-md text-[10px]"
+                          >
                             {TYPE_LABELS[field.type]}
                           </Badge>
                           {field.required && (
@@ -567,7 +595,10 @@ export function FormBuilder({ mode, formId, initialData }: FormBuilderProps) {
                             </Badge>
                           )}
                           {field.condition && (
-                            <Badge variant="info" className="rounded-md text-[10px]">
+                            <Badge
+                              variant="info"
+                              className="rounded-md text-[10px]"
+                            >
                               Condicional
                             </Badge>
                           )}
@@ -654,7 +685,7 @@ export function FormBuilder({ mode, formId, initialData }: FormBuilderProps) {
                   />
                 </div>
 
-                <div className="flex items-center justify-between rounded-lg border border-border/60 px-3 py-2">
+                <div className="border-border/60 flex items-center justify-between rounded-lg border px-3 py-2">
                   <div>
                     <p className="text-sm font-medium">Obrigatória</p>
                     <p className="text-muted-foreground text-xs">
@@ -664,13 +695,18 @@ export function FormBuilder({ mode, formId, initialData }: FormBuilderProps) {
                   <Switch
                     checked={selectedField.required}
                     onCheckedChange={(checked) =>
-                      updateSelectedField((field) => ({ ...field, required: checked }))
+                      updateSelectedField((field) => ({
+                        ...field,
+                        required: checked,
+                      }))
                     }
                   />
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label htmlFor="question-help">Texto de ajuda (opcional)</Label>
+                  <Label htmlFor="question-help">
+                    Texto de ajuda (opcional)
+                  </Label>
                   <Textarea
                     id="question-help"
                     className="min-h-20 resize-y rounded-lg"
@@ -688,43 +724,50 @@ export function FormBuilder({ mode, formId, initialData }: FormBuilderProps) {
                 {selectedField.type === 'select' && (
                   <div className="space-y-2">
                     <Label>Opções</Label>
-                    <div className="space-y-2 rounded-lg border border-border/60 p-3">
-                      {(selectedField.options ?? []).map((option, optionIndex) => (
-                        <div key={optionIndex} className="flex items-center gap-2">
-                          <Input
-                            className="h-9 rounded-lg"
-                            value={option}
-                            onChange={(event) =>
-                              updateSelectedField((field) => {
-                                const nextOptions = [...(field.options ?? [])]
-                                nextOptions[optionIndex] = event.target.value
-                                return {
-                                  ...field,
-                                  options: nextOptions,
-                                }
-                              })
-                            }
-                          />
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="icon"
-                            className="h-9 w-9 rounded-lg"
-                            onClick={() =>
-                              updateSelectedField((field) => {
-                                const nextOptions = [...(field.options ?? [])]
-                                nextOptions.splice(optionIndex, 1)
-                                return {
-                                  ...field,
-                                  options: nextOptions.length ? nextOptions : ['Nova opção'],
-                                }
-                              })
-                            }
+                    <div className="border-border/60 space-y-2 rounded-lg border p-3">
+                      {(selectedField.options ?? []).map(
+                        (option, optionIndex) => (
+                          <div
+                            key={optionIndex}
+                            className="flex items-center gap-2"
                           >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      ))}
+                            <Input
+                              className="h-9 rounded-lg"
+                              value={option}
+                              onChange={(event) =>
+                                updateSelectedField((field) => {
+                                  const nextOptions = [...(field.options ?? [])]
+                                  nextOptions[optionIndex] = event.target.value
+                                  return {
+                                    ...field,
+                                    options: nextOptions,
+                                  }
+                                })
+                              }
+                            />
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon"
+                              className="h-9 w-9 rounded-lg"
+                              onClick={() =>
+                                updateSelectedField((field) => {
+                                  const nextOptions = [...(field.options ?? [])]
+                                  nextOptions.splice(optionIndex, 1)
+                                  return {
+                                    ...field,
+                                    options: nextOptions.length
+                                      ? nextOptions
+                                      : ['Nova opção'],
+                                  }
+                                })
+                              }
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        )
+                      )}
 
                       <Button
                         type="button"
@@ -749,7 +792,7 @@ export function FormBuilder({ mode, formId, initialData }: FormBuilderProps) {
                 )}
 
                 {selectedField.type === 'media' && (
-                  <div className="space-y-2 rounded-lg border border-border/60 p-3">
+                  <div className="border-border/60 space-y-2 rounded-lg border p-3">
                     <div className="flex items-center gap-1.5">
                       <Label className="text-sm">Tipo de arquivo</Label>
                       <TooltipProvider delayDuration={150}>
@@ -791,13 +834,17 @@ export function FormBuilder({ mode, formId, initialData }: FormBuilderProps) {
                     </Select>
 
                     <p className="text-muted-foreground text-xs">
-                      {getMediaLimitMessage(selectedField.mediaConfig?.kind ?? 'image')}
+                      {getMediaLimitMessage(
+                        selectedField.mediaConfig?.kind ?? 'image'
+                      )}
                     </p>
                   </div>
                 )}
 
-                <div className="space-y-2 rounded-lg border border-border/60 p-3">
-                  <p className="text-sm font-medium">Mostrar esta pergunta se...</p>
+                <div className="border-border/60 space-y-2 rounded-lg border p-3">
+                  <p className="text-sm font-medium">
+                    Mostrar esta pergunta se...
+                  </p>
                   {previousFields.length === 0 ? (
                     <p className="text-muted-foreground text-xs">
                       Não há perguntas anteriores para criar uma condição.
@@ -828,7 +875,7 @@ export function FormBuilder({ mode, formId, initialData }: FormBuilderProps) {
                             parent.type === 'boolean'
                               ? false
                               : parent.type === 'select'
-                                ? parentOptions[0] ?? 'Opção'
+                                ? (parentOptions[0] ?? 'Opção')
                                 : ''
 
                           updateSelectedField((field) => ({
@@ -872,7 +919,9 @@ export function FormBuilder({ mode, formId, initialData }: FormBuilderProps) {
                       ) : conditionParentField.type === 'boolean' ? (
                         <Select
                           value={
-                            selectedField.condition.value === true ? 'yes' : 'no'
+                            selectedField.condition.value === true
+                              ? 'yes'
+                              : 'no'
                           }
                           onValueChange={(value) =>
                             updateSelectedField((field) => ({
@@ -913,11 +962,13 @@ export function FormBuilder({ mode, formId, initialData }: FormBuilderProps) {
                             <SelectValue placeholder="Escolher valor" />
                           </SelectTrigger>
                           <SelectContent>
-                            {getValidOptions(conditionParentField.options).map((option) => (
-                              <SelectItem key={option} value={option}>
-                                {option}
-                              </SelectItem>
-                            ))}
+                            {getValidOptions(conditionParentField.options).map(
+                              (option) => (
+                                <SelectItem key={option} value={option}>
+                                  {option}
+                                </SelectItem>
+                              )
+                            )}
                           </SelectContent>
                         </Select>
                       ) : (
@@ -969,10 +1020,14 @@ export function FormBuilder({ mode, formId, initialData }: FormBuilderProps) {
                 <div key={field.id} className="space-y-1.5">
                   <Label className="text-sm font-medium">
                     {field.label}
-                    {field.required && <span className="text-destructive"> *</span>}
+                    {field.required && (
+                      <span className="text-destructive"> *</span>
+                    )}
                   </Label>
                   {field.helpText && (
-                    <p className="text-muted-foreground text-xs">{field.helpText}</p>
+                    <p className="text-muted-foreground text-xs">
+                      {field.helpText}
+                    </p>
                   )}
 
                   {field.type === 'textarea' && (
@@ -1049,7 +1104,7 @@ export function FormBuilder({ mode, formId, initialData }: FormBuilderProps) {
                     </Select>
                   )}
 
-                  {field.type === 'select' && (
+                  {field.type === 'select' &&
                     (() => {
                       const validOptions = getValidOptions(field.options)
                       if (validOptions.length === 0) {
@@ -1082,14 +1137,16 @@ export function FormBuilder({ mode, formId, initialData }: FormBuilderProps) {
                           </SelectContent>
                         </Select>
                       )
-                    })()
-                  )}
+                    })()}
 
                   {field.type === 'media' && (
                     <div className="space-y-1.5">
                       <Input
                         type="file"
-                        accept={MEDIA_LIMITS[field.mediaConfig?.kind ?? 'image'].accept}
+                        accept={
+                          MEDIA_LIMITS[field.mediaConfig?.kind ?? 'image']
+                            .accept
+                        }
                         className="h-10 rounded-lg"
                         onChange={(event) =>
                           setPreviewValues((current) => ({
@@ -1099,7 +1156,9 @@ export function FormBuilder({ mode, formId, initialData }: FormBuilderProps) {
                         }
                       />
                       <p className="text-muted-foreground text-xs">
-                        {getMediaLimitMessage(field.mediaConfig?.kind ?? 'image')}
+                        {getMediaLimitMessage(
+                          field.mediaConfig?.kind ?? 'image'
+                        )}
                       </p>
                     </div>
                   )}
@@ -1109,10 +1168,10 @@ export function FormBuilder({ mode, formId, initialData }: FormBuilderProps) {
         </CardContent>
       </Card>
 
-      <div className="bg-background/90 sticky bottom-0 z-10 -mx-4 border-t border-border/40 px-4 py-3 backdrop-blur sm:static sm:mx-0 sm:flex sm:justify-end sm:border-0 sm:bg-transparent sm:p-0">
+      <div className="bg-background/90 border-border/40 sticky bottom-0 z-10 -mx-4 border-t px-4 py-3 backdrop-blur sm:static sm:mx-0 sm:flex sm:justify-end sm:border-0 sm:bg-transparent sm:p-0">
         <Button
           type="button"
-          className="w-full rounded-xl shadow-primary-glow transition-all duration-200 hover:shadow-primary-glow-hover sm:w-auto"
+          className="shadow-primary-glow hover:shadow-primary-glow-hover w-full rounded-xl transition-all duration-200 sm:w-auto"
           disabled={isPending}
           onClick={saveForm}
         >
@@ -1144,7 +1203,7 @@ export function FormBuilder({ mode, formId, initialData }: FormBuilderProps) {
                 key={option.type}
                 type="button"
                 onClick={() => addField(option.type)}
-                className="w-full rounded-lg border border-border/60 px-3 py-2.5 text-left transition-all duration-200 hover:border-border hover:bg-muted/30"
+                className="border-border/60 hover:border-border hover:bg-muted/30 w-full rounded-lg border px-3 py-2.5 text-left transition-all duration-200"
               >
                 <p className="text-sm font-medium">{option.title}</p>
                 <p className="text-muted-foreground mt-0.5 text-xs">

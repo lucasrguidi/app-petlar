@@ -47,7 +47,7 @@ export function FormsFilterBar({
   }, [searchValue, filters.search, onFilterChange])
 
   return (
-    <div className="shrink-0 rounded-xl border border-border/60 bg-card/95 p-2.5 shadow-warm-sm sm:p-3">
+    <div className="border-border/60 bg-card/95 shadow-warm-sm shrink-0 rounded-xl border p-2.5 sm:p-3">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
         <Select
           value={filters.status || 'all'}
@@ -67,7 +67,7 @@ export function FormsFilterBar({
         </Select>
 
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
           <Input
             placeholder="Buscar por nome..."
             value={searchValue}

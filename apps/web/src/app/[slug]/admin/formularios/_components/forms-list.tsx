@@ -50,8 +50,8 @@ export function FormsList({ filters, onClearFilters }: FormsListProps) {
 
   if (isError) {
     return (
-      <div className="rounded-xl border border-destructive/20 bg-destructive/5 p-4 text-center shadow-warm-sm">
-        <p className="inline-flex items-center gap-2 text-sm text-destructive">
+      <div className="border-destructive/20 bg-destructive/5 shadow-warm-sm rounded-xl border p-4 text-center">
+        <p className="text-destructive inline-flex items-center gap-2 text-sm">
           <AlertTriangle className="h-4 w-4" />
           Erro ao carregar formulários.
         </p>
@@ -79,15 +79,15 @@ export function FormsList({ filters, onClearFilters }: FormsListProps) {
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-3">
       {/* Results count */}
-      <div className="flex shrink-0 items-center justify-between rounded-xl border border-border/60 bg-card/95 px-3 py-2 shadow-warm-sm">
-        <p className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground">
-          <FileText className="h-4 w-4 text-primary" />
+      <div className="border-border/60 bg-card/95 shadow-warm-sm flex shrink-0 items-center justify-between rounded-xl border px-3 py-2">
+        <p className="text-muted-foreground inline-flex items-center gap-2 text-sm font-medium">
+          <FileText className="text-primary h-4 w-4" />
           {filteredForms.length} formulário
           {filteredForms.length !== 1 && 's'} encontrado
           {filteredForms.length !== 1 && 's'}
         </p>
         {isFetching && (
-          <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+          <span className="text-muted-foreground inline-flex items-center gap-1.5 text-xs">
             <Loader2 className="h-3.5 w-3.5 animate-spin" />
             Atualizando...
           </span>

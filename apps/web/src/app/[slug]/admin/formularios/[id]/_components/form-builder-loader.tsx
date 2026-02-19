@@ -27,10 +27,10 @@ export function FormBuilderLoader({ formId }: FormBuilderLoaderProps) {
     return (
       <Card className="rounded-xl">
         <CardContent className="flex flex-col items-center justify-center gap-4 py-12">
-          <AlertCircle className="h-12 w-12 text-destructive" />
+          <AlertCircle className="text-destructive h-12 w-12" />
           <div className="text-center">
             <p className="font-medium">Erro ao carregar formulário</p>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               {error?.message || 'Tente novamente em instantes'}
             </p>
           </div>
@@ -46,7 +46,7 @@ export function FormBuilderLoader({ formId }: FormBuilderLoaderProps) {
     return (
       <Card className="rounded-xl">
         <CardContent className="flex flex-col items-center justify-center gap-4 py-12">
-          <AlertCircle className="h-12 w-12 text-muted-foreground" />
+          <AlertCircle className="text-muted-foreground h-12 w-12" />
           <p className="text-muted-foreground">Formulário não encontrado</p>
         </CardContent>
       </Card>

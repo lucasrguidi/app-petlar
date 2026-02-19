@@ -4,7 +4,7 @@ export function FormBuilderSkeleton() {
   return (
     <div className="mx-auto w-full max-w-6xl space-y-4 pb-2">
       {/* Form data card */}
-      <div className="rounded-xl border border-border/60 bg-card/95 shadow-warm-sm">
+      <div className="border-border/60 bg-card/95 shadow-warm-sm rounded-xl border">
         <div className="space-y-1 p-4 pb-2 sm:p-5 sm:pb-3">
           <div className="flex items-center gap-2">
             <Skeleton className="h-4 w-4 rounded" />
@@ -23,7 +23,7 @@ export function FormBuilderSkeleton() {
               <Skeleton className="h-10 w-full rounded-lg" />
             </div>
           </div>
-          <div className="flex items-center justify-between rounded-lg border border-border/60 px-3 py-2">
+          <div className="border-border/60 flex items-center justify-between rounded-lg border px-3 py-2">
             <div className="space-y-1">
               <Skeleton className="h-4 w-28" />
               <Skeleton className="h-3 w-56" />
@@ -36,7 +36,7 @@ export function FormBuilderSkeleton() {
       {/* Two-column grid */}
       <div className="grid gap-4 xl:grid-cols-[0.95fr_1.1fr]">
         {/* Questions card */}
-        <div className="rounded-xl border border-border/60 bg-card/95 shadow-warm-sm">
+        <div className="border-border/60 bg-card/95 shadow-warm-sm rounded-xl border">
           <div className="space-y-1 p-4 pb-2 sm:p-5 sm:pb-3">
             <div className="flex items-center justify-between gap-3">
               <div className="space-y-1">
@@ -50,7 +50,7 @@ export function FormBuilderSkeleton() {
             {Array.from({ length: 3 }).map((_, index) => (
               <div
                 key={index}
-                className="rounded-lg border border-border/60 px-3 py-2"
+                className="border-border/60 rounded-lg border px-3 py-2"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0 space-y-1">
@@ -72,7 +72,7 @@ export function FormBuilderSkeleton() {
         </div>
 
         {/* Config card */}
-        <div className="rounded-xl border border-border/60 bg-card/95 shadow-warm-sm">
+        <div className="border-border/60 bg-card/95 shadow-warm-sm rounded-xl border">
           <div className="space-y-1 p-4 pb-2 sm:p-5 sm:pb-3">
             <Skeleton className="h-5 w-36" />
             <Skeleton className="h-4 w-56" />
@@ -82,7 +82,7 @@ export function FormBuilderSkeleton() {
               <Skeleton className="h-4 w-32" />
               <Skeleton className="h-10 w-full rounded-lg" />
             </div>
-            <div className="flex items-center justify-between rounded-lg border border-border/60 px-3 py-2">
+            <div className="border-border/60 flex items-center justify-between rounded-lg border px-3 py-2">
               <div className="space-y-1">
                 <Skeleton className="h-4 w-20" />
                 <Skeleton className="h-3 w-48" />
@@ -98,7 +98,7 @@ export function FormBuilderSkeleton() {
       </div>
 
       {/* Preview card */}
-      <div className="rounded-xl border border-border/60 bg-card/95 shadow-warm-sm">
+      <div className="border-border/60 bg-card/95 shadow-warm-sm rounded-xl border">
         <div className="space-y-1 p-4 pb-2 sm:p-5 sm:pb-3">
           <div className="flex items-center gap-2">
             <Skeleton className="h-4 w-4 rounded" />

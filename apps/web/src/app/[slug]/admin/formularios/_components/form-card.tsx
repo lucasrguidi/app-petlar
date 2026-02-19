@@ -33,16 +33,16 @@ export function FormCard({ form }: FormCardProps) {
   const hasLinkedCats = form.linkedCatsCount > 0
 
   return (
-    <div className="group relative overflow-hidden rounded-xl border border-border/60 bg-card/95 shadow-warm-sm transition-all duration-200 hover:border-border hover:shadow-md">
+    <div className="group border-border/60 bg-card/95 shadow-warm-sm hover:border-border relative overflow-hidden rounded-xl border transition-all duration-200 hover:shadow-md">
       {/* Left accent bar on hover */}
-      <div className="absolute left-0 top-0 h-full w-1 bg-transparent transition-colors group-hover:bg-primary/50" />
+      <div className="group-hover:bg-primary/50 absolute top-0 left-0 h-full w-1 bg-transparent transition-colors" />
 
       <div className="flex flex-col gap-3 p-4 lg:flex-row lg:items-center lg:justify-between">
         {/* Info section */}
         <div className="flex items-start gap-3">
           {/* Icon container */}
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10">
-            <FileText className="h-5 w-5 text-primary" />
+          <div className="bg-primary/10 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl">
+            <FileText className="text-primary h-5 w-5" />
           </div>
 
           <div className="min-w-0 space-y-1.5">
@@ -59,7 +59,7 @@ export function FormCard({ form }: FormCardProps) {
             </div>
 
             {/* Metadata */}
-            <p className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+            <p className="text-muted-foreground inline-flex items-center gap-1.5 text-xs">
               <CalendarClock className="h-3.5 w-3.5" />
               Editado em {formatUpdatedAt(form.updatedAt)}
             </p>
@@ -92,8 +92,8 @@ export function FormCard({ form }: FormCardProps) {
 
       {/* Warning for linked cats */}
       {hasLinkedCats && (
-        <div className="border-t border-border/40 bg-muted/20 px-4 py-2">
-          <p className="text-xs text-muted-foreground">
+        <div className="border-border/40 bg-muted/20 border-t px-4 py-2">
+          <p className="text-muted-foreground text-xs">
             Este formulário está em uso e não pode ser excluído.
           </p>
         </div>

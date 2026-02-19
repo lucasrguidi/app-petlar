@@ -4,7 +4,7 @@ function FormsCardsSkeleton() {
   return (
     <>
       {/* Results count skeleton */}
-      <div className="shrink-0 rounded-xl border border-border/60 bg-card/95 px-3 py-2 shadow-warm-sm">
+      <div className="border-border/60 bg-card/95 shadow-warm-sm shrink-0 rounded-xl border px-3 py-2">
         <Skeleton className="h-5 w-44" />
       </div>
 
@@ -13,7 +13,7 @@ function FormsCardsSkeleton() {
         {Array.from({ length: 4 }).map((_, index) => (
           <div
             key={index}
-            className="rounded-xl border border-border/60 bg-card/95 p-4 shadow-warm-sm"
+            className="border-border/60 bg-card/95 shadow-warm-sm rounded-xl border p-4"
           >
             <div className="flex items-start gap-3">
               {/* Icon */}
@@ -54,7 +54,7 @@ export function FormsLoadingSkeleton() {
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-3">
       {/* Filter bar skeleton */}
-      <div className="shrink-0 rounded-xl border border-border/60 bg-card/95 p-2.5 shadow-warm-sm sm:p-3">
+      <div className="border-border/60 bg-card/95 shadow-warm-sm shrink-0 rounded-xl border p-2.5 sm:p-3">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
           <Skeleton className="h-10 w-full rounded-xl sm:w-[180px]" />
           <Skeleton className="h-10 flex-1 rounded-xl" />
