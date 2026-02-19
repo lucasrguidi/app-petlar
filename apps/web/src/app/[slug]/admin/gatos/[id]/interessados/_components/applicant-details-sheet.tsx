@@ -17,7 +17,12 @@ import {
 import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 
-import { formatDate, formatDateTime, getStatusLabel, toWhatsappLink } from './helpers'
+import {
+  formatDate,
+  formatDateTime,
+  getStatusLabel,
+  toWhatsappLink,
+} from './helpers'
 
 import type { ApplicationStatus } from './types'
 
@@ -121,7 +126,9 @@ function MediaPreviewCard({ file }: { file: ApplicationFile }) {
       {hasError ? (
         <div className="border-border/60 bg-muted/20 flex min-h-44 flex-col items-center justify-center rounded-xl border px-4 py-6 text-center">
           <AlertTriangle className="text-warning h-5 w-5" />
-          <p className="mt-2 text-sm font-medium">Não foi possível carregar a mídia</p>
+          <p className="mt-2 text-sm font-medium">
+            Não foi possível carregar a mídia
+          </p>
           <p className="text-muted-foreground mt-1 text-xs">
             Tente novamente ou abra em nova aba.
           </p>
@@ -137,7 +144,7 @@ function MediaPreviewCard({ file }: { file: ApplicationFile }) {
           </Button>
         </div>
       ) : file.fileType === 'image' ? (
-        <div className="bg-muted/30 overflow-hidden rounded-xl border border-border/40">
+        <div className="bg-muted/30 border-border/40 overflow-hidden rounded-xl border">
           <img
             key={retryKey}
             src={file.url}
@@ -148,7 +155,7 @@ function MediaPreviewCard({ file }: { file: ApplicationFile }) {
           />
         </div>
       ) : (
-        <div className="bg-muted/30 overflow-hidden rounded-xl border border-border/40">
+        <div className="bg-muted/30 border-border/40 overflow-hidden rounded-xl border">
           <video
             key={retryKey}
             controls
@@ -196,7 +203,8 @@ export function ApplicantDetailsSheet({
   onOpenChange,
 }: ApplicantDetailsSheetProps) {
   const queryClient = useQueryClient()
-  const [selectedStatus, setSelectedStatus] = useState<ApplicationStatus>('pending')
+  const [selectedStatus, setSelectedStatus] =
+    useState<ApplicationStatus>('pending')
 
   const detailsQuery = useQuery({
     ...trpc.applications.getById.queryOptions({ id: applicationId ?? '' }),
@@ -237,13 +245,13 @@ export function ApplicantDetailsSheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="right"
-        className="w-full overflow-y-auto border-border/60 p-0 sm:max-w-2xl"
+        className="border-border/60 w-full overflow-y-auto p-0 sm:max-w-2xl"
       >
-        <SheetHeader className="sticky top-0 z-20 border-b border-border/40 bg-gradient-to-b from-card to-card/95 px-5 py-4">
+        <SheetHeader className="border-border/40 from-card to-card/95 sticky top-0 z-20 border-b bg-gradient-to-b px-5 py-4">
           <div className="flex items-center justify-between gap-3">
             <div className="flex min-w-0 items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
-                <UserRound className="h-5 w-5 text-primary" />
+              <div className="bg-primary/10 flex h-10 w-10 items-center justify-center rounded-xl">
+                <UserRound className="text-primary h-5 w-5" />
               </div>
               <div className="min-w-0">
                 <SheetTitle className="font-display text-lg">
@@ -289,10 +297,10 @@ export function ApplicantDetailsSheet({
           </div>
         ) : !data ? null : (
           <div className="space-y-5 p-5">
-            <div className="rounded-xl border border-border/60 bg-card/95 p-4 shadow-warm-sm">
+            <div className="border-border/60 bg-card/95 shadow-warm-sm rounded-xl border p-4">
               <div className="flex gap-4">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10">
-                  <span className="text-lg font-semibold text-primary">
+                <div className="bg-primary/10 flex h-12 w-12 shrink-0 items-center justify-center rounded-xl">
+                  <span className="text-primary text-lg font-semibold">
                     {getInitials(data.application.applicantName)}
                   </span>
                 </div>
@@ -303,7 +311,7 @@ export function ApplicantDetailsSheet({
                       <h3 className="text-lg font-semibold">
                         {data.application.applicantName}
                       </h3>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-muted-foreground text-xs">
                         Confirmada em{' '}
                         {formatDateTime(
                           data.application.confirmedAt ??
@@ -316,7 +324,7 @@ export function ApplicantDetailsSheet({
                       return (
                         <Badge
                           variant={config.variant}
-                          className="gap-1.5 whitespace-nowrap px-2 py-0.5 text-[11px] font-medium"
+                          className="gap-1.5 px-2 py-0.5 text-[11px] font-medium whitespace-nowrap"
                         >
                           <span
                             className={cn(
@@ -333,7 +341,7 @@ export function ApplicantDetailsSheet({
                   <div className="flex flex-wrap gap-x-4 gap-y-1">
                     <a
                       href={`mailto:${data.application.applicantEmail}`}
-                      className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
+                      className="text-primary inline-flex items-center gap-1.5 text-sm hover:underline"
                     >
                       <Mail className="h-3.5 w-3.5" />
                       {data.application.applicantEmail}
@@ -342,7 +350,7 @@ export function ApplicantDetailsSheet({
                       href={toWhatsappLink(data.application.applicantWhatsapp)}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
+                      className="text-primary inline-flex items-center gap-1.5 text-sm hover:underline"
                     >
                       <MessageCircle className="h-3.5 w-3.5" />
                       WhatsApp
@@ -352,7 +360,7 @@ export function ApplicantDetailsSheet({
               </div>
             </div>
 
-            <div className="space-y-3 rounded-xl border border-border/60 bg-card/95 p-4 shadow-warm-sm">
+            <div className="border-border/60 bg-card/95 shadow-warm-sm space-y-3 rounded-xl border p-4">
               <Label className="text-sm font-semibold">Atualizar status</Label>
               <div className="flex flex-col gap-2 sm:flex-row">
                 <Select
@@ -398,10 +406,12 @@ export function ApplicantDetailsSheet({
               </div>
             </div>
 
-            <div className="space-y-3 rounded-xl border border-border/60 bg-card/95 p-4">
+            <div className="border-border/60 bg-card/95 space-y-3 rounded-xl border p-4">
               <div className="flex items-center gap-2">
-                <FileText className="h-4 w-4 text-primary" />
-                <h3 className="text-sm font-semibold">Respostas do formulário</h3>
+                <FileText className="text-primary h-4 w-4" />
+                <h3 className="text-sm font-semibold">
+                  Respostas do formulário
+                </h3>
               </div>
               {visibleResponses.length === 0 ? (
                 <p className="text-muted-foreground text-sm">
@@ -426,9 +436,9 @@ export function ApplicantDetailsSheet({
               )}
             </div>
 
-            <div className="space-y-3 rounded-xl border border-border/60 bg-card/95 p-4">
+            <div className="border-border/60 bg-card/95 space-y-3 rounded-xl border p-4">
               <div className="flex items-center gap-2">
-                <Video className="h-4 w-4 text-primary" />
+                <Video className="text-primary h-4 w-4" />
                 <h3 className="text-sm font-semibold">Mídias enviadas</h3>
               </div>
 

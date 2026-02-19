@@ -62,9 +62,8 @@ export function ApplicantsFilterDrawer({
   onApply,
   onClear,
 }: ApplicantsFilterDrawerProps) {
-  const [localFilters, setLocalFilters] = useState<DynamicFilterInput[]>(
-    dynamicFilters
-  )
+  const [localFilters, setLocalFilters] =
+    useState<DynamicFilterInput[]>(dynamicFilters)
 
   const filtersByField = useMemo(
     () => new Map(localFilters.map((filter) => [filter.fieldId, filter])),
@@ -270,7 +269,8 @@ export function ApplicantsFilterDrawer({
                       </Select>
                       <Input
                         value={
-                          currentFilter && typeof currentFilter.value === 'string'
+                          currentFilter &&
+                          typeof currentFilter.value === 'string'
                             ? currentFilter.value
                             : ''
                         }
@@ -290,7 +290,9 @@ export function ApplicantsFilterDrawer({
                           ? currentFilter.value
                           : 'all'
                       }
-                      onValueChange={(value) => handleSelectChange(field.id, value)}
+                      onValueChange={(value) =>
+                        handleSelectChange(field.id, value)
+                      }
                     >
                       <SelectTrigger className="h-10 rounded-xl">
                         <SelectValue placeholder="Qualquer" />
@@ -309,11 +311,14 @@ export function ApplicantsFilterDrawer({
                   {field.type === 'boolean' && (
                     <Select
                       value={
-                        currentFilter && typeof currentFilter.value === 'boolean'
+                        currentFilter &&
+                        typeof currentFilter.value === 'boolean'
                           ? String(currentFilter.value)
                           : 'all'
                       }
-                      onValueChange={(value) => handleBooleanChange(field.id, value)}
+                      onValueChange={(value) =>
+                        handleBooleanChange(field.id, value)
+                      }
                     >
                       <SelectTrigger className="h-10 rounded-xl">
                         <SelectValue placeholder="Qualquer" />
@@ -354,7 +359,8 @@ export function ApplicantsFilterDrawer({
                       <Input
                         type="date"
                         value={
-                          currentFilter && typeof currentFilter.value === 'string'
+                          currentFilter &&
+                          typeof currentFilter.value === 'string'
                             ? currentFilter.value
                             : ''
                         }

@@ -115,10 +115,10 @@ export function ApplicantsList({
             <img
               src={data.cat.photoUrl}
               alt={data.cat.name}
-              className="h-10 w-10 shrink-0 rounded-xl border border-border/40 object-cover"
+              className="border-border/40 h-10 w-10 shrink-0 rounded-xl border object-cover"
             />
           ) : (
-            <div className="bg-muted text-muted-foreground flex h-10 w-10 items-center justify-center rounded-xl border border-border/40">
+            <div className="bg-muted text-muted-foreground border-border/40 flex h-10 w-10 items-center justify-center rounded-xl border">
               <PawPrint className="h-4 w-4" />
             </div>
           )}

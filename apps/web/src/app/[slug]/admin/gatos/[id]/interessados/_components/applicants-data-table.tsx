@@ -82,7 +82,7 @@ function getColumns(
 
         return (
           <div className="space-y-0.5">
-            <p className="text-foreground truncate text-sm font-semibold leading-tight">
+            <p className="text-foreground truncate text-sm leading-tight font-semibold">
               {applicant.applicantName}
             </p>
             <a
@@ -149,7 +149,7 @@ function getColumns(
           return (
             <Badge
               variant={config.variant}
-              className="gap-1.5 whitespace-nowrap px-2 py-0.5 text-[11px] font-medium"
+              className="gap-1.5 px-2 py-0.5 text-[11px] font-medium whitespace-nowrap"
             >
               <span
                 className={cn('h-1.5 w-1.5 rounded-full', config.dotClass)}
@@ -168,7 +168,7 @@ function getColumns(
               }
               disabled={isThisUpdating}
             >
-              <SelectTrigger className="h-8 w-[118px] rounded-lg border-border/60 text-xs sm:w-[130px]">
+              <SelectTrigger className="border-border/60 h-8 w-[118px] rounded-lg text-xs sm:w-[130px]">
                 {isThisUpdating ? (
                   <span className="flex items-center gap-1.5">
                     <Loader2 className="h-3 w-3 animate-spin" />
@@ -177,7 +177,10 @@ function getColumns(
                 ) : (
                   <span className="flex items-center gap-1.5">
                     <span
-                      className={cn('h-1.5 w-1.5 rounded-full', config.dotClass)}
+                      className={cn(
+                        'h-1.5 w-1.5 rounded-full',
+                        config.dotClass
+                      )}
                     />
                     <SelectValue />
                   </span>
@@ -186,25 +189,25 @@ function getColumns(
               <SelectContent>
                 <SelectItem value="pending">
                   <span className="flex items-center gap-1.5">
-                    <span className="h-1.5 w-1.5 rounded-full bg-warning" />
+                    <span className="bg-warning h-1.5 w-1.5 rounded-full" />
                     Pendente
                   </span>
                 </SelectItem>
                 <SelectItem value="reviewing">
                   <span className="flex items-center gap-1.5">
-                    <span className="h-1.5 w-1.5 rounded-full bg-info" />
+                    <span className="bg-info h-1.5 w-1.5 rounded-full" />
                     Em análise
                   </span>
                 </SelectItem>
                 <SelectItem value="approved">
                   <span className="flex items-center gap-1.5">
-                    <span className="h-1.5 w-1.5 rounded-full bg-success" />
+                    <span className="bg-success h-1.5 w-1.5 rounded-full" />
                     Aprovado
                   </span>
                 </SelectItem>
                 <SelectItem value="rejected">
                   <span className="flex items-center gap-1.5">
-                    <span className="h-1.5 w-1.5 rounded-full bg-destructive" />
+                    <span className="bg-destructive h-1.5 w-1.5 rounded-full" />
                     Recusado
                   </span>
                 </SelectItem>

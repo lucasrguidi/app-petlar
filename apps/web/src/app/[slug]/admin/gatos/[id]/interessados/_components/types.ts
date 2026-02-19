@@ -1,4 +1,8 @@
-export type ApplicationStatus = 'pending' | 'reviewing' | 'approved' | 'rejected'
+export type ApplicationStatus =
+  | 'pending'
+  | 'reviewing'
+  | 'approved'
+  | 'rejected'
 export type DynamicFilterOperator = 'contains' | 'equals' | 'before' | 'after'
 export type FilterableFieldType = 'text' | 'select' | 'boolean' | 'date'
 

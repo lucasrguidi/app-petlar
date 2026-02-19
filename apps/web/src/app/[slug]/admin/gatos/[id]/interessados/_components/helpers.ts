@@ -20,19 +20,15 @@ const VALID_OPERATORS: DynamicFilterOperator[] = [
   'after',
 ]
 
-function isValidOperator(
-  value: unknown
-): value is DynamicFilterOperator {
+function isValidOperator(value: unknown): value is DynamicFilterOperator {
   return (
-    typeof value === 'string' &&
-    (VALID_OPERATORS as string[]).includes(value)
+    typeof value === 'string' && (VALID_OPERATORS as string[]).includes(value)
   )
 }
 
 function isValidStatus(value: unknown): value is ApplicationStatus {
   return (
-    typeof value === 'string' &&
-    (VALID_STATUSES as string[]).includes(value)
+    typeof value === 'string' && (VALID_STATUSES as string[]).includes(value)
   )
 }
 
@@ -40,7 +36,9 @@ function isFilterValueValid(value: unknown): value is string | boolean {
   return typeof value === 'string' || typeof value === 'boolean'
 }
 
-export function parseDynamicFilters(raw: string | undefined): DynamicFilterInput[] {
+export function parseDynamicFilters(
+  raw: string | undefined
+): DynamicFilterInput[] {
   if (!raw) return []
 
   try {
@@ -81,7 +79,9 @@ export function parseApplicantsFilters(searchParams: {
   const pageRaw = Number.parseInt(searchParams.page ?? '1', 10)
 
   return {
-    status: isValidStatus(searchParams.status) ? searchParams.status : undefined,
+    status: isValidStatus(searchParams.status)
+      ? searchParams.status
+      : undefined,
     search: searchParams.search?.trim() || undefined,
     page: Number.isFinite(pageRaw) && pageRaw > 0 ? pageRaw : 1,
     dynamicFilters: parseDynamicFilters(searchParams.dynamicFilters),

@@ -21,7 +21,8 @@ import { Button } from '@/components/ui/button'
 import { trpc } from '@/utils/trpc'
 
 const ApplicantsFilterDrawer = dynamic(
-  () => import('./applicants-filter-drawer').then((m) => m.ApplicantsFilterDrawer),
+  () =>
+    import('./applicants-filter-drawer').then((m) => m.ApplicantsFilterDrawer),
   { ssr: false }
 )
 
@@ -42,9 +43,9 @@ export function ApplicantsPageContent({
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [drawerOpen, setDrawerOpen] = useState(false)
-  const [selectedApplicationId, setSelectedApplicationId] = useState<string | null>(
-    null
-  )
+  const [selectedApplicationId, setSelectedApplicationId] = useState<
+    string | null
+  >(null)
 
   const filters = useMemo(
     () => parseApplicantsFilters(searchParams),
@@ -86,7 +87,10 @@ export function ApplicantsPageContent({
         }
 
         if (merged.dynamicFilters.length > 0) {
-          params.set('dynamicFilters', serializeDynamicFilters(merged.dynamicFilters))
+          params.set(
+            'dynamicFilters',
+            serializeDynamicFilters(merged.dynamicFilters)
+          )
         }
 
         if (merged.page > 1) {
@@ -201,7 +205,9 @@ export function ApplicantsPageContent({
         hasFilters={hasActiveFilters}
         onClearFilters={clearAllFilters}
         onPageChange={handlePageChange}
-        onOpenDetails={(applicationId) => setSelectedApplicationId(applicationId)}
+        onOpenDetails={(applicationId) =>
+          setSelectedApplicationId(applicationId)
+        }
       />
 
       <ApplicantsFilterDrawer
