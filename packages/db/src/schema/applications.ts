@@ -33,7 +33,9 @@ export const applications = sqliteTable(
     catId: text('cat_id')
       .notNull()
       .references(() => cats.id, { onDelete: 'cascade' }),
-    formId: text('form_id').references(() => forms.id, { onDelete: 'set null' }), // Snapshot - form may be deleted later
+    formId: text('form_id').references(() => forms.id, {
+      onDelete: 'set null',
+    }), // Snapshot - form may be deleted later
 
     // Status
     status: text('status', { enum: applicationStatuses })
@@ -49,7 +51,9 @@ export const applications = sqliteTable(
     applicantWhatsapp: text('applicant_whatsapp').notNull(),
 
     // Dynamic form responses (JSON)
-    responses: text('responses', { mode: 'json' }).$type<ApplicationResponses>(),
+    responses: text('responses', {
+      mode: 'json',
+    }).$type<ApplicationResponses>(),
 
     // Consents (LGPD)
     lgpdConsent: integer('lgpd_consent', { mode: 'boolean' }).notNull(),
@@ -121,15 +125,20 @@ export const applicationFiles = sqliteTable(
       .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
       .notNull(),
   },
-  (table) => [index('applicationFiles_applicationId_idx').on(table.applicationId)]
+  (table) => [
+    index('applicationFiles_applicationId_idx').on(table.applicationId),
+  ]
 )
 
-export const applicationsRelations = relations(applications, ({ one, many }) => ({
-  org: one(orgs, { fields: [applications.orgId], references: [orgs.id] }),
-  cat: one(cats, { fields: [applications.catId], references: [cats.id] }),
-  form: one(forms, { fields: [applications.formId], references: [forms.id] }),
-  files: many(applicationFiles),
-}))
+export const applicationsRelations = relations(
+  applications,
+  ({ one, many }) => ({
+    org: one(orgs, { fields: [applications.orgId], references: [orgs.id] }),
+    cat: one(cats, { fields: [applications.catId], references: [cats.id] }),
+    form: one(forms, { fields: [applications.formId], references: [forms.id] }),
+    files: many(applicationFiles),
+  })
+)
 
 export const applicationFilesRelations = relations(
   applicationFiles,

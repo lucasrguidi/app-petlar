@@ -214,8 +214,7 @@ async function seed() {
       id: defaultFormId,
       orgId,
       name: defaultFormName,
-      description:
-        'Modelo inicial para candidatura de adoção no site público.',
+      description: 'Modelo inicial para candidatura de adoção no site público.',
       active: true,
     })
 
@@ -393,10 +392,7 @@ async function seed() {
     .select({ id: schema.cats.id })
     .from(schema.cats)
     .where(
-      and(
-        eq(schema.cats.orgId, orgId),
-        sql`${schema.cats.formId} is null`
-      )
+      and(eq(schema.cats.orgId, orgId), sql`${schema.cats.formId} is null`)
     )
 
   if (catsWithoutForm.length > 0) {
@@ -404,12 +400,11 @@ async function seed() {
       .update(schema.cats)
       .set({ formId: defaultFormId, formSnapshot: defaultFormSnapshot })
       .where(
-        and(
-          eq(schema.cats.orgId, orgId),
-          sql`${schema.cats.formId} is null`
-        )
+        and(eq(schema.cats.orgId, orgId), sql`${schema.cats.formId} is null`)
       )
-    console.log(`✅ ${catsWithoutForm.length} gatos vinculados ao formulário padrão`)
+    console.log(
+      `✅ ${catsWithoutForm.length} gatos vinculados ao formulário padrão`
+    )
   }
 
   const catsWithoutSnapshot = await db
@@ -592,8 +587,11 @@ async function seed() {
 
   const snapshotCache = new Map<string, schema.CatFormFieldSnapshot[]>()
 
-  const applicationsToInsert: Array<typeof schema.applications.$inferInsert> = []
-  const applicationFilesToInsert: Array<typeof schema.applicationFiles.$inferInsert> = []
+  const applicationsToInsert: Array<typeof schema.applications.$inferInsert> =
+    []
+  const applicationFilesToInsert: Array<
+    typeof schema.applicationFiles.$inferInsert
+  > = []
 
   let globalCandidateIndex = 0
 
@@ -614,11 +612,17 @@ async function seed() {
 
     const applicationsCount = randomInt(3, 8)
 
-    for (let applicationIndex = 0; applicationIndex < applicationsCount; applicationIndex++) {
+    for (
+      let applicationIndex = 0;
+      applicationIndex < applicationsCount;
+      applicationIndex++
+    ) {
       globalCandidateIndex += 1
 
       const firstName =
-        candidatesFirstNames[globalCandidateIndex % candidatesFirstNames.length]!
+        candidatesFirstNames[
+          globalCandidateIndex % candidatesFirstNames.length
+        ]!
       const lastName =
         candidatesLastNames[globalCandidateIndex % candidatesLastNames.length]!
       const applicantName = `${firstName} ${lastName}`
@@ -631,7 +635,9 @@ async function seed() {
       const confirmedAt = new Date(createdAt.getTime() + 10 * 60 * 1000)
 
       const responses: Record<string, string | boolean | null> = {}
-      const filesForApplication: Array<typeof schema.applicationFiles.$inferInsert> = []
+      const filesForApplication: Array<
+        typeof schema.applicationFiles.$inferInsert
+      > = []
 
       for (const field of [...snapshot].sort((a, b) => a.order - b.order)) {
         if (field.condition) {
@@ -662,7 +668,8 @@ async function seed() {
         }
 
         if (field.type === 'textarea') {
-          responses[field.id] = `Tenho rotina estável e experiência com gatos. Candidatura ${globalCandidateIndex}.`
+          responses[field.id] =
+            `Tenho rotina estável e experiência com gatos. Candidatura ${globalCandidateIndex}.`
           continue
         }
 
@@ -685,7 +692,8 @@ async function seed() {
           continue
         }
 
-        responses[field.id] = `Resposta ${globalCandidateIndex} - ${field.label}`
+        responses[field.id] =
+          `Resposta ${globalCandidateIndex} - ${field.label}`
       }
 
       const applicationId = crypto.randomUUID()

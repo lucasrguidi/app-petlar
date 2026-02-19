@@ -58,12 +58,12 @@ export const formFields = sqliteTable(
     required: integer('required', { mode: 'boolean' }).notNull().default(false),
     helpText: text('help_text'),
     options: text('options', { mode: 'json' }).$type<string[] | null>(),
-    condition: text('condition', { mode: 'json' }).$type<
-      FormFieldCondition | null
-    >(),
-    mediaConfig: text('media_config', { mode: 'json' }).$type<
-      FormFieldMediaConfig | null
-    >(),
+    condition: text('condition', {
+      mode: 'json',
+    }).$type<FormFieldCondition | null>(),
+    mediaConfig: text('media_config', {
+      mode: 'json',
+    }).$type<FormFieldMediaConfig | null>(),
     createdAt: integer('created_at', { mode: 'timestamp_ms' })
       .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
       .notNull(),
