@@ -1,5 +1,6 @@
 import { protectedProcedure, publicProcedure, router } from '../index'
 
+import { adoptionsRouter } from './adoptions'
 import { applicationsRouter } from './applications'
 import { catsRouter } from './cats'
 import { formsRouter } from './forms'
@@ -16,6 +17,7 @@ export const appRouter = router({
       user: ctx.session.user,
     }
   }),
+  adoptions: adoptionsRouter,
   applications: applicationsRouter,
   upload: uploadRouter,
   cats: catsRouter,
