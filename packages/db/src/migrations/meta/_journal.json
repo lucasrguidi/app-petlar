@@ -57,6 +57,13 @@
       "when": 1770876030715,
       "tag": "0007_add-phase5-candidate-foundation",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1771471965630,
+      "tag": "0008_add-adoptions-table",
+      "breakpoints": true
     }
   ]
 }

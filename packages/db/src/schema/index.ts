@@ -1,3 +1,4 @@
+export * from './adoptions'
 export * from './applications'
 export * from './auth'
 export * from './cats'
