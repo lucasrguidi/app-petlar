@@ -99,7 +99,9 @@ function normalizeTextValue(value: string | null | undefined): string | null {
   return normalized.length > 0 ? normalized : null
 }
 
-function normalizeSelectOptions(options: string[] | null | undefined): string[] {
+function normalizeSelectOptions(
+  options: string[] | null | undefined
+): string[] {
   if (!options || options.length === 0) return []
   const unique = new Set<string>()
   for (const option of options) {
@@ -111,9 +113,13 @@ function normalizeSelectOptions(options: string[] | null | undefined): string[] 
   return Array.from(unique).slice(0, MAX_SELECT_OPTIONS)
 }
 
-function normalizeField(field: FieldInput, fallbackOrder: number): NormalizedField {
+function normalizeField(
+  field: FieldInput,
+  fallbackOrder: number
+): NormalizedField {
   const type = field.type
-  const options = type === 'select' ? normalizeSelectOptions(field.options) : null
+  const options =
+    type === 'select' ? normalizeSelectOptions(field.options) : null
 
   if (type === 'select' && (!options || options.length === 0)) {
     throw new TRPCError({
@@ -130,7 +136,8 @@ function normalizeField(field: FieldInput, fallbackOrder: number): NormalizedFie
     helpText: normalizeTextValue(field.helpText),
     options,
     condition: field.condition ?? null,
-    mediaConfig: type === 'media' ? (field.mediaConfig ?? { kind: 'image' }) : null,
+    mediaConfig:
+      type === 'media' ? (field.mediaConfig ?? { kind: 'image' }) : null,
     order: field.order ?? fallbackOrder,
   }
 }
@@ -221,7 +228,9 @@ function normalizeAndValidateFields(fields: FieldInput[]): NormalizedField[] {
       })
     }
 
-    const parentIndex = normalized.findIndex((f) => f.id === field.condition?.fieldId)
+    const parentIndex = normalized.findIndex(
+      (f) => f.id === field.condition?.fieldId
+    )
     if (parentIndex === -1 || parentIndex >= index) {
       throw new TRPCError({
         code: 'BAD_REQUEST',
@@ -243,9 +252,7 @@ function normalizeAndValidateFields(fields: FieldInput[]): NormalizedField[] {
   return normalized
 }
 
-function mapDbFieldToInput(
-  field: typeof formFields.$inferSelect
-): FieldInput {
+function mapDbFieldToInput(field: typeof formFields.$inferSelect): FieldInput {
   return {
     id: field.id,
     type: field.type,
@@ -309,10 +316,14 @@ export const formsRouter = router({
         .groupBy(cats.formId),
     ])
 
-    const fieldsCountMap = new Map(fieldsCountRows.map((row) => [row.formId, row.count]))
+    const fieldsCountMap = new Map(
+      fieldsCountRows.map((row) => [row.formId, row.count])
+    )
     const linkedCatsMap = new Map(
       linkedCatsRows
-        .filter((row): row is { formId: string; count: number } => Boolean(row.formId))
+        .filter((row): row is { formId: string; count: number } =>
+          Boolean(row.formId)
+        )
         .map((row) => [row.formId, row.count])
     )
 
@@ -393,7 +404,10 @@ export const formsRouter = router({
     .input(
       z.object({
         form: formBaseInputSchema,
-        fields: z.array(formFieldInputSchema).max(MAX_FIELDS_PER_FORM).default([]),
+        fields: z
+          .array(formFieldInputSchema)
+          .max(MAX_FIELDS_PER_FORM)
+          .default([]),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -438,7 +452,10 @@ export const formsRouter = router({
       z.object({
         id: z.string().min(1),
         form: formBaseInputSchema.partial(),
-        fields: z.array(formFieldInputSchema).max(MAX_FIELDS_PER_FORM).optional(),
+        fields: z
+          .array(formFieldInputSchema)
+          .max(MAX_FIELDS_PER_FORM)
+          .optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -469,7 +486,9 @@ export const formsRouter = router({
       }
 
       const normalizedFields =
-        input.fields !== undefined ? normalizeAndValidateFields(input.fields) : null
+        input.fields !== undefined
+          ? normalizeAndValidateFields(input.fields)
+          : null
 
       await db.transaction(async (tx) => {
         if (Object.keys(formPayload).length > 0) {
@@ -527,7 +546,8 @@ export const formsRouter = router({
       if ((linkedCats?.count ?? 0) > 0) {
         throw new TRPCError({
           code: 'BAD_REQUEST',
-          message: 'Este formulário está vinculado a gatos e não pode ser excluído',
+          message:
+            'Este formulário está vinculado a gatos e não pode ser excluído',
         })
       }
 
@@ -710,7 +730,9 @@ export const formsRouter = router({
       }
 
       const mergedFields = existingFields.map((field) =>
-        field.id === input.fieldId ? { ...mapDbFieldToInput(field), ...input.field } : mapDbFieldToInput(field)
+        field.id === input.fieldId
+          ? { ...mapDbFieldToInput(field), ...input.field }
+          : mapDbFieldToInput(field)
       )
 
       const normalized = normalizeAndValidateFields(mergedFields)
@@ -767,7 +789,9 @@ export const formsRouter = router({
         .where(eq(formFields.formId, input.formId))
         .orderBy(asc(formFields.order))
 
-      const targetExists = existingFields.some((field) => field.id === input.fieldId)
+      const targetExists = existingFields.some(
+        (field) => field.id === input.fieldId
+      )
       if (!targetExists) {
         throw new TRPCError({
           code: 'NOT_FOUND',
@@ -863,7 +887,9 @@ export const formsRouter = router({
         }
       }
 
-      const orderMap = new Map(input.fieldIds.map((id, index) => [id, index + 1]))
+      const orderMap = new Map(
+        input.fieldIds.map((id, index) => [id, index + 1])
+      )
       const reorderedDraft = existingFields
         .map((field) => ({
           ...mapDbFieldToInput(field),
@@ -879,7 +905,12 @@ export const formsRouter = router({
             tx
               .update(formFields)
               .set({ order: index + 1 })
-              .where(and(eq(formFields.formId, input.formId), eq(formFields.id, fieldId)))
+              .where(
+                and(
+                  eq(formFields.formId, input.formId),
+                  eq(formFields.id, fieldId)
+                )
+              )
           )
         )
       })

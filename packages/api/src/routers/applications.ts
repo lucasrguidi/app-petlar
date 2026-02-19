@@ -17,7 +17,17 @@ import {
 } from '@app-petlar/db/schema'
 import { env } from '@app-petlar/env/server'
 import { TRPCError } from '@trpc/server'
-import { and, asc, desc, eq, inArray, isNull, lt, sql, type SQL } from 'drizzle-orm'
+import {
+  and,
+  asc,
+  desc,
+  eq,
+  inArray,
+  isNull,
+  lt,
+  sql,
+  type SQL,
+} from 'drizzle-orm'
 import { nanoid } from 'nanoid'
 import { z } from 'zod'
 
@@ -384,7 +394,9 @@ function toPendingResponsePayload(
 }
 
 async function cleanupExpiredPendingApplications(orgId: string) {
-  const threshold = new Date(Date.now() - PENDING_APPLICATION_TTL_HOURS * 60 * 60 * 1000)
+  const threshold = new Date(
+    Date.now() - PENDING_APPLICATION_TTL_HOURS * 60 * 60 * 1000
+  )
 
   const expiredRows = await db
     .select({
@@ -609,19 +621,22 @@ export interface FilterableField {
   options: string[] | null
 }
 
-function getFilterableFields(fields: ApplicationFormField[]): FilterableField[] {
+function getFilterableFields(
+  fields: ApplicationFormField[]
+): FilterableField[] {
   return fields
-    .filter((field): field is ApplicationFormField & { type: FilterableFieldType } =>
-      field.type === 'text' ||
-      field.type === 'select' ||
-      field.type === 'boolean' ||
-      field.type === 'date'
+    .filter(
+      (field): field is ApplicationFormField & { type: FilterableFieldType } =>
+        field.type === 'text' ||
+        field.type === 'select' ||
+        field.type === 'boolean' ||
+        field.type === 'date'
     )
     .map((field) => ({
       id: field.id,
       label: field.label,
       type: field.type,
-      options: field.type === 'select' ? field.options ?? [] : null,
+      options: field.type === 'select' ? (field.options ?? []) : null,
     }))
 }
 
@@ -819,12 +834,11 @@ export const applicationsRouter = router({
     .input(
       z.object({
         filename: z.string().min(1),
-        contentType: z.string().refine(
-          (type) => ALLOWED_CONTENT_TYPES.includes(type),
-          {
+        contentType: z
+          .string()
+          .refine((type) => ALLOWED_CONTENT_TYPES.includes(type), {
             message: `Tipo de arquivo não permitido. Use: ${ALLOWED_CONTENT_TYPES.join(', ')}`,
-          }
-        ),
+          }),
         fileSize: z.number(),
       })
     )
@@ -1031,17 +1045,22 @@ export const applicationsRouter = router({
         formSnapshot: application.catFormSnapshot,
       })
 
-      const responses = (application.responses ?? {}) as ApplicationResponsesRecord
+      const responses = (application.responses ??
+        {}) as ApplicationResponsesRecord
       const fieldsById = new Map(fields.map((field) => [field.id, field]))
 
-      const visibleFields = fields.filter((field) => isFieldVisible(field, responses))
+      const visibleFields = fields.filter((field) =>
+        isFieldVisible(field, responses)
+      )
 
       const normalizedResponses = visibleFields.map((field) => ({
         fieldId: field.id,
         label: field.label,
         type: field.type,
         value:
-          responses[field.id] !== undefined ? (responses[field.id] ?? null) : null,
+          responses[field.id] !== undefined
+            ? (responses[field.id] ?? null)
+            : null,
       }))
 
       const orphanResponses = Object.entries(responses)
@@ -1099,7 +1118,9 @@ export const applicationsRouter = router({
           confirmedAt: applications.confirmedAt,
         })
         .from(applications)
-        .where(and(eq(applications.id, input.id), eq(applications.orgId, orgId)))
+        .where(
+          and(eq(applications.id, input.id), eq(applications.orgId, orgId))
+        )
         .limit(1)
 
       if (!application || !application.confirmedAt) {
@@ -1324,7 +1345,10 @@ export const applicationsRouter = router({
           })
           .where(eq(applications.id, applicationId))
       } catch (error) {
-        console.error('Erro ao enviar email de confirmação da candidatura', error)
+        console.error(
+          'Erro ao enviar email de confirmação da candidatura',
+          error
+        )
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',
           message:
@@ -1466,10 +1490,7 @@ export const applicationsRouter = router({
       const now = Date.now()
       const lastSentAtMs = application.confirmationLastSentAt?.getTime() ?? null
 
-      if (
-        lastSentAtMs &&
-        now < lastSentAtMs + RESEND_COOLDOWN_SECONDS * 1000
-      ) {
+      if (lastSentAtMs && now < lastSentAtMs + RESEND_COOLDOWN_SECONDS * 1000) {
         const remainingSeconds = Math.ceil(
           (lastSentAtMs + RESEND_COOLDOWN_SECONDS * 1000 - now) / 1000
         )
@@ -1519,7 +1540,10 @@ export const applicationsRouter = router({
           code: nextCode,
         })
       } catch (error) {
-        console.error('Erro ao reenviar email de confirmação da candidatura', error)
+        console.error(
+          'Erro ao reenviar email de confirmação da candidatura',
+          error
+        )
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',
           message: 'Não foi possível reenviar o código agora. Tente novamente',

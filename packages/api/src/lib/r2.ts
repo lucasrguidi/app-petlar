@@ -35,6 +35,15 @@ export function generateApplicationFileKey(filename: string): string {
 }
 
 /**
+ * Generate a unique file key for adoption term PDFs
+ */
+export function generateAdoptionTermKey(filename: string): string {
+  const extension = filename.split('.').pop() || 'pdf'
+  const uniqueId = nanoid()
+  return `adoption-terms/${uniqueId}.${extension}`
+}
+
+/**
  * Get a presigned URL for uploading a file directly to R2
  */
 export async function getPresignedUploadUrl(
