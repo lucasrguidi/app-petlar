@@ -20,6 +20,7 @@ export const user = sqliteTable(
       .notNull(),
     active: integer('active', { mode: 'boolean' }).default(true).notNull(),
     lastLoginAt: integer('last_login_at', { mode: 'timestamp_ms' }),
+    lastSeenAt: integer('last_seen_at', { mode: 'timestamp_ms' }),
     // Timestamps
     createdAt: integer('created_at', { mode: 'timestamp_ms' })
       .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)

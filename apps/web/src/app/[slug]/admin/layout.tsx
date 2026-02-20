@@ -1,6 +1,7 @@
 import { auth } from '@app-petlar/auth'
 import { db } from '@app-petlar/db'
 import { orgs, user as authUser } from '@app-petlar/db/schema'
+import { touchUserLastSeen } from '@app-petlar/db/user-activity'
 import { eq } from 'drizzle-orm'
 import { type Metadata } from 'next'
 import { headers } from 'next/headers'
@@ -80,6 +81,12 @@ export default async function AdminLayout({
     currentUser.orgId !== org.id
   ) {
     redirect(`/${slug}/login`)
+  }
+
+  try {
+    await touchUserLastSeen(user.id)
+  } catch {
+    // Best effort only.
   }
 
   return (

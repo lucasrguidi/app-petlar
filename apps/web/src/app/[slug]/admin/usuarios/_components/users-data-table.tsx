@@ -21,7 +21,7 @@ interface UserData {
   image: string | null
   role: 'admin' | 'volunteer'
   active: boolean
-  lastLoginAt: Date | string | null
+  lastSeenAt: Date | string | null
   createdAt: Date | string
 }
 
@@ -82,7 +82,7 @@ function getInitials(name: string): string {
     .toUpperCase()
 }
 
-function formatLastLogin(date: Date | string | null): string {
+function formatLastSeen(date: Date | string | null): string {
   if (!date) return 'Nunca'
   const dateObj = typeof date === 'string' ? new Date(date) : date
   const now = new Date()
@@ -107,7 +107,7 @@ function getColumns(
         const user = row.original
         const isCurrentUser = user.id === currentUserId
         const roleLabel = user.role === 'admin' ? 'Admin' : 'Voluntário'
-        const lastLogin = formatLastLogin(user.lastLoginAt)
+        const lastSeen = formatLastSeen(user.lastSeenAt)
 
         return (
           <div className="flex min-w-0 items-center gap-3">
@@ -152,7 +152,7 @@ function getColumns(
                   {roleLabel}
                 </span>
                 <span className="text-border">•</span>
-                <span className="truncate">Acesso {lastLogin}</span>
+                <span className="truncate">Acesso {lastSeen}</span>
               </div>
             </div>
           </div>
@@ -174,9 +174,9 @@ function getColumns(
       meta: { className: 'hidden sm:table-cell w-32' },
     },
     {
-      id: 'lastLogin',
+      id: 'lastSeen',
       accessorFn: (row) =>
-        row.lastLoginAt ? new Date(row.lastLoginAt).getTime() : 0,
+        row.lastSeenAt ? new Date(row.lastSeenAt).getTime() : 0,
       header: () => (
         <span className="text-muted-foreground hidden text-xs font-medium md:inline">
           Último acesso
@@ -184,7 +184,7 @@ function getColumns(
       ),
       cell: ({ row }) => (
         <span className="text-muted-foreground hidden text-sm md:inline">
-          {formatLastLogin(row.original.lastLoginAt)}
+          {formatLastSeen(row.original.lastSeenAt)}
         </span>
       ),
       meta: { className: 'hidden md:table-cell w-32' },

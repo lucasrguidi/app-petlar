@@ -283,9 +283,11 @@ export const usersRouter = router({
     }),
 
   updateLastLogin: protectedProcedure.mutation(async ({ ctx }) => {
+    const now = new Date()
+
     await db
       .update(user)
-      .set({ lastLoginAt: new Date() })
+      .set({ lastLoginAt: now, lastSeenAt: now })
       .where(eq(user.id, ctx.session.user.id))
 
     return { success: true }
@@ -322,7 +324,7 @@ export const usersRouter = router({
         image: user.image,
         role: user.role,
         active: user.active,
-        lastLoginAt: user.lastLoginAt,
+        lastSeenAt: user.lastSeenAt,
         createdAt: user.createdAt,
       })
       .from(user)
