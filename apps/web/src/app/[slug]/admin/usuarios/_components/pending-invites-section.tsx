@@ -5,6 +5,7 @@ import {
   ChevronDown,
   ChevronUp,
   Clock,
+  Loader2,
   Mail,
   MoreVertical,
   RefreshCw,
@@ -63,6 +64,9 @@ export function PendingInvitesSection() {
   const queryClient = useQueryClient()
   const [isOpen, setIsOpen] = useState(true)
   const [cancelInviteId, setCancelInviteId] = useState<string | null>(null)
+  const [resendingInviteId, setResendingInviteId] = useState<string | null>(
+    null
+  )
 
   const { data, isLoading } = useQuery(
     trpc.users.listInvites.queryOptions({ page: 1, limit: 10 })
@@ -83,12 +87,18 @@ export function PendingInvitesSection() {
 
   const resendMutation = useMutation(
     trpc.users.resendInvite.mutationOptions({
+      onMutate: ({ inviteId }) => {
+        setResendingInviteId(inviteId)
+      },
       onSuccess: () => {
         toast.success('Convite reenviado com sucesso')
         queryClient.invalidateQueries({ queryKey: [['users', 'listInvites']] })
       },
       onError: (error) => {
         toast.error(error.message)
+      },
+      onSettled: () => {
+        setResendingInviteId(null)
       },
     })
   )
@@ -119,74 +129,105 @@ export function PendingInvitesSection() {
 
           <CollapsibleContent>
             <CardContent className="space-y-2 pt-0 pb-3">
-              {data.invites.map((invite) => (
-                <div
-                  key={invite.id}
-                  className="bg-muted/30 flex items-center justify-between rounded-lg px-3 py-2"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="bg-primary/10 flex h-8 w-8 items-center justify-center rounded-full">
-                      <Mail className="text-primary h-4 w-4" />
-                    </div>
-                    <div>
-                      <p className="text-foreground text-sm font-medium">
-                        {invite.email}
-                      </p>
-                      <div className="text-muted-foreground flex items-center gap-2 text-xs">
-                        <Clock className="h-3 w-3" />
-                        {formatTimeRemaining(invite.expiresAt)}
+              {data.invites.map((invite) => {
+                const isResendingThisInvite =
+                  resendMutation.isPending && resendingInviteId === invite.id
+
+                return (
+                  <div
+                    key={invite.id}
+                    className="border-border/40 bg-muted/25 rounded-xl border px-3 py-2.5"
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="bg-primary/10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full">
+                        <Mail className="text-primary h-4 w-4" />
                       </div>
+
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-start justify-between gap-2">
+                          <p className="text-foreground truncate text-sm font-medium">
+                            {invite.email}
+                          </p>
+                          <Badge
+                            variant={
+                              invite.role === 'admin' ? 'default' : 'secondary'
+                            }
+                            className="hidden gap-1 px-2 py-0.5 text-[11px] sm:inline-flex"
+                          >
+                            {invite.role === 'admin' ? (
+                              <Shield className="h-3 w-3" />
+                            ) : (
+                              <User className="h-3 w-3" />
+                            )}
+                            {invite.role === 'admin' ? 'Admin' : 'Voluntário'}
+                          </Badge>
+                        </div>
+
+                        <div className="text-muted-foreground mt-0.5 flex items-center gap-1.5 text-xs">
+                          <Clock className="h-3 w-3 shrink-0" />
+                          <span>{formatTimeRemaining(invite.expiresAt)}</span>
+                        </div>
+
+                        <Badge
+                          variant={
+                            invite.role === 'admin' ? 'default' : 'secondary'
+                          }
+                          className="mt-2 inline-flex gap-1 px-2 py-0.5 text-[11px] sm:hidden"
+                        >
+                          {invite.role === 'admin' ? (
+                            <Shield className="h-3 w-3" />
+                          ) : (
+                            <User className="h-3 w-3" />
+                          )}
+                          {invite.role === 'admin' ? 'Admin' : 'Voluntário'}
+                        </Badge>
+                      </div>
+
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 shrink-0 rounded-lg"
+                          >
+                            <MoreVertical className="h-4 w-4" />
+                            <span className="sr-only">Ações do convite</span>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem
+                            onClick={() =>
+                              resendMutation.mutate({ inviteId: invite.id })
+                            }
+                            disabled={isResendingThisInvite}
+                            className="gap-2"
+                          >
+                            {isResendingThisInvite ? (
+                              <>
+                                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                Reenviando...
+                              </>
+                            ) : (
+                              <>
+                                <RefreshCw className="h-3.5 w-3.5" />
+                                Reenviar convite
+                              </>
+                            )}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => setCancelInviteId(invite.id)}
+                            disabled={cancelMutation.isPending}
+                            className="text-destructive hover:!bg-destructive/10 focus:!bg-destructive/10 hover:!text-destructive focus:!text-destructive gap-2"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                            Cancelar convite
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
                   </div>
-
-                  <div className="flex items-center gap-2">
-                    <Badge
-                      variant={
-                        invite.role === 'admin' ? 'default' : 'secondary'
-                      }
-                      className="gap-1"
-                    >
-                      {invite.role === 'admin' ? (
-                        <Shield className="h-3 w-3" />
-                      ) : (
-                        <User className="h-3 w-3" />
-                      )}
-                      {invite.role === 'admin' ? 'Admin' : 'Voluntário'}
-                    </Badge>
-
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 rounded-lg"
-                        >
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem
-                          onClick={() =>
-                            resendMutation.mutate({ inviteId: invite.id })
-                          }
-                          disabled={resendMutation.isPending}
-                          className="gap-2"
-                        >
-                          <RefreshCw className="h-3.5 w-3.5" />
-                          Reenviar convite
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => setCancelInviteId(invite.id)}
-                          className="text-destructive hover:!bg-destructive/10 focus:!bg-destructive/10 hover:!text-destructive focus:!text-destructive gap-2"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                          Cancelar convite
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                </div>
-              ))}
+                )
+              })}
             </CardContent>
           </CollapsibleContent>
         </Collapsible>
@@ -215,8 +256,16 @@ export function PendingInvitesSection() {
                 cancelMutation.mutate({ inviteId: cancelInviteId })
               }
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-lg"
+              disabled={cancelMutation.isPending}
             >
-              Cancelar convite
+              {cancelMutation.isPending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Cancelando...
+                </>
+              ) : (
+                'Cancelar convite'
+              )}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
