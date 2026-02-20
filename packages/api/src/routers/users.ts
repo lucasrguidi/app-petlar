@@ -1,5 +1,5 @@
 import { db } from '@app-petlar/db'
-import { invites, orgs, user } from '@app-petlar/db/schema'
+import { invites, orgs, session, user } from '@app-petlar/db/schema'
 import { env } from '@app-petlar/env/server'
 import { TRPCError } from '@trpc/server'
 import { and, count, desc, eq, isNull, ne, or, sql } from 'drizzle-orm'
@@ -408,7 +408,10 @@ export const usersRouter = router({
         await ensureAtLeastOneAdmin(orgId, input.userId)
       }
 
-      await db.update(user).set({ active: false }).where(eq(user.id, input.userId))
+      await db.transaction(async (tx) => {
+        await tx.update(user).set({ active: false }).where(eq(user.id, input.userId))
+        await tx.delete(session).where(eq(session.userId, input.userId))
+      })
 
       return { success: true }
     }),

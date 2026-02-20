@@ -28,6 +28,29 @@ export const auth = betterAuth({
         defaultValue: 'volunteer',
         fieldName: 'role',
       },
+      active: {
+        type: 'boolean',
+        required: false,
+        defaultValue: true,
+        input: false,
+        fieldName: 'active',
+      },
+    },
+  },
+  databaseHooks: {
+    session: {
+      create: {
+        before: async (session) => {
+          const foundUser = await db.query.user.findFirst({
+            columns: { active: true },
+            where: (users, { eq }) => eq(users.id, session.userId),
+          })
+
+          if (!foundUser || !foundUser.active) {
+            return false
+          }
+        },
+      },
     },
   },
   plugins: [nextCookies()],
