@@ -139,50 +139,214 @@ async function seed() {
     console.log(`✅ Org criada: PetLar (id: ${orgId})`)
   }
 
-  // Verificar se usuário de teste já existe
-  const existingUser = await db.query.user.findFirst({
-    where: (users, { eq }) => eq(users.email, 'admin@petlar.com'),
-  })
+  // Seed de usuários da equipe (inclui admin + voluntários) para testes de gestão.
+  const defaultSeedPassword = '123456'
+  const userActivityStepMs = 6 * 60 * 60 * 1000
+  const dayMs = 24 * 60 * 60 * 1000
 
-  if (existingUser) {
-    // Atualizar orgId se não estiver definido
-    if (!existingUser.orgId) {
+  const teamUsers: Array<{
+    name: string
+    email: string
+    role: 'admin' | 'volunteer'
+    active: boolean
+  }> = [
+    {
+      name: 'Admin PetLar',
+      email: 'admin@petlar.com',
+      role: 'admin',
+      active: true,
+    },
+    {
+      name: 'Mariana Soares',
+      email: 'mariana.soares@petlar.com',
+      role: 'admin',
+      active: true,
+    },
+    {
+      name: 'Rafael Mendes',
+      email: 'rafael.mendes@petlar.com',
+      role: 'admin',
+      active: true,
+    },
+    {
+      name: 'Ana Oliveira',
+      email: 'ana.oliveira@petlar.com',
+      role: 'volunteer',
+      active: true,
+    },
+    {
+      name: 'Bruno Costa',
+      email: 'bruno.costa@petlar.com',
+      role: 'volunteer',
+      active: true,
+    },
+    {
+      name: 'Carla Souza',
+      email: 'carla.souza@petlar.com',
+      role: 'volunteer',
+      active: true,
+    },
+    {
+      name: 'Diego Ferreira',
+      email: 'diego.ferreira@petlar.com',
+      role: 'volunteer',
+      active: true,
+    },
+    {
+      name: 'Eduarda Lima',
+      email: 'eduarda.lima@petlar.com',
+      role: 'volunteer',
+      active: true,
+    },
+    {
+      name: 'Felipe Almeida',
+      email: 'felipe.almeida@petlar.com',
+      role: 'volunteer',
+      active: true,
+    },
+    {
+      name: 'Giovana Martins',
+      email: 'giovana.martins@petlar.com',
+      role: 'volunteer',
+      active: true,
+    },
+    {
+      name: 'Henrique Rocha',
+      email: 'henrique.rocha@petlar.com',
+      role: 'volunteer',
+      active: true,
+    },
+    {
+      name: 'Isabela Gomes',
+      email: 'isabela.gomes@petlar.com',
+      role: 'volunteer',
+      active: true,
+    },
+    {
+      name: 'Joao Nascimento',
+      email: 'joao.nascimento@petlar.com',
+      role: 'volunteer',
+      active: true,
+    },
+    {
+      name: 'Karen Barbosa',
+      email: 'karen.barbosa@petlar.com',
+      role: 'volunteer',
+      active: true,
+    },
+    {
+      name: 'Lucas Araujo',
+      email: 'lucas.araujo@petlar.com',
+      role: 'volunteer',
+      active: true,
+    },
+    {
+      name: 'Natalia Vieira',
+      email: 'natalia.vieira@petlar.com',
+      role: 'volunteer',
+      active: true,
+    },
+    {
+      name: 'Pedro Moreira',
+      email: 'pedro.moreira@petlar.com',
+      role: 'volunteer',
+      active: false,
+    },
+    {
+      name: 'Sofia Ribeiro',
+      email: 'sofia.ribeiro@petlar.com',
+      role: 'volunteer',
+      active: false,
+    },
+  ]
+
+  const scrypt = new Scrypt()
+  const hashedPassword = await scrypt.hash(defaultSeedPassword)
+  const now = Date.now()
+  let usersCreated = 0
+  let usersUpdated = 0
+  let accountsCreated = 0
+
+  for (const [index, teamUser] of teamUsers.entries()) {
+    const existingUser = await db.query.user.findFirst({
+      where: (users, { eq }) => eq(users.email, teamUser.email),
+    })
+
+    const lastSeenAt = teamUser.active
+      ? new Date(now - (index + 1) * userActivityStepMs)
+      : null
+    const lastLoginAt = teamUser.active
+      ? new Date(now - (index + 1) * userActivityStepMs * 2)
+      : null
+
+    if (existingUser) {
       await db
         .update(schema.user)
-        .set({ orgId: orgId, role: 'admin' })
+        .set({
+          name: teamUser.name,
+          emailVerified: true,
+          orgId,
+          role: teamUser.role,
+          active: teamUser.active,
+          lastSeenAt,
+          lastLoginAt,
+        })
         .where(eq(schema.user.id, existingUser.id))
-      console.log(`✅ Usuário atualizado com orgId: admin@petlar.com`)
-    } else {
-      console.log(`⏭️  Usuário já existe: admin@petlar.com`)
-    }
-  } else {
-    // Criar usuário de teste
-    const userId = crypto.randomUUID()
-    const accountId = crypto.randomUUID()
 
-    // Hash da senha usando Scrypt (mesmo algoritmo do Better Auth)
-    const scrypt = new Scrypt()
-    const hashedPassword = await scrypt.hash('123456')
+      usersUpdated++
+
+      const existingCredentialAccount = await db.query.account.findFirst({
+        where: (accounts, { and, eq }) =>
+          and(
+            eq(accounts.userId, existingUser.id),
+            eq(accounts.providerId, 'credential')
+          ),
+      })
+
+      if (!existingCredentialAccount) {
+        await db.insert(schema.account).values({
+          id: crypto.randomUUID(),
+          accountId: existingUser.id,
+          providerId: 'credential',
+          userId: existingUser.id,
+          password: hashedPassword,
+        })
+        accountsCreated++
+      }
+
+      continue
+    }
+
+    const userId = crypto.randomUUID()
 
     await db.insert(schema.user).values({
       id: userId,
-      name: 'Admin PetLar',
-      email: 'admin@petlar.com',
+      name: teamUser.name,
+      email: teamUser.email,
       emailVerified: true,
-      orgId: orgId,
-      role: 'admin',
+      orgId,
+      role: teamUser.role,
+      active: teamUser.active,
+      lastSeenAt,
+      lastLoginAt,
+      createdAt: new Date(now - (teamUsers.length - index) * dayMs),
     })
 
     await db.insert(schema.account).values({
-      id: accountId,
+      id: crypto.randomUUID(),
       accountId: userId,
       providerId: 'credential',
-      userId: userId,
+      userId,
       password: hashedPassword,
     })
 
-    console.log(`✅ Usuário criado: admin@petlar.com (senha: 123456)`)
+    usersCreated++
+    accountsCreated++
   }
+
+  console.log(
+    `✅ Usuários seed: ${usersCreated} criados, ${usersUpdated} atualizados, ${accountsCreated} contas credential criadas (senha: ${defaultSeedPassword})`
+  )
 
   // Buscar o userId para createdBy
   const adminUser = await db.query.user.findFirst({
@@ -223,7 +387,6 @@ async function seed() {
       'diego.pereira@email.com',
     ]
 
-    const now = Date.now()
     const HOUR_MS = 60 * 60 * 1000
 
     const invitesToCreate = inviteEmails.map((email, index) => {
