@@ -1,0 +1,179 @@
+'use client'
+
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { MoreVertical, Shield, UserCog, UserX } from 'lucide-react'
+import { useState } from 'react'
+import { toast } from 'sonner'
+
+import { ChangeRoleDialog } from './change-role-dialog'
+
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
+import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
+import { trpc } from '@/utils/trpc'
+
+interface UserActionsMenuProps {
+  user: {
+    id: string
+    name: string
+    role: 'admin' | 'volunteer'
+  }
+  isCurrentUser: boolean
+  isLastAdmin: boolean
+}
+
+export function UserActionsMenu({
+  user,
+  isCurrentUser,
+  isLastAdmin,
+}: UserActionsMenuProps) {
+  const queryClient = useQueryClient()
+  const [roleDialogOpen, setRoleDialogOpen] = useState(false)
+  const [deactivateDialogOpen, setDeactivateDialogOpen] = useState(false)
+
+  const deactivateMutation = useMutation(
+    trpc.users.deactivate.mutationOptions({
+      onSuccess: () => {
+        toast.success('Usuário desativado com sucesso')
+        queryClient.invalidateQueries({ queryKey: [['users', 'list']] })
+      },
+      onError: (error) => {
+        toast.error(error.message)
+      },
+    })
+  )
+
+  const canChangeRole = !isCurrentUser
+  const canDeactivate =
+    !isCurrentUser && !(user.role === 'admin' && isLastAdmin)
+
+  const changeRoleTooltip = isCurrentUser
+    ? 'Você não pode alterar seu próprio papel'
+    : null
+
+  const deactivateTooltip = isCurrentUser
+    ? 'Você não pode desativar a si mesmo'
+    : user.role === 'admin' && isLastAdmin
+      ? 'A organização precisa ter pelo menos 1 admin'
+      : null
+
+  return (
+    <>
+      <TooltipProvider>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 rounded-lg"
+              disabled={isCurrentUser}
+            >
+              <MoreVertical className="h-4 w-4" />
+              <span className="sr-only">Ações</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-48">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div>
+                  <DropdownMenuItem
+                    onClick={() => canChangeRole && setRoleDialogOpen(true)}
+                    disabled={!canChangeRole}
+                    className="gap-2"
+                  >
+                    <UserCog className="h-3.5 w-3.5" />
+                    Alterar papel
+                  </DropdownMenuItem>
+                </div>
+              </TooltipTrigger>
+              {changeRoleTooltip && (
+                <TooltipContent side="left">
+                  <p>{changeRoleTooltip}</p>
+                </TooltipContent>
+              )}
+            </Tooltip>
+
+            <DropdownMenuSeparator />
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div>
+                  <DropdownMenuItem
+                    onClick={() =>
+                      canDeactivate && setDeactivateDialogOpen(true)
+                    }
+                    disabled={!canDeactivate}
+                    className="text-destructive focus:text-destructive gap-2"
+                  >
+                    <UserX className="h-3.5 w-3.5" />
+                    Desativar usuário
+                  </DropdownMenuItem>
+                </div>
+              </TooltipTrigger>
+              {deactivateTooltip && (
+                <TooltipContent side="left">
+                  <p>{deactivateTooltip}</p>
+                </TooltipContent>
+              )}
+            </Tooltip>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </TooltipProvider>
+
+      <ChangeRoleDialog
+        open={roleDialogOpen}
+        onOpenChange={setRoleDialogOpen}
+        user={user}
+      />
+
+      <AlertDialog
+        open={deactivateDialogOpen}
+        onOpenChange={setDeactivateDialogOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <Shield className="text-destructive h-5 w-5" />
+              Desativar usuário
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja desativar <strong>{user.name}</strong>?
+              Essa pessoa perderá o acesso ao sistema, mas o histórico será
+              preservado.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => deactivateMutation.mutate({ userId: user.id })}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Desativar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
+  )
+}
