@@ -1,7 +1,7 @@
 'use client'
 
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { MoreVertical, Shield, UserCog, UserX } from 'lucide-react'
+import { MoreVertical, Shield, UserCheck, UserCog, UserX } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
@@ -38,6 +38,7 @@ interface UserActionsMenuProps {
     id: string
     name: string
     role: 'admin' | 'volunteer'
+    active: boolean
   }
   isCurrentUser: boolean
   isLastAdmin: boolean
@@ -64,9 +65,22 @@ export function UserActionsMenu({
     })
   )
 
-  const canChangeRole = !isCurrentUser
+  const reactivateMutation = useMutation(
+    trpc.users.reactivate.mutationOptions({
+      onSuccess: () => {
+        toast.success('Usuário reativado com sucesso')
+        queryClient.invalidateQueries({ queryKey: [['users', 'list']] })
+      },
+      onError: (error) => {
+        toast.error(error.message)
+      },
+    })
+  )
+
+  const canChangeRole = !isCurrentUser && user.active
   const canDeactivate =
-    !isCurrentUser && !(user.role === 'admin' && isLastAdmin)
+    !isCurrentUser && user.active && !(user.role === 'admin' && isLastAdmin)
+  const canReactivate = !user.active
 
   const changeRoleTooltip = isCurrentUser
     ? 'Você não pode alterar seu próprio papel'
@@ -116,27 +130,37 @@ export function UserActionsMenu({
 
             <DropdownMenuSeparator />
 
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div>
-                  <DropdownMenuItem
-                    onClick={() =>
-                      canDeactivate && setDeactivateDialogOpen(true)
-                    }
-                    disabled={!canDeactivate}
-                    className="text-destructive focus:text-destructive gap-2"
-                  >
-                    <UserX className="h-3.5 w-3.5" />
-                    Desativar usuário
-                  </DropdownMenuItem>
-                </div>
-              </TooltipTrigger>
-              {deactivateTooltip && (
-                <TooltipContent side="left">
-                  <p>{deactivateTooltip}</p>
-                </TooltipContent>
-              )}
-            </Tooltip>
+            {canReactivate ? (
+              <DropdownMenuItem
+                onClick={() => reactivateMutation.mutate({ userId: user.id })}
+                className="text-success hover:!bg-success/10 focus:!bg-success/10 hover:!text-success focus:!text-success gap-2"
+              >
+                <UserCheck className="h-3.5 w-3.5" />
+                Reativar usuário
+              </DropdownMenuItem>
+            ) : (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div>
+                    <DropdownMenuItem
+                      onClick={() =>
+                        canDeactivate && setDeactivateDialogOpen(true)
+                      }
+                      disabled={!canDeactivate}
+                      className="text-destructive hover:!bg-destructive/10 focus:!bg-destructive/10 hover:!text-destructive focus:!text-destructive gap-2"
+                    >
+                      <UserX className="h-3.5 w-3.5" />
+                      Desativar usuário
+                    </DropdownMenuItem>
+                  </div>
+                </TooltipTrigger>
+                {deactivateTooltip && (
+                  <TooltipContent side="left">
+                    <p>{deactivateTooltip}</p>
+                  </TooltipContent>
+                )}
+              </Tooltip>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       </TooltipProvider>
@@ -151,7 +175,7 @@ export function UserActionsMenu({
         open={deactivateDialogOpen}
         onOpenChange={setDeactivateDialogOpen}
       >
-        <AlertDialogContent>
+        <AlertDialogContent className="rounded-xl">
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
               <Shield className="text-destructive h-5 w-5" />
@@ -164,10 +188,12 @@ export function UserActionsMenu({
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogCancel className="rounded-lg">
+              Cancelar
+            </AlertDialogCancel>
             <AlertDialogAction
               onClick={() => deactivateMutation.mutate({ userId: user.id })}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-lg"
             >
               Desativar
             </AlertDialogAction>

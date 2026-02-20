@@ -11,12 +11,14 @@ import { UsersList } from './users-list'
 export interface UsersFilters {
   search?: string
   page: number
+  includeInactive: boolean
 }
 
 interface UsersPageContentProps {
   searchParams: {
     search?: string
     page?: string
+    includeInactive?: string
   }
 }
 
@@ -29,8 +31,9 @@ export function UsersPageContent({ searchParams }: UsersPageContentProps) {
     () => ({
       search: searchParams.search || '',
       page: parseInt(searchParams.page || '1', 10) || 1,
+      includeInactive: searchParams.includeInactive === 'true',
     }),
-    [searchParams.search, searchParams.page]
+    [searchParams.search, searchParams.page, searchParams.includeInactive]
   )
 
   const updateFilters = useCallback(
@@ -49,6 +52,10 @@ export function UsersPageContent({ searchParams }: UsersPageContentProps) {
 
         if (merged.page > 1) {
           params.set('page', String(merged.page))
+        }
+
+        if (merged.includeInactive) {
+          params.set('includeInactive', 'true')
         }
 
         const queryString = params.toString()
@@ -73,8 +80,15 @@ export function UsersPageContent({ searchParams }: UsersPageContentProps) {
   )
 
   const handleClearFilters = useCallback(() => {
-    updateFilters({ search: undefined })
+    updateFilters({ search: undefined, includeInactive: false })
   }, [updateFilters])
+
+  const handleIncludeInactiveChange = useCallback(
+    (includeInactive: boolean) => {
+      updateFilters({ includeInactive })
+    },
+    [updateFilters]
+  )
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-3">
@@ -84,6 +98,8 @@ export function UsersPageContent({ searchParams }: UsersPageContentProps) {
           onSearchChange={handleSearchChange}
           onInviteClick={() => setInviteModalOpen(true)}
           isPending={isPending}
+          includeInactive={filters.includeInactive}
+          onIncludeInactiveChange={handleIncludeInactiveChange}
         />
       </div>
 

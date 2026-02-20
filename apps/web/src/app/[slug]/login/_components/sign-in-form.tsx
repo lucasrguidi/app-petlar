@@ -20,6 +20,7 @@ import { Input } from '@/components/ui/input'
 import { useOrgSlug } from '@/hooks/use-org-slug'
 import { authClient } from '@/lib/auth-client'
 import { cn } from '@/lib/utils'
+import { trpcClient } from '@/utils/trpc'
 
 const signInSchema = z.object({
   email: z.string().min(1, 'E-mail é obrigatório').email('E-mail inválido'),
@@ -52,6 +53,19 @@ export function SignInForm({ orgId }: SignInFormProps) {
 
   async function onSubmit(data: SignInFormValues) {
     try {
+      // Check if user exists and is active before attempting login
+      const checkResult = await trpcClient.users.checkUserActive.query({
+        email: data.email,
+        orgId,
+      })
+
+      if (checkResult.exists && !checkResult.active) {
+        toast.error(
+          'Sua conta foi desativada. Entre em contato com um administrador.'
+        )
+        return
+      }
+
       const { data: session, error } = await authClient.signIn.email({
         email: data.email,
         password: data.password,
@@ -80,6 +94,13 @@ export function SignInForm({ orgId }: SignInFormProps) {
         await authClient.signOut()
         toast.error('Você não tem acesso a esta organização')
         return
+      }
+
+      // Update last login timestamp
+      try {
+        await trpcClient.users.updateLastLogin.mutate()
+      } catch {
+        // Non-blocking, continue with login
       }
 
       toast.success('Login realizado com sucesso!')

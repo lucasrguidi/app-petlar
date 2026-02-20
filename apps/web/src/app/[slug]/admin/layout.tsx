@@ -61,9 +61,15 @@ export default async function AdminLayout({
     image: string | null
     orgId: string | null
     role: 'admin' | 'volunteer'
+    active?: boolean
   }
 
   if (user.orgId !== org.id) {
+    redirect(`/${slug}/login`)
+  }
+
+  // Check if user is deactivated (default to active if not set)
+  if (user.active === false) {
     redirect(`/${slug}/login`)
   }
 

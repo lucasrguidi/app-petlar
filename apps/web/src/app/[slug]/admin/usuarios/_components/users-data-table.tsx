@@ -24,6 +24,7 @@ interface UserData {
   email: string
   image: string | null
   role: 'admin' | 'volunteer'
+  active: boolean
   lastLoginAt: Date | string | null
   createdAt: Date | string
 }
@@ -96,6 +97,14 @@ export function UsersDataTable({
                             <span className="bg-muted text-muted-foreground rounded px-1.5 py-0.5 text-[10px] font-medium">
                               você
                             </span>
+                          )}
+                          {!user.active && (
+                            <Badge
+                              variant="destructive"
+                              className="text-[10px] font-medium"
+                            >
+                              Desativado
+                            </Badge>
                           )}
                         </div>
                         <p className="text-muted-foreground text-sm">

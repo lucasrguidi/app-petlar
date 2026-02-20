@@ -6,7 +6,7 @@ import { and, count, desc, eq, isNull, ne, or, sql } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
 import { z } from 'zod'
 
-import { adminProcedure, publicProcedure, router } from '../index'
+import { adminProcedure, protectedProcedure, publicProcedure, router } from '../index'
 
 const INVITE_EXPIRATION_HOURS = 48
 
@@ -212,6 +212,12 @@ const listUsersSchema = z.object({
   search: z.string().trim().max(200).optional(),
   page: z.number().int().min(1).default(1),
   limit: z.number().int().min(1).max(50).default(15),
+  includeInactive: z.boolean().default(false),
+})
+
+const checkUserActiveSchema = z.object({
+  email: z.string().email(),
+  orgId: z.string().min(1),
 })
 
 const updateRoleSchema = z.object({
@@ -253,11 +259,45 @@ const acceptInviteSchema = z.object({
 })
 
 export const usersRouter = router({
+  checkUserActive: publicProcedure
+    .input(checkUserActiveSchema)
+    .query(async ({ input }) => {
+      const normalizedEmail = input.email.trim().toLowerCase()
+
+      const [foundUser] = await db
+        .select({ id: user.id, active: user.active })
+        .from(user)
+        .where(
+          and(
+            eq(user.orgId, input.orgId),
+            sql`lower(${user.email}) = ${normalizedEmail}`
+          )
+        )
+        .limit(1)
+
+      if (!foundUser) {
+        return { exists: false, active: false }
+      }
+
+      return { exists: true, active: foundUser.active }
+    }),
+
+  updateLastLogin: protectedProcedure.mutation(async ({ ctx }) => {
+    await db
+      .update(user)
+      .set({ lastLoginAt: new Date() })
+      .where(eq(user.id, ctx.session.user.id))
+
+    return { success: true }
+  }),
+
   list: adminProcedure.input(listUsersSchema).query(async ({ ctx, input }) => {
     const orgId = requireOrgId(ctx.session.user)
     const offset = (input.page - 1) * input.limit
 
-    const conditions = [eq(user.orgId, orgId), eq(user.active, true)]
+    const conditions = input.includeInactive
+      ? [eq(user.orgId, orgId)]
+      : [eq(user.orgId, orgId), eq(user.active, true)]
 
     if (input.search) {
       const searchLower = input.search.toLowerCase()
@@ -281,6 +321,7 @@ export const usersRouter = router({
         email: user.email,
         image: user.image,
         role: user.role,
+        active: user.active,
         lastLoginAt: user.lastLoginAt,
         createdAt: user.createdAt,
       })
@@ -372,11 +413,42 @@ export const usersRouter = router({
       return { success: true }
     }),
 
+  reactivate: adminProcedure
+    .input(z.object({ userId: z.string().min(1) }))
+    .mutation(async ({ ctx, input }) => {
+      const orgId = requireOrgId(ctx.session.user)
+
+      const [targetUser] = await db
+        .select({ id: user.id, active: user.active })
+        .from(user)
+        .where(and(eq(user.id, input.userId), eq(user.orgId, orgId)))
+        .limit(1)
+
+      if (!targetUser) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Usuário não encontrado.',
+        })
+      }
+
+      if (targetUser.active) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Este usuário já está ativo.',
+        })
+      }
+
+      await db.update(user).set({ active: true }).where(eq(user.id, input.userId))
+
+      return { success: true }
+    }),
+
   invite: adminProcedure.input(inviteSchema).mutation(async ({ ctx, input }) => {
     const orgId = requireOrgId(ctx.session.user)
     const normalizedEmail = input.email.trim().toLowerCase()
 
-    const [existingUser] = await db
+    // Check for active user first
+    const [existingActiveUser] = await db
       .select({ id: user.id })
       .from(user)
       .where(
@@ -388,10 +460,34 @@ export const usersRouter = router({
       )
       .limit(1)
 
-    if (existingUser) {
+    if (existingActiveUser) {
       throw new TRPCError({
         code: 'CONFLICT',
         message: 'Já existe um usuário com este e-mail na organização.',
+      })
+    }
+
+    // Check for deactivated user
+    const [deactivatedUser] = await db
+      .select({ id: user.id, name: user.name })
+      .from(user)
+      .where(
+        and(
+          eq(user.orgId, orgId),
+          sql`lower(${user.email}) = ${normalizedEmail}`,
+          eq(user.active, false)
+        )
+      )
+      .limit(1)
+
+    if (deactivatedUser) {
+      throw new TRPCError({
+        code: 'CONFLICT',
+        message: JSON.stringify({
+          type: 'DEACTIVATED_USER',
+          userId: deactivatedUser.id,
+          userName: deactivatedUser.name,
+        }),
       })
     }
 

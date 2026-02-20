@@ -5,13 +5,17 @@ import { useDeferredValue, useEffect, useState } from 'react'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 
 interface UsersFilterBarProps {
   search: string
   onSearchChange: (search: string) => void
   onInviteClick: () => void
   isPending?: boolean
+  includeInactive: boolean
+  onIncludeInactiveChange: (includeInactive: boolean) => void
 }
 
 export function UsersFilterBar({
@@ -19,6 +23,8 @@ export function UsersFilterBar({
   onSearchChange,
   onInviteClick,
   isPending,
+  includeInactive,
+  onIncludeInactiveChange,
 }: UsersFilterBarProps) {
   const [localSearch, setLocalSearch] = useState(search)
   const deferredSearch = useDeferredValue(localSearch)
@@ -36,7 +42,7 @@ export function UsersFilterBar({
   return (
     <Card className="border-border/60 bg-card/95 shadow-warm-sm rounded-xl border">
       <CardContent className="p-3">
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <div className="relative flex-1">
             {isPending ? (
               <Loader2 className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 animate-spin" />
@@ -50,6 +56,22 @@ export function UsersFilterBar({
               onChange={(e) => setLocalSearch(e.target.value)}
               className="border-border/40 bg-card h-10 rounded-lg pl-10 text-sm"
             />
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Checkbox
+              id="includeInactive"
+              checked={includeInactive}
+              onCheckedChange={(checked) =>
+                onIncludeInactiveChange(checked === true)
+              }
+            />
+            <Label
+              htmlFor="includeInactive"
+              className="text-muted-foreground cursor-pointer text-sm"
+            >
+              Mostrar desativados
+            </Label>
           </div>
 
           <Button

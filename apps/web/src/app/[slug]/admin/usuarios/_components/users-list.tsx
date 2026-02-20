@@ -28,11 +28,12 @@ export function UsersList({
       search: filters.search || undefined,
       page: filters.page,
       limit: 15,
+      includeInactive: filters.includeInactive,
     }),
     placeholderData: keepPreviousData,
   })
 
-  const hasActiveFilters = !!filters.search
+  const hasActiveFilters = !!filters.search || filters.includeInactive
 
   if (isLoading && !data) {
     return <UsersLoadingSkeleton />
