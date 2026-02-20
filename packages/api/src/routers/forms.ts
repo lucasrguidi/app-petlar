@@ -13,7 +13,7 @@ import { and, asc, desc, eq, sql } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
 import { z } from 'zod'
 
-import { protectedProcedure, router } from '../index'
+import { adminProcedure, protectedProcedure, router } from '../index'
 
 const MAX_FIELDS_PER_FORM = 30
 const MAX_SELECT_OPTIONS = 20
@@ -82,15 +82,6 @@ function requireOrgId(user: SessionUser): string {
     })
   }
   return user.orgId
-}
-
-function requireAdmin(user: SessionUser): void {
-  if (user.role !== 'admin') {
-    throw new TRPCError({
-      code: 'FORBIDDEN',
-      message: 'Apenas administradores podem gerenciar formulários',
-    })
-  }
 }
 
 function normalizeTextValue(value: string | null | undefined): string | null {
@@ -282,9 +273,8 @@ export const formsRouter = router({
       .orderBy(desc(forms.updatedAt))
   }),
 
-  list: protectedProcedure.query(async ({ ctx }) => {
+  list: adminProcedure.query(async ({ ctx }) => {
     const orgId = requireOrgId(ctx.session.user)
-    requireAdmin(ctx.session.user)
 
     const [formsList, fieldsCountRows, linkedCatsRows] = await Promise.all([
       db
@@ -334,11 +324,10 @@ export const formsRouter = router({
     }))
   }),
 
-  getById: protectedProcedure
+  getById: adminProcedure
     .input(z.object({ id: z.string().min(1) }))
     .query(async ({ ctx, input }) => {
       const orgId = requireOrgId(ctx.session.user)
-      requireAdmin(ctx.session.user)
 
       const [form] = await db
         .select({
@@ -400,7 +389,7 @@ export const formsRouter = router({
       }
     }),
 
-  create: protectedProcedure
+  create: adminProcedure
     .input(
       z.object({
         form: formBaseInputSchema,
@@ -412,7 +401,6 @@ export const formsRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       const orgId = requireOrgId(ctx.session.user)
-      requireAdmin(ctx.session.user)
 
       const formId = nanoid()
       const normalizedFields = normalizeAndValidateFields(input.fields)
@@ -447,7 +435,7 @@ export const formsRouter = router({
       return { id: formId }
     }),
 
-  update: protectedProcedure
+  update: adminProcedure
     .input(
       z.object({
         id: z.string().min(1),
@@ -460,7 +448,6 @@ export const formsRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       const orgId = requireOrgId(ctx.session.user)
-      requireAdmin(ctx.session.user)
 
       const [existingForm] = await db
         .select({ id: forms.id })
@@ -520,11 +507,10 @@ export const formsRouter = router({
       return { success: true }
     }),
 
-  delete: protectedProcedure
+  delete: adminProcedure
     .input(z.object({ id: z.string().min(1) }))
     .mutation(async ({ ctx, input }) => {
       const orgId = requireOrgId(ctx.session.user)
-      requireAdmin(ctx.session.user)
 
       const [existingForm] = await db
         .select({ id: forms.id })
@@ -555,11 +541,10 @@ export const formsRouter = router({
       return { success: true }
     }),
 
-  duplicate: protectedProcedure
+  duplicate: adminProcedure
     .input(z.object({ id: z.string().min(1) }))
     .mutation(async ({ ctx, input }) => {
       const orgId = requireOrgId(ctx.session.user)
-      requireAdmin(ctx.session.user)
 
       const [original] = await db
         .select({
@@ -630,7 +615,7 @@ export const formsRouter = router({
       return { id: duplicatedFormId }
     }),
 
-  addField: protectedProcedure
+  addField: adminProcedure
     .input(
       z.object({
         formId: z.string().min(1),
@@ -639,7 +624,6 @@ export const formsRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       const orgId = requireOrgId(ctx.session.user)
-      requireAdmin(ctx.session.user)
 
       const [existingForm] = await db
         .select({ id: forms.id })
@@ -691,7 +675,7 @@ export const formsRouter = router({
       return { id: fieldToInsert.id }
     }),
 
-  updateField: protectedProcedure
+  updateField: adminProcedure
     .input(
       z.object({
         formId: z.string().min(1),
@@ -701,7 +685,6 @@ export const formsRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       const orgId = requireOrgId(ctx.session.user)
-      requireAdmin(ctx.session.user)
 
       const [existingForm] = await db
         .select({ id: forms.id })
@@ -760,7 +743,7 @@ export const formsRouter = router({
       return { success: true }
     }),
 
-  deleteField: protectedProcedure
+  deleteField: adminProcedure
     .input(
       z.object({
         formId: z.string().min(1),
@@ -769,7 +752,6 @@ export const formsRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       const orgId = requireOrgId(ctx.session.user)
-      requireAdmin(ctx.session.user)
 
       const [existingForm] = await db
         .select({ id: forms.id })
@@ -834,7 +816,7 @@ export const formsRouter = router({
       return { success: true }
     }),
 
-  reorderFields: protectedProcedure
+  reorderFields: adminProcedure
     .input(
       z.object({
         formId: z.string().min(1),
@@ -843,7 +825,6 @@ export const formsRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       const orgId = requireOrgId(ctx.session.user)
-      requireAdmin(ctx.session.user)
 
       const [existingForm] = await db
         .select({ id: forms.id })

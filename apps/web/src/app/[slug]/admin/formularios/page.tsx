@@ -1,5 +1,8 @@
+import { auth } from '@app-petlar/auth'
 import { FileText, Plus } from 'lucide-react'
+import { headers } from 'next/headers'
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
 import { Suspense } from 'react'
 
 import { FormsLoadingSkeleton } from './_components/forms-loading-skeleton'
@@ -15,6 +18,12 @@ export default async function FormulariosPage({
   params,
 }: FormulariosPageProps) {
   const { slug } = await params
+
+  const session = await auth.api.getSession({ headers: await headers() })
+
+  if (!session || session.user.role !== 'admin') {
+    redirect(`/${slug}/admin`)
+  }
 
   return (
     <div className="mx-auto flex h-full w-full max-w-6xl flex-col">
