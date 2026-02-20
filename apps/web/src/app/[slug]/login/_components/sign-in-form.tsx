@@ -72,6 +72,22 @@ export function SignInForm({ orgId }: SignInFormProps) {
       })
 
       if (error) {
+        try {
+          const latestCheckResult = await trpcClient.users.checkUserActive.query({
+            email: data.email,
+            orgId,
+          })
+
+          if (latestCheckResult.exists && !latestCheckResult.active) {
+            toast.error(
+              'Sua conta foi desativada. Entre em contato com um administrador.'
+            )
+            return
+          }
+        } catch {
+          // Keep default auth error when recheck fails
+        }
+
         toast.error(error.message || 'Erro ao fazer login')
         return
       }

@@ -1,6 +1,6 @@
 import { auth } from '@app-petlar/auth'
 import { db } from '@app-petlar/db'
-import { orgs } from '@app-petlar/db/schema'
+import { orgs, user as authUser } from '@app-petlar/db/schema'
 import { eq } from 'drizzle-orm'
 import { type Metadata } from 'next'
 import { headers } from 'next/headers'
@@ -68,8 +68,17 @@ export default async function AdminLayout({
     redirect(`/${slug}/login`)
   }
 
-  // Check if user is deactivated (default to active if not set)
-  if (user.active === false) {
+  const [currentUser] = await db
+    .select({ active: authUser.active, orgId: authUser.orgId })
+    .from(authUser)
+    .where(eq(authUser.id, user.id))
+    .limit(1)
+
+  if (
+    !currentUser ||
+    currentUser.active === false ||
+    currentUser.orgId !== org.id
+  ) {
     redirect(`/${slug}/login`)
   }
 
