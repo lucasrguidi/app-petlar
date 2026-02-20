@@ -18,6 +18,8 @@ export const user = sqliteTable(
     role: text('role', { enum: ['admin', 'volunteer'] })
       .default('volunteer')
       .notNull(),
+    active: integer('active', { mode: 'boolean' }).default(true).notNull(),
+    lastLoginAt: integer('last_login_at', { mode: 'timestamp_ms' }),
     // Timestamps
     createdAt: integer('created_at', { mode: 'timestamp_ms' })
       .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)

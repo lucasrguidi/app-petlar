@@ -64,6 +64,13 @@
       "when": 1771471965630,
       "tag": "0008_add-adoptions-table",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1771531464212,
+      "tag": "0009_add-user-management",
+      "breakpoints": true
     }
   ]
 }
