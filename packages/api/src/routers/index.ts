@@ -6,6 +6,7 @@ import { catsRouter } from './cats'
 import { formsRouter } from './forms'
 import { orgsRouter } from './orgs'
 import { uploadRouter } from './upload'
+import { usersRouter } from './users'
 
 export const appRouter = router({
   healthCheck: publicProcedure.query(() => {
@@ -23,5 +24,6 @@ export const appRouter = router({
   cats: catsRouter,
   forms: formsRouter,
   orgs: orgsRouter,
+  users: usersRouter,
 })
 export type AppRouter = typeof appRouter
