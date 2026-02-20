@@ -177,7 +177,7 @@ export function PendingInvitesSection() {
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={() => setCancelInviteId(invite.id)}
-                          className="text-destructive focus:text-destructive gap-2"
+                          className="text-destructive hover:!bg-destructive/10 focus:!bg-destructive/10 hover:!text-destructive focus:!text-destructive gap-2"
                         >
                           <Trash2 className="h-3.5 w-3.5" />
                           Cancelar convite
@@ -196,22 +196,25 @@ export function PendingInvitesSection() {
         open={!!cancelInviteId}
         onOpenChange={() => setCancelInviteId(null)}
       >
-        <AlertDialogContent>
+        <AlertDialogContent className="rounded-xl">
           <AlertDialogHeader>
-            <AlertDialogTitle>Cancelar convite</AlertDialogTitle>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <Trash2 className="text-destructive h-5 w-5" />
+              Cancelar convite
+            </AlertDialogTitle>
             <AlertDialogDescription>
               Tem certeza que deseja cancelar este convite? A pessoa não poderá
               mais usar o link para criar uma conta.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Voltar</AlertDialogCancel>
+            <AlertDialogCancel className="rounded-lg">Voltar</AlertDialogCancel>
             <AlertDialogAction
               onClick={() =>
                 cancelInviteId &&
                 cancelMutation.mutate({ inviteId: cancelInviteId })
               }
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-lg"
             >
               Cancelar convite
             </AlertDialogAction>

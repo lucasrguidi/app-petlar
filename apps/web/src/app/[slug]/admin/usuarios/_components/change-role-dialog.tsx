@@ -67,7 +67,7 @@ export function ChangeRoleDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="rounded-xl sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Shield className="text-primary h-5 w-5" />
@@ -125,7 +125,11 @@ export function ChangeRoleDialog({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            className="rounded-lg"
+          >
             Cancelar
           </Button>
           <Button
@@ -133,6 +137,7 @@ export function ChangeRoleDialog({
             disabled={
               updateRoleMutation.isPending || selectedRole === user.role
             }
+            className="rounded-lg"
           >
             {updateRoleMutation.isPending ? 'Salvando...' : 'Salvar'}
           </Button>
