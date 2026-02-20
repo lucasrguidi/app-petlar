@@ -194,6 +194,75 @@ async function seed() {
     process.exit(1)
   }
 
+  // Seed de convites pendentes para testes do admin
+  const existingInvites = await db
+    .select({ id: schema.invites.id })
+    .from(schema.invites)
+    .where(eq(schema.invites.orgId, orgId))
+
+  if (existingInvites.length >= 12) {
+    console.log(
+      `⏭️  Já existem ${existingInvites.length} convites, pulando...`
+    )
+  } else {
+    // Limpar convites antigos
+    await db.delete(schema.invites).where(eq(schema.invites.orgId, orgId))
+
+    const inviteEmails = [
+      'maria.silva@email.com',
+      'joao.santos@email.com',
+      'ana.oliveira@email.com',
+      'pedro.costa@email.com',
+      'carla.souza@email.com',
+      'lucas.ferreira@email.com',
+      'julia.almeida@email.com',
+      'bruno.rodrigues@email.com',
+      'mariana.lima@email.com',
+      'rafael.gomes@email.com',
+      'beatriz.martins@email.com',
+      'diego.pereira@email.com',
+    ]
+
+    const now = Date.now()
+    const HOUR_MS = 60 * 60 * 1000
+
+    const invitesToCreate = inviteEmails.map((email, index) => {
+      // Alternate between admin and volunteer
+      const role = index % 3 === 0 ? 'admin' : 'volunteer'
+
+      // Vary expiration times: some expired, some expiring soon, some valid
+      let expiresAt: Date
+      if (index < 2) {
+        // Already expired (1-2 hours ago)
+        expiresAt = new Date(now - (index + 1) * HOUR_MS)
+      } else if (index < 4) {
+        // Expiring soon (1-4 hours)
+        expiresAt = new Date(now + (index + 1) * HOUR_MS)
+      } else {
+        // Valid (24-48 hours)
+        expiresAt = new Date(now + (24 + index) * HOUR_MS)
+      }
+
+      // Vary creation times
+      const createdAt = new Date(now - (12 - index) * 2 * HOUR_MS)
+
+      return {
+        id: crypto.randomUUID(),
+        orgId,
+        email,
+        role: role as 'admin' | 'volunteer',
+        token: crypto.randomUUID(),
+        expiresAt,
+        usedAt: null,
+        invitedById: adminUser.id,
+        createdAt,
+      }
+    })
+
+    await db.insert(schema.invites).values(invitesToCreate)
+    console.log(`✅ ${invitesToCreate.length} convites de teste criados`)
+  }
+
   // Garantir formulário padrão para candidaturas
   const defaultFormName = 'Formulário padrão de adoção'
 
