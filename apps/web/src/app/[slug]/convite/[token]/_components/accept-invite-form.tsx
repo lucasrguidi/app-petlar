@@ -14,7 +14,6 @@ import {
   Mail,
   Shield,
   User,
-  UserCheck,
 } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -187,27 +186,11 @@ function InviteForm({
   const isLoading = acceptMutation.isPending
 
   return (
-    <div className="space-y-6">
-      <div className="space-y-4 text-center">
-        <div className="from-primary to-accent shadow-warm-lg relative mx-auto flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br">
-          <UserCheck className="h-10 w-10 text-white" />
-          <div className="border-card bg-success absolute -right-1 -bottom-1 flex h-6 w-6 items-center justify-center rounded-full border-2 shadow-sm">
-            <Shield className="h-3 w-3 text-white" />
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <h2 className="text-display text-foreground text-2xl font-bold tracking-tight">
-            Bem-vindo à equipe!
-          </h2>
-          <p className="text-muted-foreground text-balance">
-            Complete seu cadastro para acessar{' '}
-            <span className="text-foreground font-medium">
-              {invite.orgName}
-            </span>
-          </p>
-        </div>
-
+    <div className="space-y-4">
+      <div className="space-y-2 text-center">
+        <p className="text-muted-foreground text-sm">
+          Complete seu cadastro como
+        </p>
         <Badge
           variant={invite.role === 'admin' ? 'default' : 'secondary'}
           className="gap-1.5"
@@ -222,7 +205,7 @@ function InviteForm({
       </div>
 
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
           {/* Email (readonly) */}
           <div className="space-y-2">
             <label className="text-foreground text-sm font-medium">

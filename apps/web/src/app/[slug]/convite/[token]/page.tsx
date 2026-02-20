@@ -133,32 +133,10 @@ export default async function InvitePage({ params }: InvitePageProps) {
             </CardDescription>
           </CardHeader>
 
-          <CardContent className="px-8 pt-4 pb-8">
+          <CardContent className="px-6 pt-2 pb-6">
             <Suspense fallback={<FormSkeleton />}>
               <AcceptInviteForm token={token} />
             </Suspense>
-
-            <div className="relative my-6">
-              <div className="absolute inset-0 flex items-center">
-                <div className="border-border/50 w-full border-t" />
-              </div>
-              <div className="relative flex justify-center">
-                <span className="bg-card text-muted-foreground px-3 text-xs">
-                  Acesso seguro
-                </span>
-              </div>
-            </div>
-
-            <div className="text-muted-foreground flex items-center justify-center gap-4 text-xs">
-              <div className="flex items-center gap-1">
-                <div className="bg-success h-1.5 w-1.5 rounded-full" />
-                <span>Conexão segura</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <div className="bg-success h-1.5 w-1.5 rounded-full" />
-                <span>Dados protegidos</span>
-              </div>
-            </div>
           </CardContent>
         </Card>
       </div>
