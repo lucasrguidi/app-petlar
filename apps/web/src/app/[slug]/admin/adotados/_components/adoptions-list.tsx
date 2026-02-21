@@ -182,11 +182,13 @@ export function AdoptionsList({
 
         {/* Pagination */}
         {data.pagination.totalPages > 1 && (
-          <AdoptionsPagination
-            page={data.pagination.page}
-            totalPages={data.pagination.totalPages}
-            onPageChange={onPageChange}
-          />
+          <div className="border-border/60 bg-card/95 shadow-warm-sm shrink-0 rounded-xl border px-2">
+            <AdoptionsPagination
+              page={data.pagination.page}
+              totalPages={data.pagination.totalPages}
+              onPageChange={onPageChange}
+            />
+          </div>
         )}
       </div>
 
