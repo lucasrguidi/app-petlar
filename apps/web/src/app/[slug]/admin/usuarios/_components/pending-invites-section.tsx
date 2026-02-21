@@ -62,7 +62,7 @@ function formatTimeRemaining(expiresAt: Date | string): string {
 
 export function PendingInvitesSection() {
   const queryClient = useQueryClient()
-  const [isOpen, setIsOpen] = useState(true)
+  const [isOpen, setIsOpen] = useState(false)
   const [cancelInviteId, setCancelInviteId] = useState<string | null>(null)
   const [resendingInviteId, setResendingInviteId] = useState<string | null>(
     null
@@ -128,7 +128,7 @@ export function PendingInvitesSection() {
           </CardHeader>
 
           <CollapsibleContent>
-            <CardContent className="space-y-2 pt-0 pb-3">
+            <CardContent className="max-h-72 space-y-2 overflow-y-auto pt-0 pb-3">
               {data.invites.map((invite) => {
                 const isResendingThisInvite =
                   resendMutation.isPending && resendingInviteId === invite.id
