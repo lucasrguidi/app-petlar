@@ -144,12 +144,14 @@ async function seed() {
   const userActivityStepMs = 6 * 60 * 60 * 1000
   const dayMs = 24 * 60 * 60 * 1000
 
+  // 40 usuários para 3 páginas de 15 itens
   const teamUsers: Array<{
     name: string
     email: string
     role: 'admin' | 'volunteer'
     active: boolean
   }> = [
+    // Admins (5)
     {
       name: 'Admin PetLar',
       email: 'admin@petlar.com',
@@ -168,6 +170,19 @@ async function seed() {
       role: 'admin',
       active: true,
     },
+    {
+      name: 'Camila Ferreira',
+      email: 'camila.ferreira@petlar.com',
+      role: 'admin',
+      active: true,
+    },
+    {
+      name: 'Gustavo Santos',
+      email: 'gustavo.santos@petlar.com',
+      role: 'admin',
+      active: true,
+    },
+    // Voluntários ativos (30)
     {
       name: 'Ana Oliveira',
       email: 'ana.oliveira@petlar.com',
@@ -247,6 +262,109 @@ async function seed() {
       active: true,
     },
     {
+      name: 'Otavio Pires',
+      email: 'otavio.pires@petlar.com',
+      role: 'volunteer',
+      active: true,
+    },
+    {
+      name: 'Patricia Neves',
+      email: 'patricia.neves@petlar.com',
+      role: 'volunteer',
+      active: true,
+    },
+    {
+      name: 'Renato Dias',
+      email: 'renato.dias@petlar.com',
+      role: 'volunteer',
+      active: true,
+    },
+    {
+      name: 'Sandra Moura',
+      email: 'sandra.moura@petlar.com',
+      role: 'volunteer',
+      active: true,
+    },
+    {
+      name: 'Tiago Ramos',
+      email: 'tiago.ramos@petlar.com',
+      role: 'volunteer',
+      active: true,
+    },
+    {
+      name: 'Ursula Campos',
+      email: 'ursula.campos@petlar.com',
+      role: 'volunteer',
+      active: true,
+    },
+    {
+      name: 'Vinicius Lopes',
+      email: 'vinicius.lopes@petlar.com',
+      role: 'volunteer',
+      active: true,
+    },
+    {
+      name: 'Wanda Teixeira',
+      email: 'wanda.teixeira@petlar.com',
+      role: 'volunteer',
+      active: true,
+    },
+    {
+      name: 'Xavier Cunha',
+      email: 'xavier.cunha@petlar.com',
+      role: 'volunteer',
+      active: true,
+    },
+    {
+      name: 'Yara Cardoso',
+      email: 'yara.cardoso@petlar.com',
+      role: 'volunteer',
+      active: true,
+    },
+    {
+      name: 'Zilda Freitas',
+      email: 'zilda.freitas@petlar.com',
+      role: 'volunteer',
+      active: true,
+    },
+    {
+      name: 'Amanda Reis',
+      email: 'amanda.reis@petlar.com',
+      role: 'volunteer',
+      active: true,
+    },
+    {
+      name: 'Bernardo Mello',
+      email: 'bernardo.mello@petlar.com',
+      role: 'volunteer',
+      active: true,
+    },
+    {
+      name: 'Clara Duarte',
+      email: 'clara.duarte@petlar.com',
+      role: 'volunteer',
+      active: true,
+    },
+    {
+      name: 'Daniel Farias',
+      email: 'daniel.farias@petlar.com',
+      role: 'volunteer',
+      active: true,
+    },
+    {
+      name: 'Elena Borges',
+      email: 'elena.borges@petlar.com',
+      role: 'volunteer',
+      active: true,
+    },
+    {
+      name: 'Fabio Castro',
+      email: 'fabio.castro@petlar.com',
+      role: 'volunteer',
+      active: true,
+    },
+    // Voluntários inativos (5)
+    {
       name: 'Pedro Moreira',
       email: 'pedro.moreira@petlar.com',
       role: 'volunteer',
@@ -255,6 +373,24 @@ async function seed() {
     {
       name: 'Sofia Ribeiro',
       email: 'sofia.ribeiro@petlar.com',
+      role: 'volunteer',
+      active: false,
+    },
+    {
+      name: 'Ricardo Monteiro',
+      email: 'ricardo.monteiro@petlar.com',
+      role: 'volunteer',
+      active: false,
+    },
+    {
+      name: 'Julia Fernandes',
+      email: 'julia.fernandes@petlar.com',
+      role: 'volunteer',
+      active: false,
+    },
+    {
+      name: 'Marcos Andrade',
+      email: 'marcos.andrade@petlar.com',
       role: 'volunteer',
       active: false,
     },
@@ -359,72 +495,75 @@ async function seed() {
   }
 
   // Seed de convites pendentes para testes do admin
-  const existingInvites = await db
-    .select({ id: schema.invites.id })
-    .from(schema.invites)
-    .where(eq(schema.invites.orgId, orgId))
+  // Sempre recriar convites para ter distribuição correta
+  await db.delete(schema.invites).where(eq(schema.invites.orgId, orgId))
 
-  if (existingInvites.length >= 12) {
-    console.log(
-      `⏭️  Já existem ${existingInvites.length} convites, pulando...`
-    )
-  } else {
-    // Limpar convites antigos
-    await db.delete(schema.invites).where(eq(schema.invites.orgId, orgId))
+  // 25 convites para 3 páginas de 10 itens
+  const inviteEmails = [
+    'maria.silva@email.com',
+    'joao.santos@email.com',
+    'ana.oliveira.convite@email.com',
+    'pedro.costa@email.com',
+    'carla.souza.convite@email.com',
+    'lucas.ferreira@email.com',
+    'julia.almeida@email.com',
+    'bruno.rodrigues@email.com',
+    'mariana.lima@email.com',
+    'rafael.gomes@email.com',
+    'beatriz.martins@email.com',
+    'diego.pereira@email.com',
+    'fernanda.silva@email.com',
+    'gabriel.costa@email.com',
+    'helena.santos@email.com',
+    'igor.oliveira@email.com',
+    'jessica.lima@email.com',
+    'kevin.ferreira@email.com',
+    'larissa.almeida@email.com',
+    'miguel.rodrigues@email.com',
+    'nicole.gomes@email.com',
+    'otto.martins@email.com',
+    'priscila.pereira@email.com',
+    'rodrigo.silva@email.com',
+    'samara.costa@email.com',
+  ]
 
-    const inviteEmails = [
-      'maria.silva@email.com',
-      'joao.santos@email.com',
-      'ana.oliveira@email.com',
-      'pedro.costa@email.com',
-      'carla.souza@email.com',
-      'lucas.ferreira@email.com',
-      'julia.almeida@email.com',
-      'bruno.rodrigues@email.com',
-      'mariana.lima@email.com',
-      'rafael.gomes@email.com',
-      'beatriz.martins@email.com',
-      'diego.pereira@email.com',
-    ]
+  const HOUR_MS = 60 * 60 * 1000
 
-    const HOUR_MS = 60 * 60 * 1000
+  const invitesToCreate = inviteEmails.map((email, index) => {
+    // Alternate between admin and volunteer
+    const role = index % 3 === 0 ? 'admin' : 'volunteer'
 
-    const invitesToCreate = inviteEmails.map((email, index) => {
-      // Alternate between admin and volunteer
-      const role = index % 3 === 0 ? 'admin' : 'volunteer'
+    // Vary expiration times: some expired, some expiring soon, some valid
+    let expiresAt: Date
+    if (index < 2) {
+      // Already expired (1-2 hours ago)
+      expiresAt = new Date(now - (index + 1) * HOUR_MS)
+    } else if (index < 4) {
+      // Expiring soon (1-4 hours)
+      expiresAt = new Date(now + (index + 1) * HOUR_MS)
+    } else {
+      // Valid (24-48 hours)
+      expiresAt = new Date(now + (24 + index) * HOUR_MS)
+    }
 
-      // Vary expiration times: some expired, some expiring soon, some valid
-      let expiresAt: Date
-      if (index < 2) {
-        // Already expired (1-2 hours ago)
-        expiresAt = new Date(now - (index + 1) * HOUR_MS)
-      } else if (index < 4) {
-        // Expiring soon (1-4 hours)
-        expiresAt = new Date(now + (index + 1) * HOUR_MS)
-      } else {
-        // Valid (24-48 hours)
-        expiresAt = new Date(now + (24 + index) * HOUR_MS)
-      }
+    // Vary creation times
+    const createdAt = new Date(now - (25 - index) * 2 * HOUR_MS)
 
-      // Vary creation times
-      const createdAt = new Date(now - (12 - index) * 2 * HOUR_MS)
+    return {
+      id: crypto.randomUUID(),
+      orgId,
+      email,
+      role: role as 'admin' | 'volunteer',
+      token: crypto.randomUUID(),
+      expiresAt,
+      usedAt: null,
+      invitedById: adminUser.id,
+      createdAt,
+    }
+  })
 
-      return {
-        id: crypto.randomUUID(),
-        orgId,
-        email,
-        role: role as 'admin' | 'volunteer',
-        token: crypto.randomUUID(),
-        expiresAt,
-        usedAt: null,
-        invitedById: adminUser.id,
-        createdAt,
-      }
-    })
-
-    await db.insert(schema.invites).values(invitesToCreate)
-    console.log(`✅ ${invitesToCreate.length} convites de teste criados`)
-  }
+  await db.insert(schema.invites).values(invitesToCreate)
+  console.log(`✅ ${invitesToCreate.length} convites de teste criados`)
 
   // Garantir formulário padrão para candidaturas
   const defaultFormName = 'Formulário padrão de adoção'
@@ -524,101 +663,164 @@ async function seed() {
 
   const defaultFormSnapshot = await buildFormSnapshot(defaultFormId)
 
-  // Verificar quantos gatos já existem
-  const existingCatsCount = await db
+  // Limpar gatos existentes para recriar com distribuição correta de status
+  const existingCats = await db
     .select({ id: schema.cats.id })
     .from(schema.cats)
     .where(eq(schema.cats.orgId, orgId))
 
-  if (existingCatsCount.length >= 35) {
-    console.log(`⏭️  Já existem ${existingCatsCount.length} gatos, pulando...`)
-  } else {
-    // Nomes de gatos variados
-    const catNames = [
-      'Luna',
-      'Simba',
-      'Mimi',
-      'Thor',
-      'Mel',
-      'Felix',
-      'Nina',
-      'Tom',
-      'Frida',
-      'Garfield',
-      'Belinha',
-      'Whiskers',
-      'Pipoca',
-      'Frajola',
-      'Mingau',
-      'Biscuit',
-      'Pantera',
-      'Flor',
-      'Tigre',
-      'Amora',
-      'Bob',
-      'Sushi',
-      'Bolinha',
-      'Chico',
-      'Marley',
-      'Nala',
-      'Oliver',
-      'Pituca',
-      'Romeo',
-      'Salém',
-      'Toddy',
-      'Zoe',
-      'Apolo',
-      'Cacau',
-      'Duque',
-    ]
-
-    const sexOptions = ['male', 'female'] as const
-    const testResults = ['positive', 'negative', 'not_tested'] as const
-    const statusOptions = ['available', 'in_progress', 'adopted'] as const
-
-    const descriptions = [
-      'Muito carinhoso e brincalhão. Adora colo!',
-      'Aventureiro e curioso. Explora tudo!',
-      'Calmo e tranquilo. Perfeito para apartamento.',
-      'Brincalhão e cheio de energia. Precisa de espaço!',
-      'Tímido no início, mas muito amoroso depois.',
-      'Sociável com outros gatos. Ótimo para lares com pets.',
-      'Independente mas carinhoso. Gosta de rotina.',
-      'Filhote esperto e ativo. Aprende rápido!',
-    ]
-
-    const catsToCreate = catNames
-      .filter(
-        (name) =>
-          !existingCatsCount.some((c) => c.id.includes(name.toLowerCase()))
+  if (existingCats.length > 0) {
+    // Deletar fotos primeiro (FK constraint)
+    await db
+      .delete(schema.catPhotos)
+      .where(
+        sql`${schema.catPhotos.catId} in ${existingCats.map((c) => c.id)}`
       )
-      .slice(0, 35 - existingCatsCount.length)
-      .map((name, index) => ({
-        id: crypto.randomUUID(),
-        orgId: orgId,
-        name,
-        ageYears: Math.floor(Math.random() * 10),
-        ageMonths: Math.floor(Math.random() * 12),
-        sex: sexOptions[index % sexOptions.length]!,
-        fiv: testResults[index % testResults.length]!,
-        felv: testResults[(index + 1) % testResults.length]!,
-        castrated: index % 3 !== 0,
-        vaccinated: index % 4 !== 0,
-        vaccinationNotes: index % 4 !== 0 ? 'Vacinas em dia' : null,
-        dewormed: index % 2 === 0,
-        dewormingNotes: null,
-        description: descriptions[index % descriptions.length]!,
-        status: statusOptions[index % 5 === 0 ? 2 : index % 3 === 0 ? 1 : 0]!,
-        formId: defaultFormId,
-        formSnapshot: defaultFormSnapshot,
-        createdBy: adminUser.id,
-      }))
-
-    if (catsToCreate.length > 0) {
-      await db.insert(schema.cats).values(catsToCreate)
-      console.log(`✅ ${catsToCreate.length} gatos criados`)
-    }
+    // Deletar gatos
+    await db.delete(schema.cats).where(eq(schema.cats.orgId, orgId))
+    console.log(`🗑️  ${existingCats.length} gatos antigos removidos`)
   }
+
+  // Nomes de gatos variados (expandido para 80+ gatos para testar paginação)
+  const catNames = [
+    // Original 35
+    'Luna',
+    'Simba',
+    'Mimi',
+    'Thor',
+    'Mel',
+    'Felix',
+    'Nina',
+    'Tom',
+    'Frida',
+    'Garfield',
+    'Belinha',
+    'Whiskers',
+    'Pipoca',
+    'Frajola',
+    'Mingau',
+    'Biscuit',
+    'Pantera',
+    'Flor',
+    'Tigre',
+    'Amora',
+    'Bob',
+    'Sushi',
+    'Bolinha',
+    'Chico',
+    'Marley',
+    'Nala',
+    'Oliver',
+    'Pituca',
+    'Romeo',
+    'Salém',
+    'Toddy',
+    'Zoe',
+    'Apolo',
+    'Cacau',
+    'Duque',
+    // Novos 50+ para paginação
+    'Mia',
+    'Leo',
+    'Cleo',
+    'Max',
+    'Lila',
+    'Oscar',
+    'Chloe',
+    'Charlie',
+    'Lucy',
+    'Milo',
+    'Sophie',
+    'Jack',
+    'Daisy',
+    'Rocky',
+    'Maggie',
+    'Buddy',
+    'Molly',
+    'Duke',
+    'Sadie',
+    'Tucker',
+    'Bailey',
+    'Cooper',
+    'Zoey',
+    'Bear',
+    'Stella',
+    'Bentley',
+    'Lola',
+    'Winston',
+    'Penny',
+    'Toby',
+    'Ruby',
+    'Murphy',
+    'Gracie',
+    'Riley',
+    'Coco',
+    'Jake',
+    'Rosie',
+    'Bruno',
+    'Lily',
+    'Gus',
+    'Abby',
+    'Hank',
+    'Ellie',
+    'Zeus',
+    'Roxy',
+    'Louie',
+    'Millie',
+    'Finn',
+    'Willow',
+    'Shadow',
+  ]
+
+  const sexOptions = ['male', 'female'] as const
+  const testResults = ['positive', 'negative', 'not_tested'] as const
+
+  const descriptions = [
+    'Muito carinhoso e brincalhão. Adora colo!',
+    'Aventureiro e curioso. Explora tudo!',
+    'Calmo e tranquilo. Perfeito para apartamento.',
+    'Brincalhão e cheio de energia. Precisa de espaço!',
+    'Tímido no início, mas muito amoroso depois.',
+    'Sociável com outros gatos. Ótimo para lares com pets.',
+    'Independente mas carinhoso. Gosta de rotina.',
+    'Filhote esperto e ativo. Aprende rápido!',
+  ]
+
+  // Distribuição de status para garantir paginação em todas as views:
+  // - 45 available (3 páginas de 15)
+  // - 20 in_progress (2 páginas de 15)
+  // - 35 adopted (3 páginas de 15)
+  const getStatus = (
+    index: number
+  ): 'available' | 'in_progress' | 'adopted' => {
+    if (index < 45) return 'available'
+    if (index < 65) return 'in_progress'
+    return 'adopted'
+  }
+
+  const catsToCreate = catNames.map((name, index) => ({
+    id: crypto.randomUUID(),
+    orgId: orgId,
+    name,
+    ageYears: Math.floor(Math.random() * 10),
+    ageMonths: Math.floor(Math.random() * 12),
+    sex: sexOptions[index % sexOptions.length]!,
+    fiv: testResults[index % testResults.length]!,
+    felv: testResults[(index + 1) % testResults.length]!,
+    castrated: index % 3 !== 0,
+    vaccinated: index % 4 !== 0,
+    vaccinationNotes: index % 4 !== 0 ? 'Vacinas em dia' : null,
+    dewormed: index % 2 === 0,
+    dewormingNotes: null,
+    description: descriptions[index % descriptions.length]!,
+    status: getStatus(index),
+    formId: defaultFormId,
+    formSnapshot: defaultFormSnapshot,
+    createdBy: adminUser.id,
+  }))
+
+  await db.insert(schema.cats).values(catsToCreate)
+  console.log(`✅ ${catsToCreate.length} gatos criados`)
 
   const catsWithoutForm = await db
     .select({ id: schema.cats.id })
@@ -842,7 +1044,10 @@ async function seed() {
         .where(eq(schema.cats.id, cat.id))
     }
 
-    const applicationsCount = randomInt(3, 8)
+    // Primeiros 5 gatos têm 20-35 interessados para testar paginação (15/página)
+    // Demais têm 3-8 interessados
+    const applicationsCount =
+      catIndex < 5 ? randomInt(20, 35) : randomInt(3, 8)
 
     for (
       let applicationIndex = 0;
@@ -974,6 +1179,98 @@ async function seed() {
     console.log(
       `✅ ${applicationFilesToInsert.length} arquivos de candidatura de teste criados`
     )
+  }
+
+  // Seed de adoções para gatos com status 'adopted'
+  // Limpar adoções existentes
+  await db.delete(schema.adoptions).where(eq(schema.adoptions.orgId, orgId))
+
+  const adoptedCats = await db
+    .select({ id: schema.cats.id, name: schema.cats.name })
+    .from(schema.cats)
+    .where(and(eq(schema.cats.orgId, orgId), eq(schema.cats.status, 'adopted')))
+
+  const adopterFirstNames = [
+    'Maria',
+    'José',
+    'Ana',
+    'Paulo',
+    'Fernanda',
+    'Carlos',
+    'Juliana',
+    'Roberto',
+    'Patricia',
+    'Lucas',
+    'Camila',
+    'Eduardo',
+    'Beatriz',
+    'Thiago',
+    'Larissa',
+    'Marcelo',
+    'Amanda',
+    'Ricardo',
+    'Vanessa',
+    'Felipe',
+  ]
+
+  const adopterLastNames = [
+    'Silva',
+    'Santos',
+    'Oliveira',
+    'Souza',
+    'Rodrigues',
+    'Ferreira',
+    'Almeida',
+    'Costa',
+    'Gomes',
+    'Martins',
+    'Araújo',
+    'Melo',
+    'Barbosa',
+    'Ribeiro',
+    'Lima',
+    'Carvalho',
+    'Pereira',
+    'Nunes',
+    'Moreira',
+    'Castro',
+  ]
+
+  const adoptionsToInsert = adoptedCats.map((cat, index) => {
+    const firstName =
+      adopterFirstNames[index % adopterFirstNames.length]!
+    const lastName =
+      adopterLastNames[index % adopterLastNames.length]!
+    const adopterName = `${firstName} ${lastName}`
+    const adopterNameNormalized = normalizeNameForSearch(adopterName)
+
+    // Datas variadas nos últimos 6 meses
+    const daysAgo = (index + 1) * 5
+    const adoptionDate = new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000)
+    const adoptionDateStr = adoptionDate.toISOString().split('T')[0]!
+
+    return {
+      id: crypto.randomUUID(),
+      orgId,
+      catId: cat.id,
+      applicationId: null,
+      adopterName,
+      adopterNameNormalized,
+      adopterPhone: `119${String(90000000 + index).slice(0, 8)}`,
+      adopterEmail: `${firstName.toLowerCase()}.${lastName.toLowerCase()}@email.com`,
+      adoptionDate: adoptionDateStr,
+      adoptionTermUrl: null,
+      notes:
+        index % 3 === 0
+          ? `Adoção realizada com sucesso. ${cat.name} está muito feliz em seu novo lar!`
+          : null,
+      createdBy: adminUser.id,
+    }
+  })
+
+  if (adoptionsToInsert.length > 0) {
+    await db.insert(schema.adoptions).values(adoptionsToInsert)
+    console.log(`✅ ${adoptionsToInsert.length} registros de adoção criados`)
   }
 
   console.log('🌱 Seed concluído!')
