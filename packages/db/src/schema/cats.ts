@@ -65,6 +65,10 @@ export const cats = sqliteTable(
     // Descrição
     description: text('description'),
 
+    // Doador
+    donorName: text('donor_name'),
+    donorWhatsapp: text('donor_whatsapp'),
+
     // Status
     status: text('status', { enum: ['available', 'in_progress', 'adopted'] })
       .notNull()

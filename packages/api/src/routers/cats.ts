@@ -30,6 +30,8 @@ const catInputSchema = z.object({
   dewormingNotes: z.string().nullable(),
   description: z.string().nullable(),
   formId: z.string().min(1),
+  donorName: z.string().nullable(),
+  donorWhatsapp: z.string().nullable(),
 })
 
 // Schema para fotos
@@ -308,6 +310,8 @@ export const catsRouter = router({
           vaccinated: cats.vaccinated,
           dewormed: cats.dewormed,
           description: cats.description,
+          donorName: cats.donorName,
+          donorWhatsapp: cats.donorWhatsapp,
           status: cats.status,
           createdAt: cats.createdAt,
         })
@@ -423,6 +427,8 @@ export const catsRouter = router({
           dewormed: cats.dewormed,
           dewormingNotes: cats.dewormingNotes,
           description: cats.description,
+          donorName: cats.donorName,
+          donorWhatsapp: cats.donorWhatsapp,
           status: cats.status,
           createdBy: cats.createdBy,
           createdAt: cats.createdAt,
@@ -646,6 +652,8 @@ export const catsRouter = router({
         dewormed: originalCat.dewormed,
         dewormingNotes: originalCat.dewormingNotes,
         description: originalCat.description,
+        donorName: originalCat.donorName,
+        donorWhatsapp: originalCat.donorWhatsapp,
         status: 'available',
         createdBy: ctx.session.user.id,
       })

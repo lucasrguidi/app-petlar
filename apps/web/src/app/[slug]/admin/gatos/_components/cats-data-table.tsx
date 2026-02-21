@@ -5,6 +5,7 @@ import {
   Check,
   ChevronLeft,
   ChevronRight,
+  ExternalLink,
   Image as ImageIcon,
   Mars,
   MessageCircle,
@@ -17,6 +18,13 @@ import Link from 'next/link'
 import { useCallback, useMemo, useState } from 'react'
 
 import { CatActionsMenu } from './cat-actions-menu'
+
+function formatPhone(value: string): string {
+  const digits = value.replace(/\D/g, '').slice(0, 11)
+  if (digits.length <= 2) return digits
+  if (digits.length <= 7) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`
+  return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`
+}
 
 import type { ColumnDef, Row } from '@tanstack/react-table'
 
@@ -54,6 +62,8 @@ interface Cat {
   vaccinated: boolean
   dewormed: boolean
   description: string | null
+  donorName?: string | null
+  donorWhatsapp?: string | null
   status: 'available' | 'in_progress'
   photoUrl: string | null
   photos?: CatPhoto[]
@@ -209,23 +219,34 @@ function ExpandedContent({ cat }: { cat: Cat }) {
           </div>
         </div>
 
-        {/* Formulário */}
-        <div className="space-y-2">
-          <p className="text-muted-foreground/80 text-[10px] font-semibold tracking-wider uppercase">
-            Formulário
-          </p>
-          <p className="text-foreground/80 leading-relaxed">
-            {cat.formName ?? (
-              <span className="text-muted-foreground italic">
-                Sem formulário
-              </span>
-            )}
-          </p>
-        </div>
+        {/* Doador */}
+        {(cat.donorName ?? cat.donorWhatsapp) && (
+          <div className="space-y-2">
+            <p className="text-muted-foreground/80 text-[10px] font-semibold tracking-wider uppercase">
+              Doador
+            </p>
+            <div className="space-y-1">
+              {cat.donorName && (
+                <p className="text-foreground/80 text-xs">{cat.donorName}</p>
+              )}
+              {cat.donorWhatsapp && (
+                <a
+                  href={`https://wa.me/${cat.donorWhatsapp.replace(/\D/g, '')}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-success inline-flex items-center gap-1 text-xs hover:underline"
+                >
+                  {formatPhone(cat.donorWhatsapp)}
+                  <ExternalLink className="h-3 w-3" />
+                </a>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Description */}
         {cat.description && (
-          <div className="space-y-2 sm:col-span-2 lg:col-span-1">
+          <div className="space-y-2">
             <p className="text-muted-foreground/80 text-[10px] font-semibold tracking-wider uppercase">
               Descrição
             </p>

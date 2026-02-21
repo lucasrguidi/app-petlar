@@ -14,6 +14,8 @@ export const catFormSchema = z.object({
   dewormingNotes: z.string().nullable(),
   description: z.string().nullable(),
   formId: z.string().min(1, 'Formulário é obrigatório'),
+  donorName: z.string().nullable(),
+  donorWhatsapp: z.string().nullable(),
 })
 
 export type CatFormData = z.infer<typeof catFormSchema>
@@ -32,4 +34,6 @@ export const defaultCatFormValues: CatFormData = {
   dewormingNotes: null,
   description: null,
   formId: '',
+  donorName: null,
+  donorWhatsapp: null,
 }

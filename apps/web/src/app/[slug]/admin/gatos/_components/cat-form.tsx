@@ -4,10 +4,13 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   ArrowLeft,
+  ChevronDown,
   FileText,
+  HandHeart,
   HeartPulse,
   Loader2,
   PawPrint,
+  Phone,
 } from 'lucide-react'
 import { type Route } from 'next'
 import { useRouter } from 'next/navigation'
@@ -16,6 +19,13 @@ import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 
 import { usePhotoUpload } from '../_hooks/use-photo-upload'
+
+function formatPhoneInput(value: string): string {
+  const digits = value.replace(/\D/g, '').slice(0, 11)
+  if (digits.length <= 2) return digits
+  if (digits.length <= 7) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`
+  return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`
+}
 
 import {
   catFormSchema,
@@ -26,8 +36,14 @@ import { CatFormSuccess } from './cat-form-success'
 import { HealthToggle, SexToggle, TestResultToggle } from './form-fields'
 import { PhotoSection } from './photo-upload/photo-section'
 
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible'
 import {
   Form,
   FormControl,
@@ -65,6 +81,7 @@ type FormState = 'editing' | 'success'
 
 export function CatForm({ mode, initialData, catId }: CatFormProps) {
   const [formState, setFormState] = useState<FormState>('editing')
+  const [isDonorOpen, setIsDonorOpen] = useState(false)
   const slug = useOrgSlug()
   const router = useRouter()
   const queryClient = useQueryClient()
@@ -74,6 +91,9 @@ export function CatForm({ mode, initialData, catId }: CatFormProps) {
     ? {
         ...initialData,
         formId: initialData.formId ?? defaultCatFormValues.formId,
+        donorWhatsapp: initialData.donorWhatsapp
+          ? formatPhoneInput(initialData.donorWhatsapp)
+          : initialData.donorWhatsapp,
       }
     : undefined
 
@@ -131,18 +151,17 @@ export function CatForm({ mode, initialData, catId }: CatFormProps) {
 
   const onSubmit = (data: CatFormData) => {
     const photosForSubmit = getPhotosForSubmit()
+    const cat = {
+      ...data,
+      donorWhatsapp: data.donorWhatsapp
+        ? data.donorWhatsapp.replace(/\D/g, '')
+        : null,
+    }
 
     if (mode === 'create') {
-      createMutation.mutate({
-        cat: data,
-        photos: photosForSubmit,
-      })
+      createMutation.mutate({ cat, photos: photosForSubmit })
     } else if (catId) {
-      updateMutation.mutate({
-        id: catId,
-        cat: data,
-        photos: photosForSubmit,
-      })
+      updateMutation.mutate({ id: catId, cat, photos: photosForSubmit })
     }
   }
 
@@ -372,6 +391,87 @@ export function CatForm({ mode, initialData, catId }: CatFormProps) {
                   />
                 </CardContent>
               </Card>
+
+              <Collapsible open={isDonorOpen} onOpenChange={setIsDonorOpen}>
+                <Card className="border-border/60 bg-card/95 shadow-warm-sm rounded-xl">
+                  <CollapsibleTrigger asChild>
+                    <CardHeader className="cursor-pointer space-y-0 p-4 sm:p-5">
+                      <div className="flex items-center justify-between">
+                        <CardTitle className="text-display flex items-center gap-2 text-base font-semibold">
+                          <HandHeart className="text-primary h-4 w-4" />
+                          Doador
+                          <Badge
+                            variant="secondary"
+                            className="text-[10px] font-normal"
+                          >
+                            Opcional
+                          </Badge>
+                        </CardTitle>
+                        <ChevronDown
+                          className={`text-muted-foreground h-4 w-4 transition-transform duration-200 ${isDonorOpen ? 'rotate-180' : ''}`}
+                        />
+                      </div>
+                      <p className="text-muted-foreground mt-1 text-xs">
+                        Informações de contato de quem doou o gato (uso
+                        interno)
+                      </p>
+                    </CardHeader>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <CardContent className="space-y-3 p-4 pt-0 sm:p-5 sm:pt-0">
+                      <FormField
+                        control={form.control}
+                        name="donorName"
+                        render={({ field }) => (
+                          <FormItem className="space-y-1.5">
+                            <FormLabel>Nome do doador</FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder="Ex.: Maria Silva"
+                                className="h-10"
+                                {...field}
+                                value={field.value ?? ''}
+                                onChange={(e) =>
+                                  field.onChange(e.target.value || null)
+                                }
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="donorWhatsapp"
+                        render={({ field }) => (
+                          <FormItem className="space-y-1.5">
+                            <FormLabel>WhatsApp</FormLabel>
+                            <FormControl>
+                              <div className="relative">
+                                <Phone className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
+                                <Input
+                                  placeholder="(11) 99999-9999"
+                                  className="h-10 pl-10"
+                                  inputMode="tel"
+                                  {...field}
+                                  value={field.value ?? ''}
+                                  onChange={(e) => {
+                                    const formatted = formatPhoneInput(
+                                      e.target.value
+                                    )
+                                    field.onChange(formatted || null)
+                                  }}
+                                />
+                              </div>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </CardContent>
+                  </CollapsibleContent>
+                </Card>
+              </Collapsible>
             </div>
 
             <Card className="border-border/60 bg-card/95 shadow-warm-sm rounded-xl">
