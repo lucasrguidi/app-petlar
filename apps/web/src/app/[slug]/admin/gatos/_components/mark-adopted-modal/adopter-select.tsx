@@ -30,6 +30,13 @@ interface AdopterSelectProps {
 
 const DIRECT_ADOPTION_VALUE = '__direct__'
 
+function getApplicantStatusLabel(status: Applicant['status']): string {
+  if (status === 'approved') return '(Aprovado)'
+  if (status === 'reviewing') return '(Em análise)'
+  if (status === 'pending') return '(Pendente)'
+  return '(Rejeitado)'
+}
+
 export function AdopterSelect({
   catId,
   value,
@@ -37,7 +44,7 @@ export function AdopterSelect({
   disabled,
 }: AdopterSelectProps) {
   const { data, isLoading } = useQuery({
-    ...trpc.adoptions.getApprovedApplicants.queryOptions({ catId }),
+    ...trpc.adoptions.getEligibleApplicants.queryOptions({ catId }),
     staleTime: 30000,
   })
 
@@ -75,7 +82,7 @@ export function AdopterSelect({
         Candidato
         {!hasApplicants && (
           <span className="text-muted-foreground ml-1.5 text-xs font-normal">
-            (nenhum candidato aprovado)
+            (nenhum candidato disponível)
           </span>
         )}
       </Label>
@@ -99,9 +106,7 @@ export function AdopterSelect({
               <div className="flex items-center gap-2">
                 <span className="font-medium">{applicant.applicantName}</span>
                 <span className="text-muted-foreground text-xs">
-                  {applicant.status === 'approved'
-                    ? '(Aprovado)'
-                    : '(Em análise)'}
+                  {getApplicantStatusLabel(applicant.status)}
                 </span>
               </div>
             </SelectItem>

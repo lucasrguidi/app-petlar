@@ -1,7 +1,7 @@
 import { db } from '@app-petlar/db'
 import { adoptions, applications, catPhotos, cats } from '@app-petlar/db/schema'
 import { TRPCError } from '@trpc/server'
-import { and, desc, eq, gte, lte, or, sql } from 'drizzle-orm'
+import { and, desc, eq, gte, lte, ne, or, sql } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
 import { z } from 'zod'
 
@@ -251,9 +251,9 @@ export const adoptionsRouter = router({
     }),
 
   /**
-   * Lista candidatos aprovados/em análise de um gato para seleção no modal de adoção
+   * Lista candidatos confirmados e não rejeitados de um gato para seleção no modal de adoção
    */
-  getApprovedApplicants: protectedProcedure
+  getEligibleApplicants: protectedProcedure
     .input(z.object({ catId: z.string() }))
     .query(async ({ ctx, input }) => {
       const orgId = requireOrgId(ctx.session.user)
@@ -286,7 +286,7 @@ export const adoptionsRouter = router({
             eq(applications.orgId, orgId),
             eq(applications.catId, input.catId),
             sql`${applications.confirmedAt} is not null`,
-            sql`${applications.status} in ('approved', 'reviewing')`
+            ne(applications.status, 'rejected')
           )
         )
         .orderBy(desc(applications.createdAt))
@@ -339,7 +339,7 @@ export const adoptionsRouter = router({
         })
       }
 
-      // If applicationId provided, verify it belongs to the cat and is approved/reviewing
+      // If applicationId provided, verify it belongs to the cat and is not rejected
       if (input.applicationId) {
         const [application] = await db
           .select({ id: applications.id, status: applications.status })
@@ -360,10 +360,10 @@ export const adoptionsRouter = router({
           })
         }
 
-        if (!['approved', 'reviewing'].includes(application.status)) {
+        if (application.status === 'rejected') {
           throw new TRPCError({
             code: 'BAD_REQUEST',
-            message: 'Candidatura não está aprovada ou em análise',
+            message: 'Candidatura rejeitada não pode ser selecionada',
           })
         }
       }
