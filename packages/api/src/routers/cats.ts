@@ -358,6 +358,7 @@ export const catsRouter = router({
               .select({
                 catId: applications.catId,
                 count: sql<number>`count(*)`,
+                pendingCount: sql<number>`sum(case when ${applications.status} = 'pending' then 1 else 0 end)`,
               })
               .from(applications)
               .where(
@@ -371,7 +372,10 @@ export const catsRouter = router({
           : []
 
       const interestedCountByCatId = new Map(
-        interestedCounts.map((item) => [item.catId, item.count])
+        interestedCounts.map((item) => [
+          item.catId,
+          { count: item.count, pendingCount: item.pendingCount },
+        ])
       )
 
       // Contar total para paginação
@@ -389,7 +393,9 @@ export const catsRouter = router({
             ...cat,
             photoUrl: catPhotosList[0]?.url ?? null,
             photos: catPhotosList,
-            interestedCount: interestedCountByCatId.get(cat.id) ?? 0,
+            interestedCount: interestedCountByCatId.get(cat.id)?.count ?? 0,
+            pendingApplicationsCount:
+              interestedCountByCatId.get(cat.id)?.pendingCount ?? 0,
           }
         }),
         pagination: {

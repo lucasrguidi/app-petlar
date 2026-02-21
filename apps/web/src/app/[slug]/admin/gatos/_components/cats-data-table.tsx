@@ -301,7 +301,7 @@ function getColumns(
         const cat = row.original
         const photoCount = resolveCatPhotos(cat).length
         const interestedCount = cat.interestedCount ?? 0
-        const hasInterested = interestedCount > 0
+        const hasPending = (cat.pendingApplicationsCount ?? 0) > 0
 
         return (
           <div className="flex items-center gap-3">
@@ -354,7 +354,7 @@ function getColumns(
                 href={`/${slug}/admin/gatos/${cat.id}/interessados` as Route}
                 className={cn(
                   'mt-1 inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-[11px] font-medium sm:hidden',
-                  hasInterested
+                  hasPending
                     ? 'bg-primary/10 text-primary'
                     : 'bg-muted/60 text-muted-foreground'
                 )}
@@ -434,6 +434,7 @@ function getColumns(
       cell: ({ row }) => {
         const count = row.original.interestedCount ?? 0
         const hasInterested = count > 0
+        const hasPending = (row.original.pendingApplicationsCount ?? 0) > 0
 
         return (
           <div className="hidden sm:block">
@@ -455,7 +456,7 @@ function getColumns(
                 )}
               />
               <span className="tabular-nums">{count}</span>
-              {hasInterested && (
+              {hasPending && (
                 <span className="bg-primary absolute -top-1 -right-1 flex h-2 w-2 items-center justify-center rounded-full">
                   <span className="bg-primary absolute inline-flex h-full w-full animate-ping rounded-full opacity-75" />
                 </span>
