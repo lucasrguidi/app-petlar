@@ -194,6 +194,10 @@ function ConfirmDialogInner({
 function AlertMode({
   open,
   onOpenChange,
+  cancelLabel = 'Cancelar',
+  actionLoadingLabel = 'Aguarde...',
+  isLoading = false,
+  isActionDisabled = false,
   ...innerProps
 }: Omit<ConfirmDialogProps, 'mode'> & { open: boolean }) {
   return (
@@ -203,6 +207,10 @@ function AlertMode({
         <AlertDialogPrimitive.Content className="bg-card data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] fixed top-[50%] left-[50%] z-50 w-full max-w-sm translate-x-[-50%] translate-y-[-50%] overflow-hidden rounded-xl border shadow-lg duration-200">
           <ConfirmDialogInner
             {...innerProps}
+            cancelLabel={cancelLabel}
+            actionLoadingLabel={actionLoadingLabel}
+            isLoading={isLoading}
+            isActionDisabled={isActionDisabled}
             TitleComponent={AlertDialogPrimitive.Title}
             DescriptionComponent={AlertDialogPrimitive.Description}
             CancelComponent={AlertDialogPrimitive.Cancel}
@@ -218,6 +226,10 @@ function AlertMode({
 function DialogMode({
   open,
   onOpenChange,
+  cancelLabel = 'Cancelar',
+  actionLoadingLabel = 'Aguarde...',
+  isLoading = false,
+  isActionDisabled = false,
   ...innerProps
 }: Omit<ConfirmDialogProps, 'mode'> & { open: boolean }) {
   return (
@@ -227,6 +239,10 @@ function DialogMode({
         <DialogPrimitive.Content className="bg-card data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] fixed top-[50%] left-[50%] z-50 w-full max-w-sm translate-x-[-50%] translate-y-[-50%] overflow-hidden rounded-xl border shadow-lg duration-200">
           <ConfirmDialogInner
             {...innerProps}
+            cancelLabel={cancelLabel}
+            actionLoadingLabel={actionLoadingLabel}
+            isLoading={isLoading}
+            isActionDisabled={isActionDisabled}
             TitleComponent={DialogPrimitive.Title}
             DescriptionComponent={DialogPrimitive.Description}
             CancelComponent={DialogPrimitive.Close}
