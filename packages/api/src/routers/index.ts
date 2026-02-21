@@ -3,6 +3,7 @@ import { protectedProcedure, publicProcedure, router } from '../index'
 import { adoptionsRouter } from './adoptions'
 import { applicationsRouter } from './applications'
 import { catsRouter } from './cats'
+import { dashboardRouter } from './dashboard'
 import { formsRouter } from './forms'
 import { orgsRouter } from './orgs'
 import { uploadRouter } from './upload'
@@ -20,6 +21,7 @@ export const appRouter = router({
   }),
   adoptions: adoptionsRouter,
   applications: applicationsRouter,
+  dashboard: dashboardRouter,
   upload: uploadRouter,
   cats: catsRouter,
   forms: formsRouter,
