@@ -215,11 +215,6 @@ const listUsersSchema = z.object({
   includeInactive: z.boolean().default(false),
 })
 
-const checkUserActiveSchema = z.object({
-  email: z.string().email(),
-  orgId: z.string().min(1),
-})
-
 const updateRoleSchema = z.object({
   userId: z.string().min(1),
   role: z.enum(['admin', 'volunteer']),
@@ -259,29 +254,6 @@ const acceptInviteSchema = z.object({
 })
 
 export const usersRouter = router({
-  checkUserActive: publicProcedure
-    .input(checkUserActiveSchema)
-    .query(async ({ input }) => {
-      const normalizedEmail = input.email.trim().toLowerCase()
-
-      const [foundUser] = await db
-        .select({ id: user.id, active: user.active })
-        .from(user)
-        .where(
-          and(
-            eq(user.orgId, input.orgId),
-            sql`lower(${user.email}) = ${normalizedEmail}`
-          )
-        )
-        .limit(1)
-
-      if (!foundUser) {
-        return { exists: false, active: false }
-      }
-
-      return { exists: true, active: foundUser.active }
-    }),
-
   updateLastLogin: protectedProcedure.mutation(async ({ ctx }) => {
     const now = new Date()
 

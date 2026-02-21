@@ -34,9 +34,10 @@ type SignInFormValues = z.infer<typeof signInSchema>
 
 interface SignInFormProps {
   orgId: string
+  callbackUrl?: string | null
 }
 
-export function SignInForm({ orgId }: SignInFormProps) {
+export function SignInForm({ orgId, callbackUrl }: SignInFormProps) {
   const slug = useOrgSlug()
   const [showPassword, setShowPassword] = useState(false)
   const [focusedField, setFocusedField] = useState<string | null>(null)
@@ -53,47 +54,18 @@ export function SignInForm({ orgId }: SignInFormProps) {
 
   async function onSubmit(data: SignInFormValues) {
     try {
-      // Check if user exists and is active before attempting login
-      const checkResult = await trpcClient.users.checkUserActive.query({
-        email: data.email,
-        orgId,
-      })
-
-      if (checkResult.exists && !checkResult.active) {
-        toast.error(
-          'Sua conta foi desativada. Entre em contato com um administrador.'
-        )
-        return
-      }
-
       const { data: session, error } = await authClient.signIn.email({
         email: data.email,
         password: data.password,
       })
 
       if (error) {
-        try {
-          const latestCheckResult = await trpcClient.users.checkUserActive.query({
-            email: data.email,
-            orgId,
-          })
-
-          if (latestCheckResult.exists && !latestCheckResult.active) {
-            toast.error(
-              'Sua conta foi desativada. Entre em contato com um administrador.'
-            )
-            return
-          }
-        } catch {
-          // Keep default auth error when recheck fails
-        }
-
-        toast.error(error.message || 'Erro ao fazer login')
+        toast.error('Não foi possível entrar com estas credenciais.')
         return
       }
 
       if (!session?.user) {
-        toast.error('Erro ao obter dados do usuário')
+        toast.error('Não foi possível entrar com estas credenciais.')
         return
       }
 
@@ -102,13 +74,13 @@ export function SignInForm({ orgId }: SignInFormProps) {
 
       if (!userOrgId) {
         await authClient.signOut()
-        toast.error('Usuário não pertence a nenhuma organização')
+        toast.error('Não foi possível entrar com estas credenciais.')
         return
       }
 
       if (userOrgId !== orgId) {
         await authClient.signOut()
-        toast.error('Você não tem acesso a esta organização')
+        toast.error('Não foi possível entrar com estas credenciais.')
         return
       }
 
@@ -120,9 +92,9 @@ export function SignInForm({ orgId }: SignInFormProps) {
       }
 
       toast.success('Login realizado com sucesso!')
-      window.location.href = `/${slug}/admin`
+      window.location.assign(callbackUrl ?? `/${slug}/admin`)
     } catch {
-      toast.error('Erro ao fazer login. Tente novamente.')
+      toast.error('Não foi possível entrar. Tente novamente.')
     }
   }
 

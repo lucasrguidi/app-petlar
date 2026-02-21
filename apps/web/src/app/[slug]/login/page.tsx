@@ -1,10 +1,9 @@
-import { db } from '@app-petlar/db'
-import { orgs } from '@app-petlar/db/schema'
-import { eq } from 'drizzle-orm'
 import { PawPrint, Shield } from 'lucide-react'
-import { type Metadata } from 'next'
-import { notFound } from 'next/navigation'
+import { type Metadata, type Route } from 'next'
+import { notFound, redirect } from 'next/navigation'
 import { Suspense } from 'react'
+
+import { getOrgBySlug } from '../_lib/get-org-by-slug'
 
 import { SignInForm } from './_components/sign-in-form'
 
@@ -16,9 +15,12 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
+import { sanitizeCallbackUrlForOrg } from '@/lib/auth-routing'
+import { getActiveSessionUser } from '@/lib/server-auth'
 
 interface LoginPageProps {
   params: Promise<{ slug: string }>
+  searchParams: Promise<{ callbackUrl?: string }>
 }
 
 export const metadata: Metadata = {
@@ -26,20 +28,6 @@ export const metadata: Metadata = {
     index: false,
     follow: false,
   },
-}
-
-async function getOrg(slug: string) {
-  const [org] = await db
-    .select({
-      id: orgs.id,
-      name: orgs.name,
-      slug: orgs.slug,
-      logoUrl: orgs.logoUrl,
-    })
-    .from(orgs)
-    .where(eq(orgs.slug, slug))
-
-  return org ?? null
 }
 
 function OrgLogo({
@@ -99,12 +87,25 @@ function FeatureBadge({ children }: { children: React.ReactNode }) {
   )
 }
 
-export default async function OrgLoginPage({ params }: LoginPageProps) {
-  const { slug } = await params
-  const org = await getOrg(slug)
+export default async function OrgLoginPage({
+  params,
+  searchParams,
+}: LoginPageProps) {
+  const [{ slug }, query, currentUser] = await Promise.all([
+    params,
+    searchParams,
+    getActiveSessionUser(),
+  ])
+  const org = await getOrgBySlug(slug)
 
   if (!org) {
     notFound()
+  }
+
+  const safeCallbackUrl = sanitizeCallbackUrlForOrg(query.callbackUrl, slug)
+
+  if (currentUser?.orgId === org.id) {
+    redirect((safeCallbackUrl ?? `/${slug}/admin`) as Route)
   }
 
   return (
@@ -152,7 +153,7 @@ export default async function OrgLoginPage({ params }: LoginPageProps) {
 
           <CardContent className="px-8 pt-4 pb-8">
             <Suspense fallback={<FormSkeleton />}>
-              <SignInForm orgId={org.id} />
+              <SignInForm orgId={org.id} callbackUrl={safeCallbackUrl} />
             </Suspense>
 
             {/* Divider */}

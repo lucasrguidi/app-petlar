@@ -78,6 +78,7 @@
     "prettier-plugin-tailwindcss": "^0.7.2",
     "shadcn": "^3.8.4",
     "tailwindcss": "^4.1.10",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vitest": "^4.0.18"
   }
 }

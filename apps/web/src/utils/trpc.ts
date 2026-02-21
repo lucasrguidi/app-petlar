@@ -14,7 +14,8 @@ type TrpcErrorLike = Error & {
   }
 }
 
-let isHandlingUnauthorized = false
+const UNAUTHORIZED_REDIRECT_COOLDOWN_MS = 2500
+let lastUnauthorizedRedirectAt = 0
 
 function isUnauthorizedError(error: Error): boolean {
   const trpcError = error as TrpcErrorLike
@@ -30,12 +31,17 @@ function getAdminLoginPath(pathname: string): string | null {
 }
 
 async function handleUnauthorizedInAdminRoute() {
-  if (typeof window === 'undefined' || isHandlingUnauthorized) return
+  if (typeof window === 'undefined') return
 
   const loginPath = getAdminLoginPath(window.location.pathname)
   if (!loginPath) return
 
-  isHandlingUnauthorized = true
+  const now = Date.now()
+  if (now - lastUnauthorizedRedirectAt < UNAUTHORIZED_REDIRECT_COOLDOWN_MS) {
+    return
+  }
+
+  lastUnauthorizedRedirectAt = now
   toast.error('Sua sessão expirou ou sua conta foi desativada.')
 
   try {

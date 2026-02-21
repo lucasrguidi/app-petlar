@@ -1,11 +1,18 @@
+import { type Route } from 'next'
 import { redirect } from 'next/navigation'
 
+import { getSessionAdminPath } from '@/lib/server-auth'
+
 /**
- * Redireciona para a página admin da organização padrão.
- * O middleware vai verificar se o usuário está autenticado e pertence à org.
+ * Resolve o destino de /admin sem slug.
+ * Sem sessão válida, envia para o hub de login com callback.
  */
-export default function AdminRedirectPage() {
-  // TODO: Detectar a org do usuário logado e redirecionar
-  // Por enquanto, redireciona para a org padrão
-  redirect('/petlar/admin')
+export default async function AdminRedirectPage() {
+  const adminPath = await getSessionAdminPath()
+
+  if (adminPath) {
+    redirect(adminPath as Route)
+  }
+
+  redirect('/login?callbackUrl=/admin' as Route)
 }

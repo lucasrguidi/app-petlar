@@ -1,11 +1,51 @@
+import { Building2 } from 'lucide-react'
+import { type Route } from 'next'
 import { redirect } from 'next/navigation'
 
+import { LoginHubForm } from './_components/login-hub-form'
+
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { sanitizeRootAdminCallbackUrl } from '@/lib/auth-routing'
+import { getSessionAdminPath } from '@/lib/server-auth'
+
 /**
- * Redireciona para a página de login da organização padrão.
- * No futuro, pode mostrar uma lista de orgs ou pedir o slug.
+ * Hub de descoberta de ONG para acesso ao login por slug.
  */
-export default function LoginRedirectPage() {
-  // TODO: Mostrar página para inserir slug da org ou listar orgs
-  // Por enquanto, redireciona para a org padrão
-  redirect('/petlar/login')
+interface LoginRedirectPageProps {
+  searchParams: Promise<{ callbackUrl?: string }>
+}
+
+export default async function LoginRedirectPage({
+  searchParams,
+}: LoginRedirectPageProps) {
+  const [query, adminPath] = await Promise.all([searchParams, getSessionAdminPath()])
+
+  if (adminPath) {
+    redirect(adminPath as Route)
+  }
+
+  const safeCallbackUrl = sanitizeRootAdminCallbackUrl(query.callbackUrl)
+
+  return (
+    <div className="from-background via-muted/30 to-background flex min-h-screen items-center justify-center bg-gradient-to-br p-4">
+      <div className="w-full max-w-md">
+        <Card className="rounded-2xl border-0 shadow-xl">
+          <CardHeader className="space-y-3 text-center">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-[#E35915] to-[#F07B3D] text-white shadow-lg shadow-[#E35915]/25">
+              <Building2 className="h-7 w-7" />
+            </div>
+            <CardTitle className="text-display text-2xl font-bold tracking-tight">
+              Acessar painel da ONG
+            </CardTitle>
+            <p className="text-muted-foreground text-sm">
+              Informe o slug da sua organização para continuar.
+            </p>
+          </CardHeader>
+          <CardContent>
+            <LoginHubForm callbackUrl={safeCallbackUrl} />
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  )
 }
