@@ -720,6 +720,96 @@ Localização: `@/components/ui/confirm-dialog`.
 </ConfirmDialog>
 ```
 
+### Pagination (BasePagination)
+
+Componente unificado de paginação com variantes para Admin e Público.
+Localização: `@/components/base-pagination`.
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                         ADMIN                                     │
+│  ┌─────────────────────────────────────────────────────────────┐ │
+│  │  [← Anterior]  [1] [2] [3] ... [10]  [Próxima →]           │ │
+│  └─────────────────────────────────────────────────────────────┘ │
+│  Container: card com border-border/60, bg-card/95, shadow-warm-sm│
+│  Mobile: "X de Y" simplificado                                   │
+├─────────────────────────────────────────────────────────────────┤
+│                         PÚBLICO                                   │
+│  ┌─────────────────────────────────────────────────────────────┐ │
+│  │  [← Anterior]  [1] [2] [●3] ... [10]  [Próxima →]          │ │
+│  └─────────────────────────────────────────────────────────────┘ │
+│  Container: rounded-2xl, bg-white/70, backdrop-blur-sm          │
+│  Página ativa: gradiente from-primary to-accent                  │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+#### Props
+
+| Prop | Tipo | Descrição |
+|------|------|-----------|
+| `page` | `number` | Página atual |
+| `totalPages` | `number` | Total de páginas |
+| `onPageChange` | `(page: number) => void` | Callback de mudança de página |
+| `variant` | `'admin' \| 'public'` | Estilo visual (padrão: `'admin'`) |
+| `className` | `string` (opcional) | Classes adicionais |
+
+#### Comportamento
+
+- Retorna `null` se `totalPages <= 1`
+- Mostra ellipsis (`...`) quando há muitas páginas
+- Mobile: exibe apenas "X de Y" com botões prev/next
+- Desktop: exibe números de página com navegação completa
+
+#### Uso no Admin
+
+**Importante:** No admin, a paginação deve estar dentro de um card wrapper.
+
+```tsx
+import { BasePagination } from '@/components/base-pagination'
+
+// ✅ Correto - com card wrapper
+<div className="border-border/60 bg-card/95 shadow-warm-sm shrink-0 rounded-xl border px-2">
+  <CatsPagination
+    page={data.pagination.page}
+    totalPages={data.pagination.totalPages}
+    onPageChange={onPageChange}
+  />
+</div>
+
+// Wrapper reutilizável (thin wrapper)
+// apps/web/src/app/[slug]/admin/gatos/_components/cats-pagination.tsx
+export function CatsPagination(props: CatsPaginationProps) {
+  return <BasePagination {...props} />
+}
+```
+
+#### Uso no Público
+
+```tsx
+// O variant="public" já inclui o container estilizado
+<PublicCatsPagination
+  page={page}
+  totalPages={totalPages}
+  onPageChange={setPage}
+/>
+
+// Wrapper (thin wrapper)
+// apps/web/src/app/[slug]/(public)/_components/public-cats-pagination.tsx
+export function PublicCatsPagination(props: Props) {
+  return <BasePagination {...props} variant="public" />
+}
+```
+
+#### Estilos por Variante
+
+| Aspecto | Admin | Public |
+|---------|-------|--------|
+| Container | Card externo (wrapper) | Interno: `rounded-2xl bg-white/70 backdrop-blur-sm` |
+| Página ativa | `buttonVariants({ variant: 'default' })` | `bg-gradient-to-r from-primary to-accent shadow-primary/25` |
+| Página inativa | `buttonVariants({ variant: 'outline' })` | `text-foreground hover:bg-muted/40 hover:text-primary` |
+| Botões prev/next | Componentes UI base | Custom com `text-foreground` |
+| Desabilitado | `opacity-50 pointer-events-none` | `text-muted-foreground/30 cursor-not-allowed` |
+
 ---
 
 ## Guidelines: Site Público vs Admin
@@ -1111,4 +1201,4 @@ Permitidos apenas no site público:
 
 ---
 
-*PetLar Design System v1.1 - Atualizado em Fevereiro/2026*
+*PetLar Design System v1.2 - Atualizado em Fevereiro/2026*
