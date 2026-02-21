@@ -11,13 +11,13 @@ import {
   MoreVertical,
   RefreshCw,
   Shield,
+  Trash2,
   User,
 } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
 import { Badge } from '@/components/ui/badge'
-import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
@@ -25,6 +25,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -236,8 +237,7 @@ export function PendingInvitesSection() {
         actionLoadingLabel="Cancelando..."
         isLoading={cancelMutation.isPending}
         onAction={() =>
-          cancelInviteId &&
-          cancelMutation.mutate({ inviteId: cancelInviteId })
+          cancelInviteId && cancelMutation.mutate({ inviteId: cancelInviteId })
         }
       />
     </>
