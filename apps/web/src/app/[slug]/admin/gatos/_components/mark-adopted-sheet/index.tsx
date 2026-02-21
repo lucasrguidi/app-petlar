@@ -8,6 +8,7 @@ import {
   Mail,
   MessageCircle,
   User,
+  X,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
@@ -33,10 +34,19 @@ interface Cat {
   name: string
 }
 
-interface MarkAdoptedModalProps {
+interface InitialApplicant {
+  applicationId: string
+  name: string
+  phone: string
+  email: string | null
+}
+
+interface MarkAdoptedSheetProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   cat: Cat
+  initialApplicant?: InitialApplicant
+  onSuccess?: () => void
 }
 
 interface FormData {
@@ -64,11 +74,13 @@ function toWhatsappLink(phone: string): string {
   return `https://wa.me/55${digits}`
 }
 
-export function MarkAdoptedModal({
+export function MarkAdoptedSheet({
   open,
   onOpenChange,
   cat,
-}: MarkAdoptedModalProps) {
+  initialApplicant,
+  onSuccess,
+}: MarkAdoptedSheetProps) {
   const queryClient = useQueryClient()
   const [selectedApplicationId, setSelectedApplicationId] = useState<
     string | null
@@ -85,17 +97,29 @@ export function MarkAdoptedModal({
   // Reset form when modal opens
   useEffect(() => {
     if (open) {
-      setSelectedApplicationId(null)
-      setFormData({
-        adopterName: '',
-        adopterPhone: '',
-        adopterEmail: '',
-        adoptionDate: getTodayISODate(),
-        adoptionTermUrl: null,
-        notes: '',
-      })
+      if (initialApplicant) {
+        setSelectedApplicationId(initialApplicant.applicationId)
+        setFormData({
+          adopterName: initialApplicant.name,
+          adopterPhone: formatPhoneInput(initialApplicant.phone),
+          adopterEmail: initialApplicant.email ?? '',
+          adoptionDate: getTodayISODate(),
+          adoptionTermUrl: null,
+          notes: '',
+        })
+      } else {
+        setSelectedApplicationId(null)
+        setFormData({
+          adopterName: '',
+          adopterPhone: '',
+          adopterEmail: '',
+          adoptionDate: getTodayISODate(),
+          adoptionTermUrl: null,
+          notes: '',
+        })
+      }
     }
-  }, [open])
+  }, [open, initialApplicant])
 
   const createAdoptionMutation = useMutation(
     trpc.adoptions.create.mutationOptions({
@@ -103,7 +127,9 @@ export function MarkAdoptedModal({
         toast.success(`${cat.name} foi marcado como adotado!`)
         queryClient.invalidateQueries({ queryKey: [['cats', 'list']] })
         queryClient.invalidateQueries({ queryKey: [['adoptions']] })
+        queryClient.invalidateQueries({ queryKey: [['applications']] })
         onOpenChange(false)
+        onSuccess?.()
       },
       onError: (error) => {
         toast.error(error.message || 'Erro ao registrar adoção')
@@ -184,29 +210,56 @@ export function MarkAdoptedModal({
         className="border-border/60 w-full overflow-y-auto p-0 sm:max-w-lg"
       >
         <SheetHeader className="border-border/40 from-card to-card/95 sticky top-0 z-20 border-b bg-gradient-to-b px-5 py-4">
-          <div className="flex items-center gap-3">
-            <div className="bg-success/10 flex h-10 w-10 items-center justify-center rounded-xl">
-              <Heart className="text-success h-5 w-5" />
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex min-w-0 items-center gap-3">
+              <div className="bg-success/10 flex h-10 w-10 items-center justify-center rounded-xl">
+                <Heart className="text-success h-5 w-5" />
+              </div>
+              <div>
+                <SheetTitle className="font-display text-lg">
+                  Marcar como adotado
+                </SheetTitle>
+                <SheetDescription className="text-xs">
+                  Registre a adoção de <strong>{cat.name}</strong>
+                </SheetDescription>
+              </div>
             </div>
-            <div>
-              <SheetTitle className="font-display text-lg">
-                Marcar como adotado
-              </SheetTitle>
-              <SheetDescription className="text-xs">
-                Registre a adoção de <strong>{cat.name}</strong>
-              </SheetDescription>
-            </div>
+
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="h-9 w-9 shrink-0 rounded-lg"
+              onClick={() => onOpenChange(false)}
+              aria-label="Fechar"
+            >
+              <X className="h-4 w-4" />
+            </Button>
           </div>
         </SheetHeader>
 
         <form onSubmit={handleSubmit} className="space-y-5 p-5">
           {/* Adopter Selection */}
-          <AdopterSelect
-            catId={cat.id}
-            value={selectedApplicationId}
-            onChange={handleApplicantChange}
-            disabled={isPending}
-          />
+          {initialApplicant ? (
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">
+                Candidato selecionado
+              </Label>
+              <div className="border-border/60 bg-muted/20 flex items-center gap-2 rounded-xl border px-3 py-2.5">
+                <User className="text-primary h-4 w-4 shrink-0" />
+                <span className="text-sm font-medium">
+                  {initialApplicant.name}
+                </span>
+              </div>
+            </div>
+          ) : (
+            <AdopterSelect
+              catId={cat.id}
+              value={selectedApplicationId}
+              onChange={handleApplicantChange}
+              disabled={isPending}
+            />
+          )}
 
           {/* Adopter Name */}
           <div className="space-y-2">

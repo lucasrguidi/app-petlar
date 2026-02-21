@@ -5,6 +5,7 @@ import {
   AlertTriangle,
   ExternalLink,
   FileText,
+  Heart,
   Loader2,
   Mail,
   MessageCircle,
@@ -16,6 +17,8 @@ import {
 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
+
+import { MarkAdoptedSheet } from '../../../_components/mark-adopted-sheet'
 
 import {
   formatDate,
@@ -205,6 +208,15 @@ export function ApplicantDetailsSheet({
   const queryClient = useQueryClient()
   const [selectedStatus, setSelectedStatus] =
     useState<ApplicationStatus>('pending')
+  const [adoptionModalData, setAdoptionModalData] = useState<{
+    cat: { id: string; name: string }
+    applicant: {
+      applicationId: string
+      name: string
+      phone: string
+      email: string | null
+    }
+  } | null>(null)
 
   const detailsQuery = useQuery({
     ...trpc.applications.getById.queryOptions({ id: applicationId ?? '' }),
@@ -242,6 +254,7 @@ export function ApplicantDetailsSheet({
   const hasStatusChange = data && selectedStatus !== data.application.status
 
   return (
+    <>
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="right"
@@ -406,6 +419,30 @@ export function ApplicantDetailsSheet({
               </div>
             </div>
 
+            <div className="border-border/60 bg-card/95 shadow-warm-sm rounded-xl border p-4">
+              <Button
+                type="button"
+                onClick={() => {
+                  // Salvar dados antes de fechar o Sheet
+                  setAdoptionModalData({
+                    cat: { id: data.cat.id, name: data.cat.name },
+                    applicant: {
+                      applicationId: data.application.id,
+                      name: data.application.applicantName,
+                      phone: data.application.applicantWhatsapp,
+                      email: data.application.applicantEmail,
+                    },
+                  })
+                  // Fechar o Sheet
+                  onOpenChange(false)
+                }}
+                className="bg-success hover:bg-success/90 text-success-foreground shadow-success/25 hover:shadow-success/35 w-full rounded-xl shadow-lg transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
+              >
+                <Heart className="mr-2 h-4 w-4" />
+                Registrar adoção
+              </Button>
+            </div>
+
             <div className="border-border/60 bg-card/95 space-y-3 rounded-xl border p-4">
               <div className="flex items-center gap-2">
                 <FileText className="text-primary h-4 w-4" />
@@ -458,5 +495,17 @@ export function ApplicantDetailsSheet({
         )}
       </SheetContent>
     </Sheet>
+
+    {adoptionModalData && (
+      <MarkAdoptedSheet
+        open={true}
+        onOpenChange={(open) => {
+          if (!open) setAdoptionModalData(null)
+        }}
+        cat={adoptionModalData.cat}
+        initialApplicant={adoptionModalData.applicant}
+      />
+    )}
+    </>
   )
 }

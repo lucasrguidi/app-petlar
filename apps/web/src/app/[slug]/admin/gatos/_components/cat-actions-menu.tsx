@@ -16,7 +16,7 @@ import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
-import { MarkAdoptedModal } from './mark-adopted-modal'
+import { MarkAdoptedSheet } from './mark-adopted-sheet'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -45,7 +45,7 @@ export function CatActionsMenu({ cat }: CatActionsMenuProps) {
   const queryClient = useQueryClient()
   const [isOpen, setIsOpen] = useState(false)
   const [isDuplicatingToEdit, setIsDuplicatingToEdit] = useState(false)
-  const [isMarkAdoptedModalOpen, setIsMarkAdoptedModalOpen] = useState(false)
+  const [isMarkAdoptedSheetOpen, setIsMarkAdoptedSheetOpen] = useState(false)
 
   // Query for fetching full cat data when duplicating to edit
   const { refetch: fetchCatData } = useQuery({
@@ -155,7 +155,7 @@ export function CatActionsMenu({ cat }: CatActionsMenuProps) {
 
   const handleMarkAsAdopted = () => {
     setIsOpen(false)
-    setIsMarkAdoptedModalOpen(true)
+    setIsMarkAdoptedSheetOpen(true)
   }
 
   return (
@@ -243,9 +243,9 @@ export function CatActionsMenu({ cat }: CatActionsMenuProps) {
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <MarkAdoptedModal
-        open={isMarkAdoptedModalOpen}
-        onOpenChange={setIsMarkAdoptedModalOpen}
+      <MarkAdoptedSheet
+        open={isMarkAdoptedSheetOpen}
+        onOpenChange={setIsMarkAdoptedSheetOpen}
         cat={cat}
       />
     </>
