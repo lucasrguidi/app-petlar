@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
-import { useCallback, useMemo, useState, useTransition } from 'react'
+import { useCallback, useEffect, useMemo, useState, useTransition } from 'react'
 
 import { CatsFilterBar } from './cats-filter-bar'
 import { CatsList } from './cats-list'
@@ -14,13 +14,19 @@ const CatsFilterDrawer = dynamic(
 )
 
 export interface CatsFilters {
-  status?: string
+  status?: CatStatusFilter
   sex?: string
   fiv?: string
   felv?: string
   castrated?: string
   search?: string
   page: number
+}
+
+export type CatStatusFilter = 'available' | 'in_progress'
+
+function isValidStatusFilter(value: string): value is CatStatusFilter {
+  return value === 'available' || value === 'in_progress'
 }
 
 interface CatsPageContentProps {
@@ -39,11 +45,54 @@ export function CatsPageContent({ searchParams }: CatsPageContentProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [drawerOpen, setDrawerOpen] = useState(false)
+  const shouldCleanLegacyStatus =
+    searchParams.status !== undefined &&
+    !isValidStatusFilter(searchParams.status)
+
+  useEffect(() => {
+    if (!shouldCleanLegacyStatus) return
+
+    const params = new URLSearchParams()
+
+    const filtersToKeep = [
+      ['sex', searchParams.sex],
+      ['fiv', searchParams.fiv],
+      ['felv', searchParams.felv],
+      ['castrated', searchParams.castrated],
+      ['search', searchParams.search],
+    ] as const
+
+    filtersToKeep.forEach(([key, value]) => {
+      if (value && value !== '') {
+        params.set(key, value)
+      }
+    })
+
+    const page = parseInt(searchParams.page || '1', 10)
+    if (Number.isFinite(page) && page > 1) {
+      params.set('page', String(page))
+    }
+
+    const queryString = params.toString()
+    router.replace(queryString ? `?${queryString}` : '?', { scroll: false })
+  }, [
+    router,
+    shouldCleanLegacyStatus,
+    searchParams.sex,
+    searchParams.fiv,
+    searchParams.felv,
+    searchParams.castrated,
+    searchParams.search,
+    searchParams.page,
+  ])
 
   // Parse filters from URL - memoized to prevent unnecessary re-renders
   const filters: CatsFilters = useMemo(
     () => ({
-      status: searchParams.status,
+      status:
+        searchParams.status && isValidStatusFilter(searchParams.status)
+          ? searchParams.status
+          : undefined,
       sex: searchParams.sex,
       fiv: searchParams.fiv,
       felv: searchParams.felv,

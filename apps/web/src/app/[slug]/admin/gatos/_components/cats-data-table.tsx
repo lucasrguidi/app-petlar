@@ -54,7 +54,7 @@ interface Cat {
   vaccinated: boolean
   dewormed: boolean
   description: string | null
-  status: 'available' | 'in_progress' | 'adopted'
+  status: 'available' | 'in_progress'
   photoUrl: string | null
   photos?: CatPhoto[]
   interestedCount?: number
@@ -90,11 +90,6 @@ function getStatusConfig(status: Cat['status']) {
       label: 'Em processo',
       variant: 'warning' as const,
       dotClass: 'bg-warning',
-    },
-    adopted: {
-      label: 'Adotado',
-      variant: 'info' as const,
-      dotClass: 'bg-info',
     },
   }
   return config[status]

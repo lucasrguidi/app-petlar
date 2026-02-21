@@ -8,7 +8,7 @@ import { CatsEmptyState } from './cats-empty-state'
 import { CatsLoadingSkeleton } from './cats-loading-skeleton'
 import { CatsPagination } from './cats-pagination'
 
-import type { CatsFilters } from './cats-page-content'
+import type { CatsFilters, CatStatusFilter } from './cats-page-content'
 
 import { trpc } from '@/utils/trpc'
 
@@ -18,6 +18,10 @@ interface CatsListProps {
   onClearFilters: () => void
 }
 
+function isAdminCatStatus(status: string): status is CatStatusFilter {
+  return status === 'available' || status === 'in_progress'
+}
+
 export function CatsList({
   filters,
   onPageChange,
@@ -25,11 +29,7 @@ export function CatsList({
 }: CatsListProps) {
   const { data, isLoading, isFetching, isError, refetch } = useQuery({
     ...trpc.cats.list.queryOptions({
-      status: filters.status as
-        | 'available'
-        | 'in_progress'
-        | 'adopted'
-        | undefined,
+      status: filters.status,
       sex: filters.sex as 'male' | 'female' | undefined,
       fiv: filters.fiv as 'positive' | 'negative' | 'not_tested' | undefined,
       felv: filters.felv as 'positive' | 'negative' | 'not_tested' | undefined,
@@ -73,7 +73,19 @@ export function CatsList({
     )
   }
 
-  if (!data?.cats.length) {
+  if (!data) {
+    return <CatsLoadingSkeleton />
+  }
+
+  const visibleCats =
+    data.cats.filter(
+      (
+        cat
+      ): cat is (typeof data.cats)[number] & { status: CatStatusFilter } =>
+        isAdminCatStatus(cat.status)
+    )
+
+  if (!visibleCats.length) {
     return (
       <CatsEmptyState
         hasFilters={Boolean(hasActiveFilters)}
@@ -100,7 +112,7 @@ export function CatsList({
       </div>
 
       <div className="min-h-0 flex-1">
-        <CatsDataTable cats={data.cats} />
+        <CatsDataTable cats={visibleCats} />
       </div>
 
       <div className="border-border/60 bg-card/95 shadow-warm-sm shrink-0 rounded-xl border px-2">

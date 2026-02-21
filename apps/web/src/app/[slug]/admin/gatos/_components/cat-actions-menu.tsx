@@ -32,7 +32,7 @@ import { trpc } from '@/utils/trpc'
 interface Cat {
   id: string
   name: string
-  status: 'available' | 'in_progress' | 'adopted'
+  status: 'available' | 'in_progress'
 }
 
 interface CatActionsMenuProps {
@@ -84,13 +84,9 @@ export function CatActionsMenu({ cat }: CatActionsMenuProps) {
   const updateStatusMutation = useMutation(
     trpc.cats.updateStatus.mutationOptions({
       onSuccess: (_, variables) => {
-        if (variables.status === 'adopted') {
-          toast.success(`${cat.name} foi adotado! 🎉`)
-        } else {
-          const label =
-            variables.status === 'available' ? 'Disponível' : 'Em processo'
-          toast.success(`Status alterado para "${label}"`)
-        }
+        const label =
+          variables.status === 'available' ? 'Disponível' : 'Em processo'
+        toast.success(`Status alterado para "${label}"`)
         invalidateQueries()
       },
       onError: (error) => {
@@ -230,7 +226,7 @@ export function CatActionsMenu({ cat }: CatActionsMenuProps) {
             className="hover:!bg-muted/80 focus:!bg-muted/80 hover:!text-foreground focus:!text-foreground cursor-pointer gap-2 rounded-lg px-2.5 py-1.5 text-[13px] transition-colors"
           >
             <Heart className="text-success h-3.5 w-3.5" />
-            <span>Adotado</span>
+            <span>Registrar adoção</span>
           </DropdownMenuItem>
 
           <DropdownMenuSeparator className="bg-border/40 my-1" />

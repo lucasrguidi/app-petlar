@@ -16,7 +16,7 @@ interface Cat {
   fiv: 'positive' | 'negative' | 'not_tested'
   felv: 'positive' | 'negative' | 'not_tested'
   castrated: boolean
-  status: 'available' | 'in_progress' | 'adopted'
+  status: 'available' | 'in_progress'
   photoUrl: string | null
 }
 
@@ -44,7 +44,6 @@ function getStatusConfig(status: Cat['status']) {
   const config = {
     available: { label: 'Disponível', variant: 'success' as const },
     in_progress: { label: 'Em processo', variant: 'warning' as const },
-    adopted: { label: 'Adotado', variant: 'info' as const },
   }
   return config[status]
 }

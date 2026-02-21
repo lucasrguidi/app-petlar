@@ -40,7 +40,7 @@ const photoSchema = z.object({
 
 // Schema de filtros para listagem
 const listFiltersSchema = z.object({
-  status: z.enum(['available', 'in_progress', 'adopted']).optional(),
+  status: z.enum(['available', 'in_progress']).optional(),
   sex: z.enum(['male', 'female']).optional(),
   fiv: z.enum(['positive', 'negative', 'not_tested']).optional(),
   felv: z.enum(['positive', 'negative', 'not_tested']).optional(),
@@ -48,7 +48,6 @@ const listFiltersSchema = z.object({
   search: z.string().optional(),
   page: z.number().int().min(1).default(1),
   limit: z.number().int().min(1).max(50).default(10),
-  includeAdopted: z.boolean().default(false),
 })
 
 const publicListFiltersSchema = z.object({
@@ -264,19 +263,18 @@ export const catsRouter = router({
         search,
         page,
         limit,
-        includeAdopted,
       } = input
       const orgId = requireOrgId(ctx.session.user)
       const offset = (page - 1) * limit
 
       // Construir condições de filtro
-      const conditions = [eq(cats.orgId, orgId)]
+      const conditions = [
+        eq(cats.orgId, orgId),
+        inArray(cats.status, ['available', 'in_progress']),
+      ]
 
       if (status) {
         conditions.push(eq(cats.status, status))
-      } else if (!includeAdopted) {
-        // Exclude adopted cats by default unless explicitly requested
-        conditions.push(sql`${cats.status} != 'adopted'`)
       }
       if (sex) {
         conditions.push(eq(cats.sex, sex))
@@ -574,7 +572,7 @@ export const catsRouter = router({
 
       // Verificar se gato existe e pertence à org
       const [existingCat] = await db
-        .select({ id: cats.id })
+        .select({ id: cats.id, status: cats.status })
         .from(cats)
         .where(and(eq(cats.id, input.id), eq(cats.orgId, orgId)))
 
@@ -582,6 +580,13 @@ export const catsRouter = router({
         throw new TRPCError({
           code: 'NOT_FOUND',
           message: 'Gato não encontrado',
+        })
+      }
+
+      if (existingCat.status === 'adopted') {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Não é possível excluir um gato já adotado',
         })
       }
 
@@ -608,6 +613,13 @@ export const catsRouter = router({
         throw new TRPCError({
           code: 'NOT_FOUND',
           message: 'Gato não encontrado',
+        })
+      }
+
+      if (originalCat.status === 'adopted') {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Não é possível duplicar um gato já adotado',
         })
       }
 
@@ -649,7 +661,7 @@ export const catsRouter = router({
     .input(
       z.object({
         id: z.string(),
-        status: z.enum(['available', 'in_progress', 'adopted']),
+        status: z.enum(['available', 'in_progress']),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -682,8 +694,8 @@ export const catsRouter = router({
 
       // Validar transições válidas
       const validTransitions: Record<string, string[]> = {
-        available: ['in_progress', 'adopted'],
-        in_progress: ['available', 'adopted'],
+        available: ['in_progress'],
+        in_progress: ['available'],
       }
 
       if (!validTransitions[currentStatus]?.includes(newStatus)) {

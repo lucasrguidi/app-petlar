@@ -1,6 +1,6 @@
 import { createClient } from '@libsql/client'
 import dotenv from 'dotenv'
-import { and, eq, sql } from 'drizzle-orm'
+import { and, eq, inArray, sql } from 'drizzle-orm'
 import { drizzle } from 'drizzle-orm/libsql'
 import { Scrypt } from 'oslo/password'
 
@@ -786,16 +786,16 @@ async function seed() {
     'Filhote esperto e ativo. Aprende rápido!',
   ]
 
-  // Distribuição de status para garantir paginação em todas as views:
-  // - 45 available (3 páginas de 15)
-  // - 20 in_progress (2 páginas de 15)
-  // - 35 adopted (3 páginas de 15)
-  const getStatus = (
-    index: number
-  ): 'available' | 'in_progress' | 'adopted' => {
-    if (index < 45) return 'available'
-    if (index < 65) return 'in_progress'
-    return 'adopted'
+  // Distribuição inicial de status para listagem de gatos (admin):
+  // - 50 available
+  // - 35 in_progress
+  // Adoções serão criadas depois para um subconjunto determinístico.
+  const INITIAL_AVAILABLE_COUNT = 50
+  const SEEDED_ADOPTIONS_COUNT = 25
+
+  const getStatus = (index: number): 'available' | 'in_progress' => {
+    if (index < INITIAL_AVAILABLE_COUNT) return 'available'
+    return 'in_progress'
   }
 
   const catsToCreate = catNames.map((name, index) => ({
@@ -1181,14 +1181,13 @@ async function seed() {
     )
   }
 
-  // Seed de adoções para gatos com status 'adopted'
-  // Limpar adoções existentes
+  // Seed de adoções para um subconjunto determinístico de gatos.
+  // O status muda para "adopted" apenas quando há registro em adoptions.
   await db.delete(schema.adoptions).where(eq(schema.adoptions.orgId, orgId))
 
-  const adoptedCats = await db
-    .select({ id: schema.cats.id, name: schema.cats.name })
-    .from(schema.cats)
-    .where(and(eq(schema.cats.orgId, orgId), eq(schema.cats.status, 'adopted')))
+  const catsForAdoptionSeed = catsToCreate
+    .filter((cat) => cat.status === 'in_progress')
+    .slice(0, SEEDED_ADOPTIONS_COUNT)
 
   const adopterFirstNames = [
     'Maria',
@@ -1236,7 +1235,7 @@ async function seed() {
     'Castro',
   ]
 
-  const adoptionsToInsert = adoptedCats.map((cat, index) => {
+  const adoptionsToInsert = catsForAdoptionSeed.map((cat, index) => {
     const firstName =
       adopterFirstNames[index % adopterFirstNames.length]!
     const lastName =
@@ -1269,8 +1268,26 @@ async function seed() {
   })
 
   if (adoptionsToInsert.length > 0) {
-    await db.insert(schema.adoptions).values(adoptionsToInsert)
+    await db.transaction(async (tx) => {
+      await tx.insert(schema.adoptions).values(adoptionsToInsert)
+      await tx
+        .update(schema.cats)
+        .set({ status: 'adopted' })
+        .where(
+          and(
+            eq(schema.cats.orgId, orgId),
+            inArray(
+              schema.cats.id,
+              catsForAdoptionSeed.map((cat) => cat.id)
+            )
+          )
+        )
+    })
+
     console.log(`✅ ${adoptionsToInsert.length} registros de adoção criados`)
+    console.log(
+      `✅ ${adoptionsToInsert.length} gatos tiveram status atualizado para adopted`
+    )
   }
 
   console.log('🌱 Seed concluído!')

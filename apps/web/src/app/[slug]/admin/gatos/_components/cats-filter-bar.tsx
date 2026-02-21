@@ -57,9 +57,16 @@ export function CatsFilterBar({
         <div className="sm:order-1">
           <Select
             value={filters.status || 'all'}
-            onValueChange={(value: string) =>
-              onFilterChange({ status: value === 'all' ? undefined : value })
-            }
+            onValueChange={(value: string) => {
+              if (value === 'all') {
+                onFilterChange({ status: undefined })
+                return
+              }
+
+              if (value === 'available' || value === 'in_progress') {
+                onFilterChange({ status: value })
+              }
+            }}
             disabled={isPending}
           >
             <SelectTrigger className="h-10 w-full rounded-xl sm:w-[190px]">
@@ -69,7 +76,6 @@ export function CatsFilterBar({
               <SelectItem value="all">Todos os status</SelectItem>
               <SelectItem value="available">Disponível</SelectItem>
               <SelectItem value="in_progress">Em processo</SelectItem>
-              <SelectItem value="adopted">Adotado</SelectItem>
             </SelectContent>
           </Select>
         </div>
