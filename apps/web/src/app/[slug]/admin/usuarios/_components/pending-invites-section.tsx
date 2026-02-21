@@ -7,6 +7,7 @@ import {
   Clock,
   Loader2,
   Mail,
+  MailX,
   MoreVertical,
   RefreshCw,
   Shield,
@@ -237,25 +238,33 @@ export function PendingInvitesSection() {
         open={!!cancelInviteId}
         onOpenChange={() => setCancelInviteId(null)}
       >
-        <AlertDialogContent className="rounded-xl">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2">
-              <Trash2 className="text-destructive h-5 w-5" />
-              Cancelar convite
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              Tem certeza que deseja cancelar este convite? A pessoa não poderá
-              mais usar o link para criar uma conta.
+        <AlertDialogContent className="overflow-hidden rounded-xl p-0 sm:max-w-sm">
+          <div className="flex items-center gap-3 border-b border-warning/20 bg-warning/10 px-5 py-4">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-warning/15">
+              <MailX className="h-5 w-5 text-warning" />
+            </div>
+            <AlertDialogHeader className="space-y-0">
+              <AlertDialogTitle className="text-base font-semibold">
+                Cancelar convite
+              </AlertDialogTitle>
+            </AlertDialogHeader>
+          </div>
+          <div className="px-5 pt-4 pb-5">
+            <AlertDialogDescription className="text-foreground/80 text-sm leading-relaxed">
+              O link de convite será invalidado e a pessoa não poderá criar uma
+              conta com ele.
             </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="rounded-lg">Voltar</AlertDialogCancel>
+          </div>
+          <AlertDialogFooter className="gap-2 border-t border-border/40 bg-card px-5 py-3 sm:flex-row sm:justify-end sm:space-x-0">
+            <AlertDialogCancel className="h-9 rounded-lg sm:mt-0">
+              Voltar
+            </AlertDialogCancel>
             <AlertDialogAction
               onClick={() =>
                 cancelInviteId &&
                 cancelMutation.mutate({ inviteId: cancelInviteId })
               }
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-lg"
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90 h-9 rounded-lg"
               disabled={cancelMutation.isPending}
             >
               {cancelMutation.isPending ? (

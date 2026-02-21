@@ -1,7 +1,13 @@
 'use client'
 
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { MoreVertical, Shield, UserCheck, UserCog, UserX } from 'lucide-react'
+import {
+  AlertTriangle,
+  MoreVertical,
+  UserCheck,
+  UserCog,
+  UserX,
+} from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
@@ -175,27 +181,34 @@ export function UserActionsMenu({
         open={deactivateDialogOpen}
         onOpenChange={setDeactivateDialogOpen}
       >
-        <AlertDialogContent className="rounded-xl">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2">
-              <Shield className="text-destructive h-5 w-5" />
-              Desativar usuário
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              Tem certeza que deseja desativar <strong>{user.name}</strong>?
-              Essa pessoa perderá o acesso ao sistema, mas o histórico será
+        <AlertDialogContent className="overflow-hidden rounded-xl p-0 sm:max-w-sm">
+          <div className="bg-destructive/10 border-destructive/20 flex items-center gap-3 border-b px-5 py-4">
+            <div className="bg-destructive/15 flex h-9 w-9 shrink-0 items-center justify-center rounded-full">
+              <AlertTriangle className="text-destructive h-5 w-5" />
+            </div>
+            <AlertDialogHeader className="space-y-0">
+              <AlertDialogTitle className="text-base font-semibold">
+                Desativar usuário
+              </AlertDialogTitle>
+            </AlertDialogHeader>
+          </div>
+          <div className="px-5 pt-4 pb-5">
+            <AlertDialogDescription className="text-foreground/80 text-sm leading-relaxed">
+              <strong className="text-foreground">{user.name}</strong> perderá
+              o acesso ao sistema imediatamente. O histórico de atividades será
               preservado.
             </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="rounded-lg">
+          </div>
+          <AlertDialogFooter className="border-border/40 gap-2 border-t bg-card px-5 py-3 sm:flex-row sm:justify-end sm:space-x-0">
+            <AlertDialogCancel className="h-9 rounded-lg sm:mt-0">
               Cancelar
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={() => deactivateMutation.mutate({ userId: user.id })}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-lg"
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90 h-9 rounded-lg"
+              disabled={deactivateMutation.isPending}
             >
-              Desativar
+              {deactivateMutation.isPending ? 'Desativando...' : 'Desativar'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
