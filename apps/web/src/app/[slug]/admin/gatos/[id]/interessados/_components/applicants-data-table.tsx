@@ -159,6 +159,15 @@ function getColumns(
           )
         }
 
+        if (isThisUpdating) {
+          return (
+            <div className="border-border/60 bg-card flex h-8 w-[118px] items-center gap-1.5 rounded-lg border px-3 text-xs sm:w-[130px]">
+              <Loader2 className="h-3 w-3 shrink-0 animate-spin" />
+              <span>Salvando...</span>
+            </div>
+          )
+        }
+
         return (
           <div>
             <Select
@@ -166,25 +175,17 @@ function getColumns(
               onValueChange={(status: ApplicationStatus) =>
                 onUpdateStatus(applicant.id, status)
               }
-              disabled={isThisUpdating}
             >
               <SelectTrigger className="border-border/60 h-8 w-[118px] rounded-lg text-xs sm:w-[130px]">
-                {isThisUpdating ? (
-                  <span className="flex items-center gap-1.5">
-                    <Loader2 className="h-3 w-3 animate-spin" />
-                    <span>Salvando...</span>
-                  </span>
-                ) : (
-                  <span className="flex items-center gap-1.5">
-                    <span
-                      className={cn(
-                        'h-1.5 w-1.5 rounded-full',
-                        config.dotClass
-                      )}
-                    />
-                    <SelectValue />
-                  </span>
-                )}
+                <span className="flex items-center gap-1.5">
+                  <span
+                    className={cn(
+                      'h-1.5 w-1.5 rounded-full',
+                      config.dotClass
+                    )}
+                  />
+                  <SelectValue />
+                </span>
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="pending">

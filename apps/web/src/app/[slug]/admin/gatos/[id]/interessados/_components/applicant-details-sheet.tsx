@@ -405,15 +405,15 @@ export function ApplicantDetailsSheet({
                   className="shadow-primary-glow rounded-xl"
                 >
                   {updateStatusMutation.isPending ? (
-                    <>
+                    <span className="inline-flex items-center">
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Salvando...
-                    </>
+                    </span>
                   ) : (
-                    <>
+                    <span className="inline-flex items-center">
                       <Save className="mr-2 h-4 w-4" />
                       Salvar status
-                    </>
+                    </span>
                   )}
                 </Button>
               </div>
