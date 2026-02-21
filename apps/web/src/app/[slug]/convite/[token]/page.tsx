@@ -11,7 +11,6 @@ import { AcceptInviteForm } from './_components/accept-invite-form'
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
@@ -128,9 +127,6 @@ export default async function InvitePage({ params }: InvitePageProps) {
               </FeatureBadge>
             </div>
 
-            <CardDescription className="text-muted-foreground mx-auto max-w-xs text-base text-balance">
-              Complete seu cadastro para fazer parte da equipe.
-            </CardDescription>
           </CardHeader>
 
           <CardContent className="px-6 pt-2 pb-6">
