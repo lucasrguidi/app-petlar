@@ -606,115 +606,119 @@ Todos os componentes interativos devem ter estes estados:
 </Avatar>
 ```
 
-### Dialog / AlertDialog
+### ConfirmDialog
 
-Padrão para modais de confirmação e ação. Estrutura em 3 zonas:
+Componente unificado para todas as modais de confirmação e ação.
+Localização: `@/components/ui/confirm-dialog`.
 
 ```
 ┌──────────────────────────────────────┐
-│  [zona colorida]  [ícone]  [título]  │  ← faixa contextual (cor por tipo)
+│  [zona colorida]  [ícone]  [título]  │  ← faixa contextual (cor por variant)
+│                         [subtítulo]  │
 ├──────────────────────────────────────┤
 │  Descrição direta                    │  ← corpo: texto + nota opcional
 │  ┌────────────────────────────────┐  │
 │  │  nota contextual (bg-muted/30) │  │
 │  └────────────────────────────────┘  │
+│  [children — formulário opcional]    │
 ├──────────────────────────────────────┤
 │  [Cancelar]              [Ação]      │  ← footer com bg-card + borda
 └──────────────────────────────────────┘
 ```
 
-#### Cor por tipo de ação
+#### Props
 
-| Tipo | Cor da faixa | Ícone sugerido |
-|------|-------------|----------------|
-| Destrutivo | `destructive` | `AlertTriangle`, `Trash2` |
-| Sucesso / confirmação positiva | `success` | `UserCheck2`, `CheckCircle2` |
-| Alerta / atenção | `warning` | `MailX`, `AlertCircle` |
-| Neutro / informação | `info` | `ShieldCheck`, `Info` |
+| Prop | Tipo | Descrição |
+|------|------|-----------|
+| `mode` | `'alert' \| 'dialog'` | `alert` não fecha ao clicar fora (padrão). `dialog` fecha. |
+| `variant` | `'destructive' \| 'success' \| 'warning' \| 'info'` | Cor da faixa e do botão de ação |
+| `icon` | `LucideIcon` | Ícone exibido na faixa colorida |
+| `title` | `string` | Título principal |
+| `subtitle` | `string` (opcional) | Subtítulo abaixo do título, na faixa |
+| `description` | `ReactNode` (opcional) | Descrição no corpo |
+| `note` | `ReactNode` (opcional) | Nota contextual em card `muted/30` |
+| `children` | `ReactNode` (opcional) | Formulário ou conteúdo adicional |
+| `actionLabel` | `string` | Texto do botão de ação |
+| `actionLoadingLabel` | `string` (opcional) | Texto durante loading |
+| `isLoading` | `boolean` | Estado de carregamento |
+| `isActionDisabled` | `boolean` | Desabilita o botão de ação |
+| `cancelLabel` | `string` | Texto do botão cancelar (padrão: "Cancelar") |
+| `onAction` | `() => void` | Callback do botão de ação |
 
-#### Estrutura base
+#### Variant por tipo de ação
+
+| Variant | Cor | Quando usar | Ícones sugeridos |
+|---------|-----|-------------|-----------------|
+| `destructive` | Vermelho | Ação irreversível, perda de acesso | `AlertTriangle`, `Trash2` |
+| `success` | Verde | Confirmação positiva, reativação | `UserCheck2`, `CheckCircle2` |
+| `warning` | Âmbar | Ação com consequência moderada | `MailX`, `AlertCircle` |
+| `info` | Azul | Formulário neutro, alteração reversível | `ShieldCheck`, `Info` |
+
+#### Quando usar cada mode
+
+| Mode | Fecha ao clicar fora? | Quando usar |
+|------|-----------------------|-------------|
+| `alert` (padrão) | Não | Ações destrutivas ou irreversíveis |
+| `dialog` | Sim | Formulários e ações reversíveis |
+
+#### Exemplos
 
 ```tsx
-// AlertDialog de ação destrutiva
-<AlertDialogContent className="overflow-hidden rounded-xl p-0 sm:max-w-sm">
-  {/* Zona colorida — troque as classes de cor conforme o tipo */}
-  <div className="flex items-center gap-3 border-b border-destructive/20 bg-destructive/10 px-5 py-4">
-    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-destructive/15">
-      <AlertTriangle className="h-5 w-5 text-destructive" />
-    </div>
-    <AlertDialogHeader className="space-y-0">
-      <AlertDialogTitle className="text-base font-semibold">
-        Título da ação
-      </AlertDialogTitle>
-    </AlertDialogHeader>
-  </div>
+// Ação destrutiva (mode alert, padrão)
+<ConfirmDialog
+  open={open}
+  onOpenChange={setOpen}
+  variant="destructive"
+  icon={AlertTriangle}
+  title="Desativar usuário"
+  description={
+    <>
+      <strong className="text-foreground">{user.name}</strong> perderá o acesso
+      ao sistema imediatamente.
+    </>
+  }
+  actionLabel="Desativar"
+  actionLoadingLabel="Desativando..."
+  isLoading={mutation.isPending}
+  onAction={() => mutation.mutate({ userId: user.id })}
+/>
 
-  {/* Corpo */}
-  <div className="px-5 pt-4 pb-5">
-    <AlertDialogDescription className="text-foreground/80 text-sm leading-relaxed">
-      Descrição clara e direta da consequência.{' '}
-      <strong className="text-foreground">Nome do item</strong> será afetado.
-    </AlertDialogDescription>
-    {/* Nota contextual opcional */}
-    <div className="mt-3 rounded-lg border border-border/40 bg-muted/30 px-3 py-2.5">
-      <p className="text-muted-foreground text-xs leading-relaxed">
-        Informação adicional relevante.
-      </p>
-    </div>
-  </div>
+// Com nota contextual
+<ConfirmDialog
+  open={open}
+  onOpenChange={setOpen}
+  variant="success"
+  icon={UserCheck2}
+  title="Reativar acesso"
+  description="Restaura o acesso imediatamente, sem novo convite."
+  note="A pessoa poderá fazer login com a senha anterior."
+  actionLabel="Reativar acesso"
+  actionLoadingLabel="Reativando..."
+  isLoading={mutation.isPending}
+  onAction={() => mutation.mutate({ userId })}
+/>
 
-  {/* Footer */}
-  <AlertDialogFooter className="gap-2 border-t border-border/40 bg-card px-5 py-3 sm:flex-row sm:justify-end sm:space-x-0">
-    <AlertDialogCancel className="h-9 rounded-lg sm:mt-0">
-      Cancelar
-    </AlertDialogCancel>
-    <AlertDialogAction
-      className="bg-destructive text-destructive-foreground hover:bg-destructive/90 h-9 rounded-lg"
-      disabled={mutation.isPending}
-    >
-      {mutation.isPending ? 'Processando...' : 'Confirmar'}
-    </AlertDialogAction>
-  </AlertDialogFooter>
-</AlertDialogContent>
-
-// Dialog com formulário (ex: alterar papel)
-<DialogContent className="overflow-hidden rounded-xl p-0 sm:max-w-sm">
-  <div className="flex items-center gap-3 border-b border-info/20 bg-info/10 px-5 py-4">
-    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-info/15">
-      <ShieldCheck className="h-5 w-5 text-info" />
-    </div>
-    <DialogHeader className="space-y-0">
-      <DialogTitle className="text-base font-semibold">Título</DialogTitle>
-      <DialogDescription className="text-xs">Subtítulo/contexto</DialogDescription>
-    </DialogHeader>
-  </div>
-
-  {/* Conteúdo do formulário */}
-  <div className="space-y-4 px-5 pt-4 pb-5">
-    {/* campos */}
-    <div className="rounded-lg border border-border/40 bg-muted/30 px-3 py-2.5">
-      <p className="text-muted-foreground text-xs leading-relaxed">
-        Descrição do impacto da escolha.
-      </p>
-    </div>
-  </div>
-
-  <DialogFooter className="gap-2 border-t border-border/40 bg-card px-5 py-3 sm:flex-row sm:justify-end sm:space-x-0">
-    <Button variant="outline" className="h-9 rounded-lg">Cancelar</Button>
-    <Button className="h-9 rounded-lg">Salvar</Button>
-  </DialogFooter>
-</DialogContent>
+// Com formulário (mode dialog — fecha ao clicar fora)
+<ConfirmDialog
+  mode="dialog"
+  open={open}
+  onOpenChange={setOpen}
+  variant="info"
+  icon={ShieldCheck}
+  title="Alterar papel"
+  subtitle={user.name}
+  actionLabel="Salvar"
+  actionLoadingLabel="Salvando..."
+  isLoading={mutation.isPending}
+  isActionDisabled={selectedRole === user.role}
+  onAction={handleSave}
+>
+  {/* Formulário vai aqui como children */}
+  <Select value={selectedRole} onValueChange={setSelectedRole}>
+    ...
+  </Select>
+</ConfirmDialog>
 ```
-
-#### Regras
-
-- Largura máxima: `sm:max-w-sm` (dialogs de confirmação são compactas)
-- `overflow-hidden p-0` sempre no content para a faixa ir de borda a borda
-- Título: `text-base font-semibold` (sem `font-display`)
-- Botões: `h-9 rounded-lg` com `gap-2` entre eles
-- Footer: sempre `bg-card` com `border-t border-border/40`
-- Texto da descrição: `text-foreground/80` com nome em `<strong className="text-foreground">`
-- Estado de loading: texto inline (ex: `'Desativando...'`) sem spinner separado quando possível
 
 ---
 

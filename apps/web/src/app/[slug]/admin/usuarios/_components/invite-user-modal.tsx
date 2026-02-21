@@ -8,17 +8,8 @@ import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
 
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import {
   Form,
   FormControl,
@@ -263,59 +254,30 @@ export function InviteUserModal({ open, onOpenChange }: InviteUserModalProps) {
         </Form>
       </SheetContent>
 
-      <AlertDialog
+      <ConfirmDialog
         open={!!deactivatedUser}
         onOpenChange={(open) => !open && setDeactivatedUser(null)}
-      >
-        <AlertDialogContent className="overflow-hidden rounded-xl p-0 sm:max-w-sm">
-          <div className="flex items-center gap-3 border-b border-success/20 bg-success/10 px-5 py-4">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-success/15">
-              <UserCheck2 className="h-5 w-5 text-success" />
-            </div>
-            <AlertDialogHeader className="space-y-0">
-              <AlertDialogTitle className="text-base font-semibold">
-                Conta já existe
-              </AlertDialogTitle>
-            </AlertDialogHeader>
-          </div>
-          <div className="space-y-3 px-5 pt-4 pb-5">
-            <AlertDialogDescription className="text-foreground/80 text-sm leading-relaxed">
-              Já existe uma conta desativada para{' '}
-              <strong className="text-foreground">
-                {deactivatedUser?.userName}
-              </strong>
-              . Reativar restaura o acesso imediatamente, sem novo convite.
-            </AlertDialogDescription>
-            <div className="rounded-lg border border-border/40 bg-muted/30 px-3 py-2.5">
-              <p className="text-muted-foreground text-xs leading-relaxed">
-                A pessoa poderá fazer login com a senha anterior.
-              </p>
-            </div>
-          </div>
-          <AlertDialogFooter className="gap-2 border-t border-border/40 bg-card px-5 py-3 sm:flex-row sm:justify-end sm:space-x-0">
-            <AlertDialogCancel className="h-9 rounded-lg sm:mt-0">
-              Cancelar
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() =>
-                deactivatedUser &&
-                reactivateMutation.mutate({ userId: deactivatedUser.userId })
-              }
-              className="h-9 rounded-lg bg-success text-success-foreground hover:bg-success/90"
-              disabled={isReactivatingUser}
-            >
-              {isReactivatingUser ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Reativando...
-                </>
-              ) : (
-                'Reativar acesso'
-              )}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+        variant="success"
+        icon={UserCheck2}
+        title="Conta já existe"
+        description={
+          <>
+            Já existe uma conta desativada para{' '}
+            <strong className="text-foreground">
+              {deactivatedUser?.userName}
+            </strong>
+            . Reativar restaura o acesso imediatamente, sem novo convite.
+          </>
+        }
+        note="A pessoa poderá fazer login com a senha anterior."
+        actionLabel="Reativar acesso"
+        actionLoadingLabel="Reativando..."
+        isLoading={isReactivatingUser}
+        onAction={() =>
+          deactivatedUser &&
+          reactivateMutation.mutate({ userId: deactivatedUser.userId })
+        }
+      />
     </Sheet>
   )
 }

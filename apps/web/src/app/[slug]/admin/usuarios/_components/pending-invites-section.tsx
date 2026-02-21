@@ -11,23 +11,13 @@ import {
   MoreVertical,
   RefreshCw,
   Shield,
-  Trash2,
   User,
 } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog'
 import { Badge } from '@/components/ui/badge'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
@@ -234,51 +224,22 @@ export function PendingInvitesSection() {
         </Collapsible>
       </Card>
 
-      <AlertDialog
+      <ConfirmDialog
         open={!!cancelInviteId}
-        onOpenChange={() => setCancelInviteId(null)}
-      >
-        <AlertDialogContent className="overflow-hidden rounded-xl p-0 sm:max-w-sm">
-          <div className="flex items-center gap-3 border-b border-warning/20 bg-warning/10 px-5 py-4">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-warning/15">
-              <MailX className="h-5 w-5 text-warning" />
-            </div>
-            <AlertDialogHeader className="space-y-0">
-              <AlertDialogTitle className="text-base font-semibold">
-                Cancelar convite
-              </AlertDialogTitle>
-            </AlertDialogHeader>
-          </div>
-          <div className="px-5 pt-4 pb-5">
-            <AlertDialogDescription className="text-foreground/80 text-sm leading-relaxed">
-              O link de convite será invalidado e a pessoa não poderá criar uma
-              conta com ele.
-            </AlertDialogDescription>
-          </div>
-          <AlertDialogFooter className="gap-2 border-t border-border/40 bg-card px-5 py-3 sm:flex-row sm:justify-end sm:space-x-0">
-            <AlertDialogCancel className="h-9 rounded-lg sm:mt-0">
-              Voltar
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() =>
-                cancelInviteId &&
-                cancelMutation.mutate({ inviteId: cancelInviteId })
-              }
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90 h-9 rounded-lg"
-              disabled={cancelMutation.isPending}
-            >
-              {cancelMutation.isPending ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Cancelando...
-                </>
-              ) : (
-                'Cancelar convite'
-              )}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+        onOpenChange={(open) => !open && setCancelInviteId(null)}
+        variant="warning"
+        icon={MailX}
+        title="Cancelar convite"
+        description="O link de convite será invalidado e a pessoa não poderá criar uma conta com ele."
+        cancelLabel="Voltar"
+        actionLabel="Cancelar convite"
+        actionLoadingLabel="Cancelando..."
+        isLoading={cancelMutation.isPending}
+        onAction={() =>
+          cancelInviteId &&
+          cancelMutation.mutate({ inviteId: cancelInviteId })
+        }
+      />
     </>
   )
 }
