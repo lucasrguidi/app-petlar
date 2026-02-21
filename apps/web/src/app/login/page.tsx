@@ -38,7 +38,8 @@ export default async function LoginRedirectPage({
               Acessar painel da ONG
             </CardTitle>
             <p className="text-muted-foreground text-sm">
-              Informe o slug da sua organização para continuar.
+              Use o slug da organização para continuar. Se você já acessou neste
+              navegador, pode entrar em 1 clique.
             </p>
           </CardHeader>
           <CardContent>
