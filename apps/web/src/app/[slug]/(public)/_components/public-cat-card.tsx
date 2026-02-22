@@ -12,9 +12,12 @@ import {
   Syringe,
   Venus,
 } from 'lucide-react'
+import { type Route } from 'next'
+import Link from 'next/link'
 import { useMemo, useState } from 'react'
 
 import { Button } from '@/components/ui/button'
+import { useOrgSlug } from '@/hooks/use-org-slug'
 import { cn } from '@/lib/utils'
 
 export interface PublicCatCardData {
@@ -42,7 +45,6 @@ export interface PublicCatCardData {
 
 interface PublicCatCardProps {
   cat: PublicCatCardData
-  onAdoptClick: (cat: PublicCatCardData) => void
 }
 
 function formatAge(years: number | null, months: number | null): string {
@@ -102,7 +104,8 @@ function HealthBadge({
   )
 }
 
-export function PublicCatCard({ cat, onAdoptClick }: PublicCatCardProps) {
+export function PublicCatCard({ cat }: PublicCatCardProps) {
+  const slug = useOrgSlug()
   const [expandedDescription, setExpandedDescription] = useState(false)
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0)
   const [isHovered, setIsHovered] = useState(false)
@@ -374,8 +377,7 @@ export function PublicCatCard({ cat, onAdoptClick }: PublicCatCardProps) {
 
         {/* CTA */}
         <Button
-          type="button"
-          onClick={() => onAdoptClick(cat)}
+          asChild
           className={cn(
             'mt-auto h-12 w-full rounded-2xl text-base',
             'bg-gradient-to-r from-[#E35915] to-[#F07B3D]',
@@ -385,13 +387,15 @@ export function PublicCatCard({ cat, onAdoptClick }: PublicCatCardProps) {
             'hover:scale-[1.01] active:scale-[0.99]'
           )}
         >
-          <Heart
-            className={cn(
-              'mr-2 h-4 w-4 transition-transform',
-              isHovered && 'scale-110'
-            )}
-          />
-          Quero adotar {cat.sex === 'female' ? 'a' : 'o'} {cat.name}
+          <Link href={`/${slug}/candidatura/${cat.id}` as Route}>
+            <Heart
+              className={cn(
+                'mr-2 h-4 w-4 transition-transform',
+                isHovered && 'scale-110'
+              )}
+            />
+            Quero adotar {cat.sex === 'female' ? 'a' : 'o'} {cat.name}
+          </Link>
         </Button>
       </div>
     </div>

@@ -3,10 +3,9 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { AlertTriangle, Loader2, PawPrint, Sparkles, X } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useCallback, useMemo, useState, useTransition } from 'react'
+import { useCallback, useMemo, useTransition } from 'react'
 
-import { ApplicationSheet } from './application-sheet'
-import { PublicCatCard, type PublicCatCardData } from './public-cat-card'
+import { PublicCatCard } from './public-cat-card'
 import { PublicCatsPagination } from './public-cats-pagination'
 
 import { Button } from '@/components/ui/button'
@@ -118,8 +117,6 @@ export function PublicCatsSection() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [isPending, startTransition] = useTransition()
-  const [selectedCat, setSelectedCat] = useState<PublicCatCardData | null>(null)
-  const [isApplicationSheetOpen, setIsApplicationSheetOpen] = useState(false)
 
   const filters = useMemo<PublicCatsFilters>(
     () => ({
@@ -179,19 +176,6 @@ export function PublicCatsSection() {
       page: 1,
     })
   }, [updateFilters])
-
-  const handleAdoptClick = useCallback((cat: PublicCatCardData) => {
-    setSelectedCat(cat)
-    setIsApplicationSheetOpen(true)
-  }, [])
-
-  const handleApplicationSheetOpenChange = useCallback((nextOpen: boolean) => {
-    setIsApplicationSheetOpen(nextOpen)
-
-    if (!nextOpen) {
-      setSelectedCat(null)
-    }
-  }, [])
 
   const hasActiveFilters = Boolean(filters.sex || filters.ageRange)
   const totalLabel =
@@ -421,7 +405,7 @@ export function PublicCatsSection() {
                   className="animate-fade-in"
                   style={{ animationDelay: `${index * 50}ms` }}
                 >
-                  <PublicCatCard cat={cat} onAdoptClick={handleAdoptClick} />
+                  <PublicCatCard cat={cat} />
                 </div>
               ))}
             </div>
@@ -437,12 +421,6 @@ export function PublicCatsSection() {
           </>
         )}
       </div>
-
-      <ApplicationSheet
-        open={isApplicationSheetOpen}
-        onOpenChange={handleApplicationSheetOpenChange}
-        cat={selectedCat}
-      />
     </section>
   )
 }
