@@ -199,10 +199,11 @@ export function ApplicationSuccess({
                 </div>
                 <div>
                   <p className="text-sm font-medium text-[#783201]">
-                    Retorno em breve
+                    Aguarde nosso contato
                   </p>
                   <p className="text-sm text-[#8B5A2B]/70">
-                    Entraremos em contato via WhatsApp ou e-mail
+                    Caso seja aprovado, entraremos em contato via WhatsApp ou
+                    e-mail
                   </p>
                 </div>
               </div>
