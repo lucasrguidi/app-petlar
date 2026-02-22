@@ -24,6 +24,11 @@ function isUnauthorizedError(error: Error): boolean {
   )
 }
 
+function isConflictError(error: Error): boolean {
+  const trpcError = error as TrpcErrorLike
+  return trpcError.data?.code === 'CONFLICT'
+}
+
 function getAdminLoginPath(pathname: string): string | null {
   const match = pathname.match(/^\/([^/]+)\/admin(?:\/|$)/)
   if (!match) return null
@@ -56,6 +61,11 @@ async function handleUnauthorizedInAdminRoute() {
 function onReactQueryError(error: Error, query?: { invalidate: () => void }) {
   if (isUnauthorizedError(error)) {
     void handleUnauthorizedInAdminRoute()
+    return
+  }
+
+  // CONFLICT errors are handled locally by components (e.g., duplicate application)
+  if (isConflictError(error)) {
     return
   }
 
