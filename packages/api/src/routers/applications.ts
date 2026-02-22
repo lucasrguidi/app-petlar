@@ -213,6 +213,159 @@ function escapeHtml(value: string): string {
     .replaceAll("'", '&#039;')
 }
 
+async function sendApplicationConfirmedEmail(params: {
+  to: string
+  applicantName: string
+  catName: string
+  catSex: 'male' | 'female'
+  orgName: string
+}) {
+  if (!env.RESEND_API_KEY || !env.EMAIL_FROM) {
+    throw new Error('Configuração de e-mail não encontrada')
+  }
+
+  const safeApplicantName = escapeHtml(params.applicantName)
+  const safeCatName = escapeHtml(params.catName)
+  const safeOrgName = escapeHtml(params.orgName)
+  const catArticle = params.catSex === 'female' ? 'a' : 'o'
+
+  const subject = `Candidatura confirmada para ${params.catName}!`
+  const text = [
+    `Olá, ${params.applicantName}!`,
+    '',
+    `Sua candidatura para adoção d${catArticle} ${params.catName} foi confirmada com sucesso!`,
+    '',
+    'E agora?',
+    `- A equipe da ${params.orgName} vai analisar sua candidatura com carinho`,
+    '- Caso seja aprovado, entraremos em contato via WhatsApp ou e-mail',
+    '- Fique de olho nas suas mensagens!',
+    '',
+    'Obrigado por escolher adotar!',
+  ].join('\n')
+
+  const html = `
+    <!doctype html>
+    <html lang="pt-BR">
+      <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Candidatura confirmada</title>
+      </head>
+      <body style="margin:0;padding:0;background:#aec7e2;">
+        <span style="display:none!important;visibility:hidden;opacity:0;color:transparent;height:0;width:0;overflow:hidden;">
+          Sua candidatura para adoção d${catArticle} ${safeCatName} foi confirmada!
+        </span>
+
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+          <tr>
+            <td align="center" style="padding:24px 12px;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width:560px;background:#ffffff;border:1px solid #9ab4d1;border-radius:22px;overflow:hidden;">
+                <tr>
+                  <td style="padding:0;">
+                    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:linear-gradient(135deg,#10b981 0%,#34d399 100%);">
+                      <tr>
+                        <td style="padding:22px 24px 18px 24px;">
+                          <div style="display:inline-block;background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.45);border-radius:999px;padding:6px 10px;color:#ffffff;font-family:'DM Sans',Segoe UI,Arial,sans-serif;font-size:12px;font-weight:700;letter-spacing:0.3px;">
+                            PETLAR • Candidatura Confirmada
+                          </div>
+                          <h1 style="margin:14px 0 8px 0;color:#ffffff;font-family:'Outfit','DM Sans',Segoe UI,Arial,sans-serif;font-size:28px;line-height:1.15;font-weight:700;letter-spacing:-0.3px;">
+                            Candidatura enviada!
+                          </h1>
+                          <p style="margin:0;color:#ecfdf5;font-family:'DM Sans',Segoe UI,Arial,sans-serif;font-size:14px;line-height:1.55;">
+                            Sua candidatura para adoção d${catArticle} <strong>${safeCatName}</strong> foi confirmada.
+                          </p>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+
+                <tr>
+                  <td style="padding:24px;">
+                    <p style="margin:0 0 14px 0;color:#783201;font-family:'DM Sans',Segoe UI,Arial,sans-serif;font-size:15px;line-height:1.6;">
+                      Olá, <strong>${safeApplicantName}</strong>!
+                    </p>
+                    <p style="margin:0 0 16px 0;color:#8b5a2b;font-family:'DM Sans',Segoe UI,Arial,sans-serif;font-size:14px;line-height:1.6;">
+                      Recebemos sua candidatura com sucesso. Agora é só aguardar — a equipe da <strong>${safeOrgName}</strong> vai analisar tudo com carinho e atenção.
+                    </p>
+
+                    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:0 0 16px 0;">
+                      <tr>
+                        <td style="border:1px solid #a7f3d0;background:#ecfdf5;border-radius:16px;padding:16px;">
+                          <p style="margin:0 0 10px 0;color:#065f46;font-family:'DM Sans',Segoe UI,Arial,sans-serif;font-size:13px;font-weight:700;letter-spacing:0.35px;text-transform:uppercase;">
+                            Próximos passos
+                          </p>
+                          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                            <tr>
+                              <td style="padding:6px 0;color:#047857;font-family:'DM Sans',Segoe UI,Arial,sans-serif;font-size:14px;line-height:1.5;">
+                                📋 A equipe vai avaliar sua candidatura
+                              </td>
+                            </tr>
+                            <tr>
+                              <td style="padding:6px 0;color:#047857;font-family:'DM Sans',Segoe UI,Arial,sans-serif;font-size:14px;line-height:1.5;">
+                                📱 Caso seja aprovado, entraremos em contato via WhatsApp ou e-mail
+                              </td>
+                            </tr>
+                            <tr>
+                              <td style="padding:6px 0;color:#047857;font-family:'DM Sans',Segoe UI,Arial,sans-serif;font-size:14px;line-height:1.5;">
+                                ⏳ Fique de olho nas suas mensagens!
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                    </table>
+
+                    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                      <tr>
+                        <td style="padding:0;color:#8b5a2b;font-family:'DM Sans',Segoe UI,Arial,sans-serif;font-size:13px;line-height:1.55;">
+                          ❤️ <strong>Obrigado por escolher adotar!</strong> Cada candidatura é um passo importante para dar um lar a quem precisa.
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+
+                <tr>
+                  <td style="border-top:1px solid #e8f0f8;background:#f8fbff;padding:16px 24px;">
+                    <p style="margin:0;color:#8b5a2b;font-family:'DM Sans',Segoe UI,Arial,sans-serif;font-size:12px;line-height:1.6;">
+                      Este é um e-mail automático. Se tiver dúvidas, entre em contato com a ${safeOrgName}.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+
+              <p style="margin:12px 0 0 0;color:#6f4f35;font-family:'DM Sans',Segoe UI,Arial,sans-serif;font-size:11px;line-height:1.4;">
+                PetLar • Sistema de adoção responsável
+              </p>
+            </td>
+          </tr>
+        </table>
+      </body>
+    </html>
+  `
+
+  const response = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${env.RESEND_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      from: env.EMAIL_FROM,
+      to: [params.to],
+      subject,
+      text,
+      html,
+    }),
+  })
+
+  if (!response.ok) {
+    const body = await response.text()
+    throw new Error(`Falha ao enviar e-mail (${response.status}): ${body}`)
+  }
+}
+
 async function sendApplicationConfirmationEmail(params: {
   to: string
   applicantName: string
@@ -1374,6 +1527,10 @@ export const applicationsRouter = router({
       const [application] = await db
         .select({
           id: applications.id,
+          orgId: applications.orgId,
+          catId: applications.catId,
+          applicantName: applications.applicantName,
+          applicantEmail: applications.applicantEmail,
           confirmedAt: applications.confirmedAt,
           confirmationToken: applications.confirmationToken,
           confirmationCodeHash: applications.confirmationCodeHash,
@@ -1433,6 +1590,34 @@ export const applicationsRouter = router({
           confirmedAt: new Date(),
         })
         .where(eq(applications.id, application.id))
+
+      // Send confirmation success email
+      try {
+        const [org] = await db
+          .select({ name: orgs.name })
+          .from(orgs)
+          .where(eq(orgs.id, application.orgId))
+          .limit(1)
+
+        const [cat] = await db
+          .select({ name: cats.name, sex: cats.sex })
+          .from(cats)
+          .where(eq(cats.id, application.catId))
+          .limit(1)
+
+        if (org && cat) {
+          await sendApplicationConfirmedEmail({
+            to: application.applicantEmail,
+            applicantName: application.applicantName,
+            catName: cat.name,
+            catSex: cat.sex,
+            orgName: org.name,
+          })
+        }
+      } catch (error) {
+        // Log error but don't fail the confirmation - the application is already confirmed
+        console.error('Erro ao enviar email de confirmação de candidatura', error)
+      }
 
       return {
         status: 'confirmed' as const,
