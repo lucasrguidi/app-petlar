@@ -2,6 +2,8 @@
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import { ArrowRight, Eye, EyeOff, Loader2, Lock, Mail } from 'lucide-react'
+import { type Route } from 'next'
+import Link from 'next/link'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
@@ -152,13 +154,12 @@ export function SignInForm({ orgId, callbackUrl }: SignInFormProps) {
                 <FormLabel className="text-foreground text-sm font-medium">
                   Senha
                 </FormLabel>
-                <button
-                  type="button"
+                <Link
+                  href={`/${slug}/esqueci-senha` as Route}
                   className="text-primary hover:text-primary/80 text-xs font-medium transition-colors"
-                  tabIndex={-1}
                 >
                   Esqueceu a senha?
-                </button>
+                </Link>
               </div>
               <FormControl>
                 <div className="relative">
