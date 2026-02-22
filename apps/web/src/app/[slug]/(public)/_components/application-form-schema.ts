@@ -160,7 +160,7 @@ export function createApplicationFormSchema(fields: ApplicationFormField[]) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
             path: ['responses', field.id],
-            message: `${field.label} é obrigatório`,
+            message: 'Este campo é obrigatório',
           })
           continue
         }

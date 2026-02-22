@@ -8,7 +8,12 @@ import {
   ToggleLeft,
 } from 'lucide-react'
 import { useEffect, useMemo } from 'react'
-import { useWatch, type FieldErrors, type UseFormReturn } from 'react-hook-form'
+import {
+  useFormState,
+  useWatch,
+  type FieldErrors,
+  type UseFormReturn,
+} from 'react-hook-form'
 
 import {
   getValidOptions,
@@ -36,6 +41,7 @@ interface ApplicationDynamicFieldsProps {
   fields: ApplicationFormField[]
   form: UseFormReturn<ApplicationFormValues>
   disabled?: boolean
+  showValidation?: boolean
 }
 
 const baseInputClassName = cn(
@@ -82,16 +88,6 @@ function getResponseErrorMessage(
   return rawMessage
 }
 
-function isResponseTouched(
-  touchedResponses: Record<string, unknown> | undefined,
-  fieldId: string
-): boolean {
-  const touched = touchedResponses?.[fieldId]
-  if (touched === true) return true
-  if (typeof touched === 'object' && touched !== null) return true
-  return false
-}
-
 function upsertFileByFieldId(
   files: ApplicationFormFileInput[],
   nextFile: ApplicationFormFileInput
@@ -112,21 +108,21 @@ export function ApplicationDynamicFields({
   fields,
   form,
   disabled = false,
+  showValidation = false,
 }: ApplicationDynamicFieldsProps) {
   const responses = useWatch({
     control: form.control,
     name: 'responses',
   })
 
+  // Subscribe to errors reactively - this ensures re-renders when validation errors change
+  const { errors } = useFormState({ control: form.control })
+
   const responseValues = useMemo(() => responses ?? {}, [responses])
 
   const visibleFields = useMemo(() => {
     return fields.filter((field) => isFieldVisible(field, responseValues))
   }, [fields, responseValues])
-
-  const touchedResponses = form.formState.touchedFields.responses as
-    | Record<string, unknown>
-    | undefined
 
   useEffect(() => {
     const visibleIds = new Set(visibleFields.map((field) => field.id))
@@ -175,6 +171,9 @@ export function ApplicationDynamicFields({
   ) => {
     const currentResponses = form.getValues('responses')
 
+    // Clear error for this specific field before setting new value
+    form.clearErrors(`responses.${fieldId}`)
+
     form.setValue(
       'responses',
       {
@@ -184,9 +183,14 @@ export function ApplicationDynamicFields({
       {
         shouldDirty: true,
         shouldTouch: options?.shouldTouch ?? true,
-        shouldValidate: options?.shouldValidate ?? true,
+        shouldValidate: false, // Don't validate here, we'll trigger it explicitly
       }
     )
+
+    // Trigger full form validation to run superRefine and update error states
+    if (options?.shouldValidate !== false) {
+      void form.trigger()
+    }
   }
 
   const setFileValue = (
@@ -250,14 +254,8 @@ export function ApplicationDynamicFields({
       <div className="space-y-4">
         {visibleFields.map((field, index) => {
           const responseValue = responseValues[field.id]
-          const fieldError = getResponseErrorMessage(
-            form.formState.errors,
-            field.id
-          )
-          const shouldShowError =
-            Boolean(fieldError) &&
-            (form.formState.submitCount > 0 ||
-              isResponseTouched(touchedResponses, field.id))
+          const fieldError = getResponseErrorMessage(errors, field.id)
+          const shouldShowError = Boolean(fieldError) && showValidation
           const FieldIcon = getFieldIcon(field.type)
 
           return (
@@ -305,6 +303,9 @@ export function ApplicationDynamicFields({
                     </div>
                     <label className="mt-1 block text-sm font-medium text-[#783201]">
                       {field.label}
+                      {field.required && (
+                        <span className="ml-1 text-[#E35915]">*</span>
+                      )}
                     </label>
                     {field.helpText && (
                       <p className="mt-0.5 text-xs text-[#8B5A2B]/65">

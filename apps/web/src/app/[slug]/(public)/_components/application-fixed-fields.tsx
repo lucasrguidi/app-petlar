@@ -108,7 +108,7 @@ export function ApplicationFixedFields({
           render={({ field, fieldState }) => (
             <FormItem className="space-y-1.5">
               <FormLabel className="text-sm font-medium text-[#783201]">
-                Nome completo
+                Nome completo <span className="text-[#E35915]">*</span>
               </FormLabel>
               <FormControl>
                 <IconInput
@@ -143,7 +143,7 @@ export function ApplicationFixedFields({
             render={({ field, fieldState }) => (
               <FormItem className="space-y-1.5">
                 <FormLabel className="text-sm font-medium text-[#783201]">
-                  E-mail
+                  E-mail <span className="text-[#E35915]">*</span>
                 </FormLabel>
                 <FormControl>
                   <IconInput
@@ -180,7 +180,7 @@ export function ApplicationFixedFields({
             render={({ field, fieldState }) => (
               <FormItem className="space-y-1.5">
                 <FormLabel className="text-sm font-medium text-[#783201]">
-                  WhatsApp
+                  WhatsApp <span className="text-[#E35915]">*</span>
                 </FormLabel>
                 <FormControl>
                   <IconInput
