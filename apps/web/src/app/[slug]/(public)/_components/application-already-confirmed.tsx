@@ -1,6 +1,7 @@
 'use client'
 
 import {
+  ArrowRight,
   CheckCircle2,
   Heart,
   Mail,
@@ -8,6 +9,8 @@ import {
   PartyPopper,
   Sparkles,
 } from 'lucide-react'
+import { type Route } from 'next'
+import Link from 'next/link'
 
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -15,13 +18,13 @@ import { cn } from '@/lib/utils'
 interface ApplicationAlreadyConfirmedProps {
   applicantEmail: string
   applicantWhatsapp: string
-  onClose: () => void
+  slug: string
 }
 
 export function ApplicationAlreadyConfirmed({
   applicantEmail,
   applicantWhatsapp,
-  onClose,
+  slug,
 }: ApplicationAlreadyConfirmedProps) {
   return (
     <div className="animate-fade-in space-y-5">
@@ -124,28 +127,10 @@ export function ApplicationAlreadyConfirmed({
             </div>
             <div className="pt-0.5">
               <p className="text-sm font-medium text-[#783201]">
-                Contato via WhatsApp
+                Aguarde nosso contato
               </p>
               <p className="text-xs text-[#8B5A2B]/70">
-                Entraremos em contato para os próximos passos
-              </p>
-            </div>
-          </div>
-
-          {/* Connector */}
-          <div className="ml-3.5 h-3 w-px bg-[#AEC7E2]/40" aria-hidden="true" />
-
-          {/* Step 3 */}
-          <div className="flex items-start gap-3">
-            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#AEC7E2]/30 text-xs font-bold text-[#8B5A2B]/70">
-              3
-            </div>
-            <div className="pt-0.5">
-              <p className="text-sm font-medium text-[#783201]">
-                Conhecer o gatinho
-              </p>
-              <p className="text-xs text-[#8B5A2B]/70">
-                Agendaremos uma visita para vocês se conhecerem
+                Caso seja aprovado, entraremos em contato via WhatsApp
               </p>
             </div>
           </div>
@@ -190,10 +175,9 @@ export function ApplicationAlreadyConfirmed({
         </div>
       </div>
 
-      {/* Close button */}
+      {/* CTA to see other cats */}
       <Button
-        type="button"
-        onClick={onClose}
+        asChild
         className={cn(
           'h-12 w-full rounded-xl text-base font-semibold',
           'bg-gradient-to-r from-[#E35915] to-[#F07B3D]',
@@ -201,8 +185,10 @@ export function ApplicationAlreadyConfirmed({
           'hover:shadow-xl hover:shadow-[#E35915]/35 hover:brightness-110'
         )}
       >
-        <Heart className="mr-2 h-5 w-5" />
-        Entendi, vou aguardar
+        <Link href={`/${slug}` as Route}>
+          Que tal conhecer outros gatinhos?
+          <ArrowRight className="ml-2 h-5 w-5" />
+        </Link>
       </Button>
     </div>
   )

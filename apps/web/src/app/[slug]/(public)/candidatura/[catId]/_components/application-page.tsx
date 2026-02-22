@@ -226,7 +226,7 @@ export function ApplicationPage({ slug, catId }: ApplicationPageProps) {
       onError: (error, variables) => {
         const isAlreadyConfirmedError =
           error.data?.code === 'CONFLICT' ||
-          error.message === confirmedDuplicateMessage
+          error.message.includes(confirmedDuplicateMessage)
 
         if (isAlreadyConfirmedError) {
           clearPending()
@@ -325,15 +325,6 @@ export function ApplicationPage({ slug, catId }: ApplicationPageProps) {
     resendCodeMutation.mutate({
       confirmationToken: pendingConfirmation.confirmationToken,
     })
-  }
-
-  const handleAlreadyConfirmedClose = () => {
-    form.reset(defaultApplicationFormValues)
-    setStep('form')
-    clearPending()
-    setConfirmedApplicationContact(null)
-    setConfirmationCode('')
-    setNowMs(Date.now())
   }
 
   const hasDynamicFields = dynamicFields.length > 0
@@ -516,7 +507,7 @@ export function ApplicationPage({ slug, catId }: ApplicationPageProps) {
             <ApplicationAlreadyConfirmed
               applicantEmail={confirmedApplicationContact.email}
               applicantWhatsapp={confirmedApplicationContact.whatsapp}
-              onClose={handleAlreadyConfirmedClose}
+              slug={slug}
             />
           </ApplicationFormCard>
         ) : step === 'confirm' && pendingConfirmation ? (
