@@ -32,7 +32,6 @@ import {
   defaultCatFormValues,
   type CatFormData,
 } from './cat-form-schema'
-import { CatFormSuccess } from './cat-form-success'
 import { HealthToggle, SexToggle, TestResultToggle } from './form-fields'
 import { PhotoSection } from './photo-upload/photo-section'
 
@@ -77,10 +76,7 @@ interface CatFormProps {
   catId?: string
 }
 
-type FormState = 'editing' | 'success'
-
 export function CatForm({ mode, initialData, catId }: CatFormProps) {
-  const [formState, setFormState] = useState<FormState>('editing')
   const [isDonorOpen, setIsDonorOpen] = useState(false)
   const slug = useOrgSlug()
   const router = useRouter()
@@ -112,7 +108,6 @@ export function CatForm({ mode, initialData, catId }: CatFormProps) {
     handleRemove,
     handleReorder,
     getPhotosForSubmit,
-    resetPhotos,
   } = usePhotoUpload({
     initialPhotos: initialData?.photos,
   })
@@ -126,7 +121,7 @@ export function CatForm({ mode, initialData, catId }: CatFormProps) {
       onSuccess: () => {
         toast.success('Gato cadastrado com sucesso!')
         queryClient.invalidateQueries({ queryKey: [['cats']] })
-        setFormState('success')
+        router.push(`/${slug}/admin/gatos` as Route)
       },
       onError: (error) => {
         toast.error(error.message || 'Erro ao cadastrar gato')
@@ -163,29 +158,6 @@ export function CatForm({ mode, initialData, catId }: CatFormProps) {
     } else if (catId) {
       updateMutation.mutate({ id: catId, cat, photos: photosForSubmit })
     }
-  }
-
-  const handleRegisterAnother = () => {
-    form.reset(defaultCatFormValues)
-    resetPhotos()
-    setFormState('editing')
-    requestAnimationFrame(() => {
-      form.setFocus('name')
-    })
-  }
-
-  const handleGoToList = () => {
-    router.push(`/${slug}/admin/gatos` as Route)
-  }
-
-  // Show success screen after create
-  if (formState === 'success') {
-    return (
-      <CatFormSuccess
-        onRegisterAnother={handleRegisterAnother}
-        onGoToList={handleGoToList}
-      />
-    )
   }
 
   return (
