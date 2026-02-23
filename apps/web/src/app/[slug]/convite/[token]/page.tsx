@@ -71,11 +71,18 @@ function OrgLogo({
 
 function FormSkeleton() {
   return (
-    <div className="space-y-5">
-      <Skeleton className="h-12 w-full rounded-xl" />
-      <Skeleton className="h-12 w-full rounded-xl" />
-      <Skeleton className="h-12 w-full rounded-xl" />
-      <Skeleton className="h-12 w-full rounded-xl" />
+    <div className="space-y-4">
+      <div className="flex flex-col items-center gap-2">
+        <Skeleton className="h-4 w-44 rounded" />
+        <Skeleton className="h-6 w-28 rounded-full" />
+      </div>
+      <div className="space-y-3">
+        <Skeleton className="h-12 w-full rounded-xl" />
+        <Skeleton className="h-12 w-full rounded-xl" />
+        <Skeleton className="h-12 w-full rounded-xl" />
+        <Skeleton className="h-12 w-full rounded-xl" />
+        <Skeleton className="h-12 w-full rounded-xl" />
+      </div>
     </div>
   )
 }

@@ -57,15 +57,13 @@ interface AcceptInviteFormProps {
 
 function LoadingState() {
   return (
-    <div className="space-y-6">
-      <div className="space-y-4">
-        <Skeleton className="mx-auto h-20 w-20 rounded-2xl" />
-        <div className="space-y-2 text-center">
-          <Skeleton className="mx-auto h-8 w-48" />
-          <Skeleton className="mx-auto h-5 w-64" />
-        </div>
+    <div className="space-y-4">
+      <div className="flex flex-col items-center gap-2">
+        <Skeleton className="h-4 w-44 rounded" />
+        <Skeleton className="h-6 w-28 rounded-full" />
       </div>
-      <div className="space-y-4">
+      <div className="space-y-3">
+        <Skeleton className="h-12 w-full rounded-xl" />
         <Skeleton className="h-12 w-full rounded-xl" />
         <Skeleton className="h-12 w-full rounded-xl" />
         <Skeleton className="h-12 w-full rounded-xl" />
