@@ -4,6 +4,7 @@ import { and, eq, inArray, sql } from 'drizzle-orm'
 import { drizzle } from 'drizzle-orm/libsql'
 import { Scrypt } from 'oslo/password'
 
+import { buildOrgScopedAuthEmail, normalizeUserEmail } from './auth-identity'
 import * as schema from './schema'
 
 dotenv.config({ path: '../../apps/web/.env' })
@@ -404,8 +405,18 @@ async function seed() {
   let accountsCreated = 0
 
   for (const [index, teamUser] of teamUsers.entries()) {
+    const normalizedEmail = normalizeUserEmail(teamUser.email)
+    const authEmail = buildOrgScopedAuthEmail({
+      orgId,
+      email: normalizedEmail,
+    })
+
     const existingUser = await db.query.user.findFirst({
-      where: (users, { eq }) => eq(users.email, teamUser.email),
+      where: (users, { and, eq }) =>
+        and(
+          eq(users.orgId, orgId),
+          eq(users.contactEmailNormalized, normalizedEmail)
+        ),
     })
 
     const lastSeenAt = teamUser.active
@@ -420,6 +431,9 @@ async function seed() {
         .update(schema.user)
         .set({
           name: teamUser.name,
+          email: authEmail,
+          contactEmail: normalizedEmail,
+          contactEmailNormalized: normalizedEmail,
           emailVerified: true,
           orgId,
           role: teamUser.role,
@@ -458,7 +472,9 @@ async function seed() {
     await db.insert(schema.user).values({
       id: userId,
       name: teamUser.name,
-      email: teamUser.email,
+      email: authEmail,
+      contactEmail: normalizedEmail,
+      contactEmailNormalized: normalizedEmail,
       emailVerified: true,
       orgId,
       role: teamUser.role,
@@ -484,9 +500,102 @@ async function seed() {
     `✅ Usuários seed: ${usersCreated} criados, ${usersUpdated} atualizados, ${accountsCreated} contas credential criadas (senha: ${defaultSeedPassword})`
   )
 
+  // Seed de conta isolada para orgB (mesmo ambiente, tenant separado).
+  const ORG_B_SLUG = 'orgb'
+  const ORG_B_NAME = 'OrgB'
+  const ORG_B_USER_EMAIL = normalizeUserEmail('lucasrguidi@gmail.com')
+  const ORG_B_USER_NAME = 'Lucas Guidi (OrgB)'
+
+  const existingOrgB = await db.query.orgs.findFirst({
+    where: (orgs, { eq }) => eq(orgs.slug, ORG_B_SLUG),
+  })
+
+  const orgBId = existingOrgB?.id ?? crypto.randomUUID()
+
+  if (!existingOrgB) {
+    await db.insert(schema.orgs).values({
+      id: orgBId,
+      name: ORG_B_NAME,
+      slug: ORG_B_SLUG,
+      logoUrl: null,
+    })
+    console.log(`✅ Org criada: ${ORG_B_NAME} (id: ${orgBId})`)
+  }
+
+  const orgBAuthEmail = buildOrgScopedAuthEmail({
+    orgId: orgBId,
+    email: ORG_B_USER_EMAIL,
+  })
+
+  const existingOrgBUser = await db.query.user.findFirst({
+    where: (users, { and, eq }) =>
+      and(
+        eq(users.orgId, orgBId),
+        eq(users.contactEmailNormalized, ORG_B_USER_EMAIL)
+      ),
+  })
+
+  const orgBUserId = existingOrgBUser?.id ?? crypto.randomUUID()
+  const orgBNow = new Date()
+
+  if (existingOrgBUser) {
+    await db
+      .update(schema.user)
+      .set({
+        name: ORG_B_USER_NAME,
+        email: orgBAuthEmail,
+        contactEmail: ORG_B_USER_EMAIL,
+        contactEmailNormalized: ORG_B_USER_EMAIL,
+        emailVerified: true,
+        orgId: orgBId,
+        role: 'admin',
+        active: true,
+        lastSeenAt: orgBNow,
+        lastLoginAt: orgBNow,
+      })
+      .where(eq(schema.user.id, existingOrgBUser.id))
+  } else {
+    await db.insert(schema.user).values({
+      id: orgBUserId,
+      name: ORG_B_USER_NAME,
+      email: orgBAuthEmail,
+      contactEmail: ORG_B_USER_EMAIL,
+      contactEmailNormalized: ORG_B_USER_EMAIL,
+      emailVerified: true,
+      orgId: orgBId,
+      role: 'admin',
+      active: true,
+      lastSeenAt: orgBNow,
+      lastLoginAt: orgBNow,
+    })
+  }
+
+  const existingOrgBCredentialAccount = await db.query.account.findFirst({
+    where: (accounts, { and, eq }) =>
+      and(eq(accounts.userId, orgBUserId), eq(accounts.providerId, 'credential')),
+  })
+
+  if (!existingOrgBCredentialAccount) {
+    await db.insert(schema.account).values({
+      id: crypto.randomUUID(),
+      accountId: orgBUserId,
+      providerId: 'credential',
+      userId: orgBUserId,
+      password: hashedPassword,
+    })
+  }
+
+  console.log(
+    `✅ Conta orgB pronta: ${ORG_B_USER_EMAIL} (senha: ${defaultSeedPassword})`
+  )
+
   // Buscar o userId para createdBy
   const adminUser = await db.query.user.findFirst({
-    where: (users, { eq }) => eq(users.email, 'admin@petlar.com'),
+    where: (users, { and, eq }) =>
+      and(
+        eq(users.orgId, orgId),
+        eq(users.contactEmailNormalized, normalizeUserEmail('admin@petlar.com'))
+      ),
   })
 
   if (!adminUser) {

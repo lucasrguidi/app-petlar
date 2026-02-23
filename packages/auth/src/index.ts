@@ -16,7 +16,11 @@ function escapeHtml(value: string): string {
     .replaceAll("'", '&#039;')
 }
 
-async function sendPasswordResetEmail(params: { to: string; url: string; userName?: string }) {
+async function sendPasswordResetEmail(params: {
+  to: string
+  url: string
+  userName?: string
+}) {
   if (!env.RESEND_API_KEY || !env.EMAIL_FROM) {
     console.error('Configuração de e-mail não encontrada para reset de senha')
     return
@@ -155,8 +159,11 @@ export const auth = betterAuth({
     enabled: true,
     minPasswordLength: 6,
     sendResetPassword: async ({ user, url }) => {
+      const targetEmail =
+        (user as { contactEmail?: string }).contactEmail ?? user.email
+
       await sendPasswordResetEmail({
-        to: user.email,
+        to: targetEmail,
         url,
         userName: user.name,
       })
@@ -167,13 +174,25 @@ export const auth = betterAuth({
     additionalFields: {
       orgId: {
         type: 'string',
-        required: false,
+        required: true,
         input: true,
         fieldName: 'orgId',
       },
+      contactEmail: {
+        type: 'string',
+        required: true,
+        input: true,
+        fieldName: 'contactEmail',
+      },
+      contactEmailNormalized: {
+        type: 'string',
+        required: true,
+        input: true,
+        fieldName: 'contactEmailNormalized',
+      },
       role: {
         type: 'string',
-        required: false,
+        required: true,
         defaultValue: 'volunteer',
         fieldName: 'role',
       },

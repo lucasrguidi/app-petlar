@@ -21,6 +21,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { useOrgSlug } from '@/hooks/use-org-slug'
 import { authClient } from '@/lib/auth-client'
+import { buildOrgScopedAuthEmail } from '@/lib/org-auth-identity'
 import { cn } from '@/lib/utils'
 
 const forgotPasswordSchema = z.object({
@@ -29,7 +30,11 @@ const forgotPasswordSchema = z.object({
 
 type ForgotPasswordFormValues = z.infer<typeof forgotPasswordSchema>
 
-export function ForgotPasswordForm() {
+interface ForgotPasswordFormProps {
+  orgId: string
+}
+
+export function ForgotPasswordForm({ orgId }: ForgotPasswordFormProps) {
   const slug = useOrgSlug()
   const [focusedField, setFocusedField] = useState<string | null>(null)
   const [isSuccess, setIsSuccess] = useState(false)
@@ -45,8 +50,13 @@ export function ForgotPasswordForm() {
 
   async function onSubmit(data: ForgotPasswordFormValues) {
     try {
-      const { error } = await authClient.requestPasswordReset({
+      const authEmail = await buildOrgScopedAuthEmail({
+        orgId,
         email: data.email,
+      })
+
+      const { error } = await authClient.requestPasswordReset({
+        email: authEmail,
         redirectTo: `/${slug}/redefinir-senha`,
       })
 

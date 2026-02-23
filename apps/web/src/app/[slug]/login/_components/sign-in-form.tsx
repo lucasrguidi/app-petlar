@@ -21,6 +21,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { useOrgSlug } from '@/hooks/use-org-slug'
 import { authClient } from '@/lib/auth-client'
+import { buildOrgScopedAuthEmail } from '@/lib/org-auth-identity'
 import { cn } from '@/lib/utils'
 import { trpcClient } from '@/utils/trpc'
 
@@ -56,8 +57,13 @@ export function SignInForm({ orgId, callbackUrl }: SignInFormProps) {
 
   async function onSubmit(data: SignInFormValues) {
     try {
-      const { data: session, error } = await authClient.signIn.email({
+      const authEmail = await buildOrgScopedAuthEmail({
+        orgId,
         email: data.email,
+      })
+
+      const { data: session, error } = await authClient.signIn.email({
+        email: authEmail,
         password: data.password,
       })
 

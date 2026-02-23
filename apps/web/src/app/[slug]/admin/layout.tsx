@@ -59,11 +59,14 @@ export default async function AdminLayout({
     id: string
     name: string
     email: string
+    contactEmail?: string | null
     image: string | null
     orgId: string | null
     role: 'admin' | 'volunteer'
     active?: boolean
   }
+
+  const displayEmail = user.contactEmail ?? user.email
 
   if (user.orgId !== org.id) {
     redirect(`/${slug}/login`)
@@ -111,7 +114,7 @@ export default async function AdminLayout({
         <AdminHeader
           user={{
             name: user.name,
-            email: user.email,
+            email: displayEmail,
             image: user.image,
             role: user.role,
           }}

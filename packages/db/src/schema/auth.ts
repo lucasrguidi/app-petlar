@@ -1,5 +1,11 @@
 import { relations, sql } from 'drizzle-orm'
-import { index, integer, sqliteTable, text } from 'drizzle-orm/sqlite-core'
+import {
+  index,
+  integer,
+  sqliteTable,
+  text,
+  uniqueIndex,
+} from 'drizzle-orm/sqlite-core'
 
 import { orgs } from './orgs'
 
@@ -8,13 +14,19 @@ export const user = sqliteTable(
   {
     id: text('id').primaryKey(),
     name: text('name').notNull(),
+    // Better Auth core identity field (org-scoped synthetic email).
     email: text('email').notNull().unique(),
+    // Real user email shown in UI and used for invites/reset.
+    contactEmail: text('contact_email').notNull(),
+    contactEmailNormalized: text('contact_email_normalized').notNull(),
     emailVerified: integer('email_verified', { mode: 'boolean' })
       .default(false)
       .notNull(),
     image: text('image'),
     // Org membership
-    orgId: text('org_id').references(() => orgs.id, { onDelete: 'cascade' }),
+    orgId: text('org_id')
+      .notNull()
+      .references(() => orgs.id, { onDelete: 'cascade' }),
     role: text('role', { enum: ['admin', 'volunteer'] })
       .default('volunteer')
       .notNull(),
@@ -30,7 +42,14 @@ export const user = sqliteTable(
       .$onUpdate(() => /* @__PURE__ */ new Date())
       .notNull(),
   },
-  (table) => [index('user_orgId_idx').on(table.orgId)]
+  (table) => [
+    index('user_orgId_idx').on(table.orgId),
+    uniqueIndex('user_org_email_unique').on(
+      table.orgId,
+      table.contactEmailNormalized
+    ),
+    index('user_contact_email_idx').on(table.contactEmailNormalized),
+  ]
 )
 
 export const session = sqliteTable(

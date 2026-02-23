@@ -125,7 +125,7 @@ export default async function ForgotPasswordPage({
 
           <CardContent className="px-8 pt-4 pb-8">
             <Suspense fallback={<FormSkeleton />}>
-              <ForgotPasswordForm />
+              <ForgotPasswordForm orgId={org.id} />
             </Suspense>
           </CardContent>
         </Card>

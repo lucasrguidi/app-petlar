@@ -1,4 +1,5 @@
 import { db } from '@app-petlar/db'
+import { buildOrgScopedAuthEmail, normalizeUserEmail } from '@app-petlar/db/auth-identity'
 import { invites, orgs, session, user } from '@app-petlar/db/schema'
 import { env } from '@app-petlar/env/server'
 import { TRPCError } from '@trpc/server'
@@ -278,7 +279,7 @@ export const usersRouter = router({
       conditions.push(
         or(
           sql`lower(${user.name}) like ${`%${searchLower}%`}`,
-          sql`lower(${user.email}) like ${`%${searchLower}%`}`
+          sql`lower(${user.contactEmail}) like ${`%${searchLower}%`}`
         )!
       )
     }
@@ -292,7 +293,7 @@ export const usersRouter = router({
       .select({
         id: user.id,
         name: user.name,
-        email: user.email,
+        email: user.contactEmail,
         image: user.image,
         role: user.role,
         active: user.active,
@@ -422,7 +423,7 @@ export const usersRouter = router({
 
   invite: adminProcedure.input(inviteSchema).mutation(async ({ ctx, input }) => {
     const orgId = requireOrgId(ctx.session.user)
-    const normalizedEmail = input.email.trim().toLowerCase()
+    const normalizedEmail = normalizeUserEmail(input.email)
 
     // Check for active user first
     const [existingActiveUser] = await db
@@ -431,7 +432,7 @@ export const usersRouter = router({
       .where(
         and(
           eq(user.orgId, orgId),
-          sql`lower(${user.email}) = ${normalizedEmail}`,
+          eq(user.contactEmailNormalized, normalizedEmail),
           eq(user.active, true)
         )
       )
@@ -451,7 +452,7 @@ export const usersRouter = router({
       .where(
         and(
           eq(user.orgId, orgId),
-          sql`lower(${user.email}) = ${normalizedEmail}`,
+          eq(user.contactEmailNormalized, normalizedEmail),
           eq(user.active, false)
         )
       )
@@ -782,7 +783,12 @@ export const usersRouter = router({
       const [existingUser] = await db
         .select({ id: user.id })
         .from(user)
-        .where(sql`lower(${user.email}) = ${invite.email.toLowerCase()}`)
+        .where(
+          and(
+            eq(user.orgId, invite.orgId),
+            eq(user.contactEmailNormalized, normalizeUserEmail(invite.email))
+          )
+        )
         .limit(1)
 
       if (existingUser) {
@@ -796,9 +802,16 @@ export const usersRouter = router({
 
       const response = await auth.api.signUpEmail({
         body: {
-          email: invite.email,
+          email: buildOrgScopedAuthEmail({
+            orgId: invite.orgId,
+            email: invite.email,
+          }),
           password: input.password,
           name: input.name,
+          orgId: invite.orgId,
+          role: invite.role,
+          contactEmail: invite.email,
+          contactEmailNormalized: normalizeUserEmail(invite.email),
         },
       })
 
