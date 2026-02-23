@@ -48,6 +48,7 @@ export function UserActionsMenu({
     trpc.users.deactivate.mutationOptions({
       onSuccess: () => {
         toast.success('Usuário desativado com sucesso')
+        setDeactivateDialogOpen(false)
         queryClient.invalidateQueries({ queryKey: [['users', 'list']] })
       },
       onError: (error) => {
