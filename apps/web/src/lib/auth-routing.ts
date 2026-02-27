@@ -7,7 +7,9 @@ export type ProtectedRouteMatch =
   | { type: 'root-admin' }
   | { type: 'org-admin'; slug: string }
 
-export function matchProtectedRoute(pathname: string): ProtectedRouteMatch | null {
+export function matchProtectedRoute(
+  pathname: string
+): ProtectedRouteMatch | null {
   if (ROOT_ADMIN_ROUTE_REGEX.test(pathname)) {
     return { type: 'root-admin' }
   }
@@ -50,7 +52,9 @@ export function buildLoginRedirectPathForProtectedRoute(
   return `/${match.slug}/login?${searchParams.toString()}`
 }
 
-export function sanitizeCallbackUrl(rawCallbackUrl: string | null | undefined): string | null {
+export function sanitizeCallbackUrl(
+  rawCallbackUrl: string | null | undefined
+): string | null {
   if (!rawCallbackUrl) {
     return null
   }
@@ -112,7 +116,10 @@ export function sanitizeCallbackUrlForOrg(
   }
 
   const orgAdminPrefix = `/${slug}/admin`
-  if (callbackUrl === orgAdminPrefix || callbackUrl.startsWith(`${orgAdminPrefix}/`)) {
+  if (
+    callbackUrl === orgAdminPrefix ||
+    callbackUrl.startsWith(`${orgAdminPrefix}/`)
+  ) {
     return callbackUrl
   }
 

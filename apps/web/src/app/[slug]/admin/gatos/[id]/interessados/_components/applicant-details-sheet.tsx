@@ -255,257 +255,263 @@ export function ApplicantDetailsSheet({
 
   return (
     <>
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent
-        side="right"
-        className="border-border/60 w-full overflow-y-auto p-0 sm:max-w-2xl"
-      >
-        <SheetHeader className="border-border/40 from-card to-card/95 sticky top-0 z-20 border-b bg-gradient-to-b px-5 py-4">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex min-w-0 items-center gap-3">
-              <div className="bg-primary/10 flex h-10 w-10 items-center justify-center rounded-xl">
-                <UserRound className="text-primary h-5 w-5" />
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <SheetContent
+          side="right"
+          className="border-border/60 w-full overflow-y-auto p-0 sm:max-w-2xl"
+        >
+          <SheetHeader className="border-border/40 from-card to-card/95 sticky top-0 z-20 border-b bg-gradient-to-b px-5 py-4">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex min-w-0 items-center gap-3">
+                <div className="bg-primary/10 flex h-10 w-10 items-center justify-center rounded-xl">
+                  <UserRound className="text-primary h-5 w-5" />
+                </div>
+                <div className="min-w-0">
+                  <SheetTitle className="font-display text-lg">
+                    Detalhes da candidatura
+                  </SheetTitle>
+                  <SheetDescription className="text-xs">
+                    Visualize e gerencie esta candidatura
+                  </SheetDescription>
+                </div>
               </div>
-              <div className="min-w-0">
-                <SheetTitle className="font-display text-lg">
-                  Detalhes da candidatura
-                </SheetTitle>
-                <SheetDescription className="text-xs">
-                  Visualize e gerencie esta candidatura
-                </SheetDescription>
-              </div>
-            </div>
 
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="h-9 w-9 rounded-lg sm:hidden"
-              onClick={() => onOpenChange(false)}
-              aria-label="Fechar detalhes"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-        </SheetHeader>
-
-        {detailsQuery.isLoading ? (
-          <DetailsLoadingState />
-        ) : detailsQuery.isError ? (
-          <div className="p-5">
-            <div className="border-destructive/30 bg-destructive/5 rounded-xl border p-4">
-              <p className="text-destructive text-sm font-medium">
-                Não foi possível carregar os detalhes.
-              </p>
               <Button
                 type="button"
-                variant="outline"
-                size="sm"
-                className="mt-3 rounded-lg"
-                onClick={() => detailsQuery.refetch()}
+                variant="ghost"
+                size="icon"
+                className="h-9 w-9 rounded-lg sm:hidden"
+                onClick={() => onOpenChange(false)}
+                aria-label="Fechar detalhes"
               >
-                Tentar novamente
+                <X className="h-4 w-4" />
               </Button>
             </div>
-          </div>
-        ) : !data ? null : (
-          <div className="space-y-5 p-5">
-            <div className="border-border/60 bg-card/95 shadow-warm-sm rounded-xl border p-4">
-              <div className="flex gap-4">
-                <div className="bg-primary/10 flex h-12 w-12 shrink-0 items-center justify-center rounded-xl">
-                  <span className="text-primary text-lg font-semibold">
-                    {getInitials(data.application.applicantName)}
-                  </span>
-                </div>
+          </SheetHeader>
 
-                <div className="flex-1 space-y-2">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <h3 className="text-lg font-semibold">
-                        {data.application.applicantName}
-                      </h3>
-                      <p className="text-muted-foreground text-xs">
-                        Confirmada em{' '}
-                        {formatDateTime(
-                          data.application.confirmedAt ??
-                            data.application.createdAt
-                        )}
-                      </p>
-                    </div>
-                    {(() => {
-                      const config = getStatusConfig(data.application.status)
-                      return (
-                        <Badge
-                          variant={config.variant}
-                          className="gap-1.5 px-2 py-0.5 text-[11px] font-medium whitespace-nowrap"
-                        >
-                          <span
-                            className={cn(
-                              'h-1.5 w-1.5 rounded-full',
-                              config.dotClass
-                            )}
-                          />
-                          {config.label}
-                        </Badge>
-                      )
-                    })()}
-                  </div>
-
-                  <div className="flex flex-wrap gap-x-4 gap-y-1">
-                    <a
-                      href={`mailto:${data.application.applicantEmail}`}
-                      className="text-primary inline-flex items-center gap-1.5 text-sm hover:underline"
-                    >
-                      <Mail className="h-3.5 w-3.5" />
-                      {data.application.applicantEmail}
-                    </a>
-                    <a
-                      href={toWhatsappLink(data.application.applicantWhatsapp)}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-primary inline-flex items-center gap-1.5 text-sm hover:underline"
-                    >
-                      <MessageCircle className="h-3.5 w-3.5" />
-                      WhatsApp
-                    </a>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="border-border/60 bg-card/95 shadow-warm-sm space-y-3 rounded-xl border p-4">
-              <Label className="text-sm font-semibold">Atualizar status</Label>
-              <div className="flex flex-col gap-2 sm:flex-row">
-                <Select
-                  value={selectedStatus}
-                  onValueChange={(value) =>
-                    setSelectedStatus(value as ApplicationStatus)
-                  }
-                >
-                  <SelectTrigger className="h-10 rounded-xl sm:w-56">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="pending">Pendente</SelectItem>
-                    <SelectItem value="reviewing">Em análise</SelectItem>
-                    <SelectItem value="approved">Aprovado</SelectItem>
-                    <SelectItem value="rejected">Recusado</SelectItem>
-                  </SelectContent>
-                </Select>
-
+          {detailsQuery.isLoading ? (
+            <DetailsLoadingState />
+          ) : detailsQuery.isError ? (
+            <div className="p-5">
+              <div className="border-destructive/30 bg-destructive/5 rounded-xl border p-4">
+                <p className="text-destructive text-sm font-medium">
+                  Não foi possível carregar os detalhes.
+                </p>
                 <Button
                   type="button"
-                  onClick={() =>
-                    updateStatusMutation.mutate({
-                      id: data.application.id,
-                      status: selectedStatus,
-                    })
-                  }
-                  disabled={!hasStatusChange || updateStatusMutation.isPending}
-                  className="shadow-primary-glow rounded-xl"
+                  variant="outline"
+                  size="sm"
+                  className="mt-3 rounded-lg"
+                  onClick={() => detailsQuery.refetch()}
                 >
-                  {updateStatusMutation.isPending ? (
-                    <span className="inline-flex items-center">
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Salvando...
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center">
-                      <Save className="mr-2 h-4 w-4" />
-                      Salvar status
-                    </span>
-                  )}
+                  Tentar novamente
                 </Button>
               </div>
             </div>
+          ) : !data ? null : (
+            <div className="space-y-5 p-5">
+              <div className="border-border/60 bg-card/95 shadow-warm-sm rounded-xl border p-4">
+                <div className="flex gap-4">
+                  <div className="bg-primary/10 flex h-12 w-12 shrink-0 items-center justify-center rounded-xl">
+                    <span className="text-primary text-lg font-semibold">
+                      {getInitials(data.application.applicantName)}
+                    </span>
+                  </div>
 
-            <div className="border-border/60 bg-card/95 shadow-warm-sm rounded-xl border p-4">
-              <Button
-                type="button"
-                onClick={() => {
-                  // Salvar dados antes de fechar o Sheet
-                  setAdoptionModalData({
-                    cat: { id: data.cat.id, name: data.cat.name },
-                    applicant: {
-                      applicationId: data.application.id,
-                      name: data.application.applicantName,
-                      phone: data.application.applicantWhatsapp,
-                      email: data.application.applicantEmail,
-                    },
-                  })
-                  // Fechar o Sheet
-                  onOpenChange(false)
-                }}
-                className="bg-success hover:bg-success/90 text-success-foreground shadow-success/25 hover:shadow-success/35 w-full rounded-xl shadow-lg transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
-              >
-                <Heart className="mr-2 h-4 w-4" />
-                Registrar adoção
-              </Button>
-            </div>
-
-            <div className="border-border/60 bg-card/95 space-y-3 rounded-xl border p-4">
-              <div className="flex items-center gap-2">
-                <FileText className="text-primary h-4 w-4" />
-                <h3 className="text-sm font-semibold">
-                  Respostas do formulário
-                </h3>
-              </div>
-              {visibleResponses.length === 0 ? (
-                <p className="text-muted-foreground text-sm">
-                  Não há respostas textuais para esta candidatura.
-                </p>
-              ) : (
-                <div className="space-y-2">
-                  {visibleResponses.map((response) => (
-                    <div
-                      key={response.fieldId}
-                      className="border-border/60 bg-muted/20 rounded-lg border p-3"
-                    >
-                      <p className="text-sm font-medium">{response.label}</p>
-                      <p className="text-muted-foreground mt-1 text-sm whitespace-pre-wrap">
-                        {renderResponseValue(
-                          response.value as string | boolean | null
-                        )}
-                      </p>
+                  <div className="flex-1 space-y-2">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <h3 className="text-lg font-semibold">
+                          {data.application.applicantName}
+                        </h3>
+                        <p className="text-muted-foreground text-xs">
+                          Confirmada em{' '}
+                          {formatDateTime(
+                            data.application.confirmedAt ??
+                              data.application.createdAt
+                          )}
+                        </p>
+                      </div>
+                      {(() => {
+                        const config = getStatusConfig(data.application.status)
+                        return (
+                          <Badge
+                            variant={config.variant}
+                            className="gap-1.5 px-2 py-0.5 text-[11px] font-medium whitespace-nowrap"
+                          >
+                            <span
+                              className={cn(
+                                'h-1.5 w-1.5 rounded-full',
+                                config.dotClass
+                              )}
+                            />
+                            {config.label}
+                          </Badge>
+                        )
+                      })()}
                     </div>
-                  ))}
-                </div>
-              )}
-            </div>
 
-            <div className="border-border/60 bg-card/95 space-y-3 rounded-xl border p-4">
-              <div className="flex items-center gap-2">
-                <Video className="text-primary h-4 w-4" />
-                <h3 className="text-sm font-semibold">Mídias enviadas</h3>
+                    <div className="flex flex-wrap gap-x-4 gap-y-1">
+                      <a
+                        href={`mailto:${data.application.applicantEmail}`}
+                        className="text-primary inline-flex items-center gap-1.5 text-sm hover:underline"
+                      >
+                        <Mail className="h-3.5 w-3.5" />
+                        {data.application.applicantEmail}
+                      </a>
+                      <a
+                        href={toWhatsappLink(
+                          data.application.applicantWhatsapp
+                        )}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-primary inline-flex items-center gap-1.5 text-sm hover:underline"
+                      >
+                        <MessageCircle className="h-3.5 w-3.5" />
+                        WhatsApp
+                      </a>
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              {data.files.length === 0 ? (
-                <p className="text-muted-foreground text-sm">
-                  Nenhuma mídia foi enviada nesta candidatura.
-                </p>
-              ) : (
-                <div className="space-y-3">
-                  {data.files.map((file) => (
-                    <MediaPreviewCard key={file.id} file={file} />
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-      </SheetContent>
-    </Sheet>
+              <div className="border-border/60 bg-card/95 shadow-warm-sm space-y-3 rounded-xl border p-4">
+                <Label className="text-sm font-semibold">
+                  Atualizar status
+                </Label>
+                <div className="flex flex-col gap-2 sm:flex-row">
+                  <Select
+                    value={selectedStatus}
+                    onValueChange={(value) =>
+                      setSelectedStatus(value as ApplicationStatus)
+                    }
+                  >
+                    <SelectTrigger className="h-10 rounded-xl sm:w-56">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="pending">Pendente</SelectItem>
+                      <SelectItem value="reviewing">Em análise</SelectItem>
+                      <SelectItem value="approved">Aprovado</SelectItem>
+                      <SelectItem value="rejected">Recusado</SelectItem>
+                    </SelectContent>
+                  </Select>
 
-    {adoptionModalData && (
-      <MarkAdoptedSheet
-        open={true}
-        onOpenChange={(open) => {
-          if (!open) setAdoptionModalData(null)
-        }}
-        cat={adoptionModalData.cat}
-        initialApplicant={adoptionModalData.applicant}
-      />
-    )}
+                  <Button
+                    type="button"
+                    onClick={() =>
+                      updateStatusMutation.mutate({
+                        id: data.application.id,
+                        status: selectedStatus,
+                      })
+                    }
+                    disabled={
+                      !hasStatusChange || updateStatusMutation.isPending
+                    }
+                    className="shadow-primary-glow rounded-xl"
+                  >
+                    {updateStatusMutation.isPending ? (
+                      <span className="inline-flex items-center">
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Salvando...
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center">
+                        <Save className="mr-2 h-4 w-4" />
+                        Salvar status
+                      </span>
+                    )}
+                  </Button>
+                </div>
+              </div>
+
+              <div className="border-border/60 bg-card/95 shadow-warm-sm rounded-xl border p-4">
+                <Button
+                  type="button"
+                  onClick={() => {
+                    // Salvar dados antes de fechar o Sheet
+                    setAdoptionModalData({
+                      cat: { id: data.cat.id, name: data.cat.name },
+                      applicant: {
+                        applicationId: data.application.id,
+                        name: data.application.applicantName,
+                        phone: data.application.applicantWhatsapp,
+                        email: data.application.applicantEmail,
+                      },
+                    })
+                    // Fechar o Sheet
+                    onOpenChange(false)
+                  }}
+                  className="bg-success hover:bg-success/90 text-success-foreground shadow-success/25 hover:shadow-success/35 w-full rounded-xl shadow-lg transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
+                >
+                  <Heart className="mr-2 h-4 w-4" />
+                  Registrar adoção
+                </Button>
+              </div>
+
+              <div className="border-border/60 bg-card/95 space-y-3 rounded-xl border p-4">
+                <div className="flex items-center gap-2">
+                  <FileText className="text-primary h-4 w-4" />
+                  <h3 className="text-sm font-semibold">
+                    Respostas do formulário
+                  </h3>
+                </div>
+                {visibleResponses.length === 0 ? (
+                  <p className="text-muted-foreground text-sm">
+                    Não há respostas textuais para esta candidatura.
+                  </p>
+                ) : (
+                  <div className="space-y-2">
+                    {visibleResponses.map((response) => (
+                      <div
+                        key={response.fieldId}
+                        className="border-border/60 bg-muted/20 rounded-lg border p-3"
+                      >
+                        <p className="text-sm font-medium">{response.label}</p>
+                        <p className="text-muted-foreground mt-1 text-sm whitespace-pre-wrap">
+                          {renderResponseValue(
+                            response.value as string | boolean | null
+                          )}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="border-border/60 bg-card/95 space-y-3 rounded-xl border p-4">
+                <div className="flex items-center gap-2">
+                  <Video className="text-primary h-4 w-4" />
+                  <h3 className="text-sm font-semibold">Mídias enviadas</h3>
+                </div>
+
+                {data.files.length === 0 ? (
+                  <p className="text-muted-foreground text-sm">
+                    Nenhuma mídia foi enviada nesta candidatura.
+                  </p>
+                ) : (
+                  <div className="space-y-3">
+                    {data.files.map((file) => (
+                      <MediaPreviewCard key={file.id} file={file} />
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </SheetContent>
+      </Sheet>
+
+      {adoptionModalData && (
+        <MarkAdoptedSheet
+          open={true}
+          onOpenChange={(open) => {
+            if (!open) setAdoptionModalData(null)
+          }}
+          cat={adoptionModalData.cat}
+          initialApplicant={adoptionModalData.applicant}
+        />
+      )}
     </>
   )
 }

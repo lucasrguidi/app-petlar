@@ -1,7 +1,13 @@
 'use client'
 
 import { zodResolver } from '@hookform/resolvers/zod'
-import { ArrowLeft, ArrowRight, CheckCircle2, Loader2, Mail } from 'lucide-react'
+import {
+  ArrowLeft,
+  ArrowRight,
+  CheckCircle2,
+  Loader2,
+  Mail,
+} from 'lucide-react'
 import { type Route } from 'next'
 import Link from 'next/link'
 import { useState } from 'react'
@@ -76,16 +82,16 @@ export function ForgotPasswordForm({ orgId }: ForgotPasswordFormProps) {
     return (
       <div className="space-y-6 text-center">
         <div className="flex justify-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-success/10">
-            <CheckCircle2 className="h-8 w-8 text-success" />
+          <div className="bg-success/10 flex h-16 w-16 items-center justify-center rounded-full">
+            <CheckCircle2 className="text-success h-8 w-8" />
           </div>
         </div>
 
         <div className="space-y-2">
-          <h3 className="text-lg font-semibold text-foreground">
+          <h3 className="text-foreground text-lg font-semibold">
             Instruções enviadas!
           </h3>
-          <p className="text-sm text-muted-foreground text-balance">
+          <p className="text-muted-foreground text-sm text-balance">
             Se existe uma conta com este e-mail, você receberá as instruções
             para redefinir sua senha em instantes.
           </p>

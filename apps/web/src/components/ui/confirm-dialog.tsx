@@ -127,7 +127,7 @@ function ConfirmDialogInner({
           <Icon className={cn('h-5 w-5', styles.icon)} />
         </div>
         <div className="space-y-0.5">
-          <TitleComponent className="text-base font-semibold leading-none">
+          <TitleComponent className="text-base leading-none font-semibold">
             {title}
           </TitleComponent>
           {subtitle && (
@@ -152,7 +152,7 @@ function ConfirmDialogInner({
             </p>
           )}
           {note && (
-            <div className="rounded-lg border border-border/40 bg-muted/30 px-3 py-2.5">
+            <div className="border-border/40 bg-muted/30 rounded-lg border px-3 py-2.5">
               <p className="text-muted-foreground text-xs leading-relaxed">
                 {note}
               </p>
@@ -163,7 +163,7 @@ function ConfirmDialogInner({
       )}
 
       {/* Footer */}
-      <div className="flex flex-col-reverse gap-2 border-t border-border/40 bg-card px-5 py-3 sm:flex-row sm:justify-end">
+      <div className="border-border/40 bg-card flex flex-col-reverse gap-2 border-t px-5 py-3 sm:flex-row sm:justify-end">
         <CancelComponent
           className={cn(
             buttonVariants({ variant: 'outline' }),

@@ -8,12 +8,7 @@ import { Suspense } from 'react'
 
 import { AcceptInviteForm } from './_components/accept-invite-form'
 
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 
 interface InvitePageProps {
@@ -133,7 +128,6 @@ export default async function InvitePage({ params }: InvitePageProps) {
                 Convite para a Equipe
               </FeatureBadge>
             </div>
-
           </CardHeader>
 
           <CardContent className="px-6 pt-2 pb-6">

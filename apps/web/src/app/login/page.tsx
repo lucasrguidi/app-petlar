@@ -18,7 +18,10 @@ interface LoginRedirectPageProps {
 export default async function LoginRedirectPage({
   searchParams,
 }: LoginRedirectPageProps) {
-  const [query, adminPath] = await Promise.all([searchParams, getSessionAdminPath()])
+  const [query, adminPath] = await Promise.all([
+    searchParams,
+    getSessionAdminPath(),
+  ])
 
   if (adminPath) {
     redirect(adminPath as Route)

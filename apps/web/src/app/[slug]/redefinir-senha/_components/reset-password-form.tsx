@@ -88,7 +88,9 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
         return
       }
 
-      toast.success('Senha redefinida com sucesso! Faça login com sua nova senha.')
+      toast.success(
+        'Senha redefinida com sucesso! Faça login com sua nova senha.'
+      )
       router.push(`/${slug}/login`)
     } catch {
       toast.error('Não foi possível redefinir a senha. Tente novamente.')
@@ -99,26 +101,26 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
     return (
       <div className="space-y-6 text-center">
         <div className="flex justify-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10">
-            <AlertTriangle className="h-8 w-8 text-destructive" />
+          <div className="bg-destructive/10 flex h-16 w-16 items-center justify-center rounded-full">
+            <AlertTriangle className="text-destructive h-8 w-8" />
           </div>
         </div>
 
         <div className="space-y-2">
-          <h3 className="text-lg font-semibold text-foreground">
+          <h3 className="text-foreground text-lg font-semibold">
             Link inválido ou expirado
           </h3>
-          <p className="text-sm text-muted-foreground text-balance">
+          <p className="text-muted-foreground text-sm text-balance">
             Este link de redefinição não é mais válido. Isso pode acontecer se:
           </p>
-          <ul className="text-sm text-muted-foreground text-left mx-auto max-w-xs space-y-1 mt-3">
+          <ul className="text-muted-foreground mx-auto mt-3 max-w-xs space-y-1 text-left text-sm">
             <li className="flex items-start gap-2">
-              <span className="text-muted-foreground/60">•</span>
-              O link já foi utilizado
+              <span className="text-muted-foreground/60">•</span>O link já foi
+              utilizado
             </li>
             <li className="flex items-start gap-2">
-              <span className="text-muted-foreground/60">•</span>
-              O link expirou (válido por 1 hora)
+              <span className="text-muted-foreground/60">•</span>O link expirou
+              (válido por 1 hora)
             </li>
           </ul>
         </div>
@@ -181,7 +183,9 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
                     onClick={() => setShowPassword(!showPassword)}
                     className="text-muted-foreground hover:text-foreground absolute top-0 right-0 flex h-12 w-12 items-center justify-center rounded-r-xl transition-colors"
                     tabIndex={-1}
-                    aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+                    aria-label={
+                      showPassword ? 'Ocultar senha' : 'Mostrar senha'
+                    }
                   >
                     {showPassword ? (
                       <EyeOff className="h-4 w-4" />

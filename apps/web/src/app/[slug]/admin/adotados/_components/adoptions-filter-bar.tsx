@@ -200,7 +200,11 @@ export function AdoptionsFilterBar({
                 disabled={isPending}
                 className={cn(
                   'h-7 rounded-lg px-2 text-[11px]',
-                  isActivePreset(preset.key, filters.dateFrom, filters.dateTo) &&
+                  isActivePreset(
+                    preset.key,
+                    filters.dateFrom,
+                    filters.dateTo
+                  ) &&
                     'bg-primary/12 text-primary hover:bg-primary/18 hover:text-primary'
                 )}
                 aria-label={`Filtrar por ${preset.label.toLowerCase()}`}

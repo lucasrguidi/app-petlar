@@ -89,7 +89,7 @@ export function DashboardActivityFeed({
                         />
                         {/* Activity type indicator */}
                         <div
-                          className={`absolute -bottom-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full ${config.bgColor} ring-2 ring-card`}
+                          className={`absolute -right-0.5 -bottom-0.5 flex h-4 w-4 items-center justify-center rounded-full ${config.bgColor} ring-card ring-2`}
                         >
                           <Icon className={`h-2.5 w-2.5 ${config.iconColor}`} />
                         </div>

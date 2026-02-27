@@ -80,9 +80,7 @@ export function DatePicker({
             className
           )}
           aria-label={
-            formattedDate
-              ? `Data selecionada: ${formattedDate}`
-              : placeholder
+            formattedDate ? `Data selecionada: ${formattedDate}` : placeholder
           }
         >
           <div className="flex min-w-0 flex-1 items-center gap-2">
@@ -91,20 +89,22 @@ export function DatePicker({
           </div>
           <ChevronDown
             className={cn(
-              'h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200',
-              open && 'rotate-180 text-foreground'
+              'text-muted-foreground h-4 w-4 shrink-0 transition-transform duration-200',
+              open && 'text-foreground rotate-180'
             )}
           />
         </Button>
       </PopoverTrigger>
       <PopoverContent
-        className="border-border/60 bg-card shadow-warm-lg w-auto max-sm:w-[calc(100vw-2.5rem)] overflow-hidden rounded-xl p-0"
+        className="border-border/60 bg-card shadow-warm-lg w-auto overflow-hidden rounded-xl p-0 max-sm:w-[calc(100vw-2.5rem)]"
         align="start"
         sideOffset={6}
       >
         <div className="border-border/60 bg-muted/20 border-b px-3 py-2">
           <p className="text-foreground text-xs font-medium">
-            {formattedDate ? `Selecionada: ${formattedDate}` : 'Selecione uma data'}
+            {formattedDate
+              ? `Selecionada: ${formattedDate}`
+              : 'Selecione uma data'}
           </p>
         </div>
         <Calendar

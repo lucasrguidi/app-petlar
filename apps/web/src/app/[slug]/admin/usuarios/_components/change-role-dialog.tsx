@@ -103,7 +103,7 @@ export function ChangeRoleDialog({
           </Select>
         </div>
 
-        <div className="rounded-lg border border-border/40 bg-muted/30 px-3 py-2.5">
+        <div className="border-border/40 bg-muted/30 rounded-lg border px-3 py-2.5">
           <p className="text-muted-foreground text-xs leading-relaxed">
             {selectedRole === 'admin' ? (
               <>

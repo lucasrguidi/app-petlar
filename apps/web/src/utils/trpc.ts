@@ -20,7 +20,8 @@ let lastUnauthorizedRedirectAt = 0
 function isUnauthorizedError(error: Error): boolean {
   const trpcError = error as TrpcErrorLike
   return (
-    trpcError.data?.code === 'UNAUTHORIZED' || trpcError.data?.httpStatus === 401
+    trpcError.data?.code === 'UNAUTHORIZED' ||
+    trpcError.data?.httpStatus === 401
   )
 }
 

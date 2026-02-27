@@ -179,10 +179,7 @@ function getColumns(
               <SelectTrigger className="border-border/60 h-8 w-[118px] rounded-lg text-xs sm:w-[130px]">
                 <span className="flex items-center gap-1.5">
                   <span
-                    className={cn(
-                      'h-1.5 w-1.5 rounded-full',
-                      config.dotClass
-                    )}
+                    className={cn('h-1.5 w-1.5 rounded-full', config.dotClass)}
                   />
                   <SelectValue />
                 </span>

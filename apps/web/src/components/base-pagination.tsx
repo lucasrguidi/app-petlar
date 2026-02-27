@@ -171,7 +171,7 @@ function PublicPagination({
               className={cn(
                 'flex h-10 w-10 items-center justify-center rounded-xl text-sm font-medium transition-all',
                 pageNum === page
-                  ? 'bg-gradient-to-r from-primary to-accent text-white shadow-lg shadow-primary/25'
+                  ? 'from-primary to-accent shadow-primary/25 bg-gradient-to-r text-white shadow-lg'
                   : 'text-foreground hover:bg-muted/40 hover:text-primary'
               )}
               aria-label={`Página ${pageNum}`}

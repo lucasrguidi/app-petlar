@@ -75,9 +75,9 @@ describe('auth-routing', () => {
       expect(sanitizeCallbackUrlForOrg('/petlar/admin', 'petlar')).toBe(
         '/petlar/admin'
       )
-      expect(sanitizeCallbackUrlForOrg('/petlar/admin/gatos?page=2', 'petlar')).toBe(
-        '/petlar/admin/gatos?page=2'
-      )
+      expect(
+        sanitizeCallbackUrlForOrg('/petlar/admin/gatos?page=2', 'petlar')
+      ).toBe('/petlar/admin/gatos?page=2')
       expect(sanitizeCallbackUrlForOrg('/admin', 'petlar')).toBe('/admin')
     })
 
@@ -131,12 +131,12 @@ describe('auth-routing', () => {
 
   describe('resolvePostLoginPath', () => {
     it('falls back to org admin when callback is missing or invalid', () => {
-      expect(resolvePostLoginPath({ slug: 'petlar', callbackUrl: undefined })).toBe(
-        '/petlar/admin'
-      )
-      expect(resolvePostLoginPath({ slug: 'petlar', callbackUrl: '/foo' })).toBe(
-        '/petlar/admin'
-      )
+      expect(
+        resolvePostLoginPath({ slug: 'petlar', callbackUrl: undefined })
+      ).toBe('/petlar/admin')
+      expect(
+        resolvePostLoginPath({ slug: 'petlar', callbackUrl: '/foo' })
+      ).toBe('/petlar/admin')
     })
 
     it('returns safe callback when valid', () => {

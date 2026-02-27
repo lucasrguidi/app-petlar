@@ -84,16 +84,14 @@ function MissingTokenState({ slug }: { slug: string }) {
   return (
     <div className="space-y-6 text-center">
       <div className="flex justify-center">
-        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10">
-          <AlertTriangle className="h-8 w-8 text-destructive" />
+        <div className="bg-destructive/10 flex h-16 w-16 items-center justify-center rounded-full">
+          <AlertTriangle className="text-destructive h-8 w-8" />
         </div>
       </div>
 
       <div className="space-y-2">
-        <h3 className="text-lg font-semibold text-foreground">
-          Link inválido
-        </h3>
-        <p className="text-sm text-muted-foreground text-balance">
+        <h3 className="text-foreground text-lg font-semibold">Link inválido</h3>
+        <p className="text-muted-foreground text-sm text-balance">
           O link de redefinição de senha está incompleto ou inválido.
         </p>
       </div>

@@ -15,7 +15,6 @@ export function DashboardStatsGrid({
   pendingApplicationsCount,
   totalAdoptions,
 }: DashboardStatsGridProps) {
-
   const stats = [
     {
       title: 'Disponíveis',
@@ -49,7 +48,7 @@ export function DashboardStatsGrid({
           <Card
             key={stat.title}
             className={`border-border/60 bg-card/95 shadow-warm-sm rounded-xl border ${
-              stat.attention ? 'ring-2 ring-warning/30' : ''
+              stat.attention ? 'ring-warning/30 ring-2' : ''
             }`}
           >
             <CardContent className="flex items-center gap-4 p-4">
@@ -59,7 +58,7 @@ export function DashboardStatsGrid({
                 <Icon className="h-6 w-6" />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-muted-foreground text-xs font-medium uppercase tracking-wide">
+                <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
                   {stat.title}
                 </p>
                 <div className="flex items-baseline gap-1.5">

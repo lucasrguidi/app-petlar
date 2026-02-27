@@ -384,8 +384,7 @@ export function CatForm({ mode, initialData, catId }: CatFormProps) {
                         />
                       </div>
                       <p className="text-muted-foreground mt-1 text-xs">
-                        Informações de contato de quem doou o gato (uso
-                        interno)
+                        Informações de contato de quem doou o gato (uso interno)
                       </p>
                     </CardHeader>
                   </CollapsibleTrigger>

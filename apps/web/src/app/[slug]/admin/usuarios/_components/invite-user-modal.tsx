@@ -56,9 +56,8 @@ interface DeactivatedUser {
 
 export function InviteUserModal({ open, onOpenChange }: InviteUserModalProps) {
   const queryClient = useQueryClient()
-  const [deactivatedUser, setDeactivatedUser] = useState<DeactivatedUser | null>(
-    null
-  )
+  const [deactivatedUser, setDeactivatedUser] =
+    useState<DeactivatedUser | null>(null)
 
   const form = useForm<InviteFormValues>({
     resolver: zodResolver(inviteSchema),

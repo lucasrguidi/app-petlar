@@ -77,13 +77,10 @@ export function CatsList({
     return <CatsLoadingSkeleton />
   }
 
-  const visibleCats =
-    data.cats.filter(
-      (
-        cat
-      ): cat is (typeof data.cats)[number] & { status: CatStatusFilter } =>
-        isAdminCatStatus(cat.status)
-    )
+  const visibleCats = data.cats.filter(
+    (cat): cat is (typeof data.cats)[number] & { status: CatStatusFilter } =>
+      isAdminCatStatus(cat.status)
+  )
 
   if (!visibleCats.length) {
     return (
