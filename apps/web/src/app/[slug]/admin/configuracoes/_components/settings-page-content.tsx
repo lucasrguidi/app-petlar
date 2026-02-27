@@ -1,0 +1,411 @@
+'use client'
+
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import {
+  Check,
+  Globe,
+  Info,
+  Loader2,
+  Palette,
+  RotateCcw,
+  Save,
+} from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
+import { toast } from 'sonner'
+
+import {
+  PRESET_THEMES,
+  THEME_DEFAULTS,
+  type PresetThemeKey,
+} from '../../../_lib/generate-theme-css'
+import { revalidateTheme } from '../_actions/revalidate-theme'
+
+import { ColorPicker } from './color-picker'
+import { ThemePreview } from './theme-preview'
+
+import { Button } from '@/components/ui/button'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { useOrgSlug } from '@/hooks/use-org-slug'
+import { cn } from '@/lib/utils'
+import { trpc } from '@/utils/trpc'
+
+interface ThemeColors {
+  primaryColor: string | null
+  primaryForegroundColor: string | null
+  secondaryColor: string | null
+  secondaryForegroundColor: string | null
+  backgroundColor: string | null
+  foregroundColor: string | null
+  accentColor: string | null
+  mutedColor: string | null
+  mutedForegroundColor: string | null
+}
+
+function getEffectiveColors(colors: ThemeColors) {
+  return {
+    primary: colors.primaryColor ?? THEME_DEFAULTS.primary,
+    primaryForeground:
+      colors.primaryForegroundColor ?? THEME_DEFAULTS.primaryForeground,
+    secondary: colors.secondaryColor ?? THEME_DEFAULTS.secondary,
+    secondaryForeground:
+      colors.secondaryForegroundColor ?? THEME_DEFAULTS.secondaryForeground,
+    background: colors.backgroundColor ?? THEME_DEFAULTS.background,
+    foreground: colors.foregroundColor ?? THEME_DEFAULTS.foreground,
+    accent: colors.accentColor ?? THEME_DEFAULTS.accent,
+    muted: colors.mutedColor ?? THEME_DEFAULTS.muted,
+    mutedForeground:
+      colors.mutedForegroundColor ?? THEME_DEFAULTS.mutedForeground,
+  }
+}
+
+function colorsMatchPreset(
+  colors: ReturnType<typeof getEffectiveColors>,
+  preset: (typeof PRESET_THEMES)[PresetThemeKey]
+): boolean {
+  return (
+    colors.primary.toLowerCase() === preset.primary.toLowerCase() &&
+    colors.background.toLowerCase() === preset.background.toLowerCase() &&
+    colors.foreground.toLowerCase() === preset.foreground.toLowerCase() &&
+    colors.secondary.toLowerCase() === preset.secondary.toLowerCase() &&
+    colors.accent.toLowerCase() === preset.accent.toLowerCase()
+  )
+}
+
+export function SettingsPageContent() {
+  const router = useRouter()
+  const queryClient = useQueryClient()
+  const slug = useOrgSlug()
+
+  const { data: orgSettings, isLoading } = useQuery(
+    trpc.orgs.getSettings.queryOptions()
+  )
+
+  const [localColors, setLocalColors] = useState<ThemeColors>({
+    primaryColor: null,
+    primaryForegroundColor: null,
+    secondaryColor: null,
+    secondaryForegroundColor: null,
+    backgroundColor: null,
+    foregroundColor: null,
+    accentColor: null,
+    mutedColor: null,
+    mutedForegroundColor: null,
+  })
+
+  const [customDomain, setCustomDomain] = useState('')
+  const [hasChanges, setHasChanges] = useState(false)
+
+  // Initialize local state from org settings
+  useEffect(() => {
+    if (orgSettings) {
+      setLocalColors({
+        primaryColor: orgSettings.primaryColor,
+        primaryForegroundColor: orgSettings.primaryForegroundColor,
+        secondaryColor: orgSettings.secondaryColor,
+        secondaryForegroundColor: orgSettings.secondaryForegroundColor,
+        backgroundColor: orgSettings.backgroundColor,
+        foregroundColor: orgSettings.foregroundColor,
+        accentColor: orgSettings.accentColor,
+        mutedColor: orgSettings.mutedColor,
+        mutedForegroundColor: orgSettings.mutedForegroundColor,
+      })
+      setCustomDomain(orgSettings.customDomain ?? '')
+    }
+  }, [orgSettings])
+
+  const updateThemeMutation = useMutation(
+    trpc.orgs.updateTheme.mutationOptions({
+      onSuccess: async () => {
+        toast.success('Tema atualizado com sucesso!')
+        queryClient.invalidateQueries({ queryKey: [['orgs', 'getSettings']] })
+        setHasChanges(false)
+        // Revalidate the org layout to regenerate theme CSS
+        await revalidateTheme(slug)
+        // Refresh the page to apply the new theme
+        router.refresh()
+      },
+      onError: (error) => {
+        toast.error(error.message)
+      },
+    })
+  )
+
+  const updateDomainMutation = useMutation(
+    trpc.orgs.updateCustomDomain.mutationOptions({
+      onSuccess: () => {
+        toast.success('Dominio atualizado com sucesso!')
+        queryClient.invalidateQueries({ queryKey: [['orgs', 'getSettings']] })
+      },
+      onError: (error) => {
+        toast.error(error.message)
+      },
+    })
+  )
+
+  const handlePresetSelect = (presetKey: PresetThemeKey) => {
+    const preset = PRESET_THEMES[presetKey]
+    setLocalColors({
+      primaryColor: preset.primary,
+      primaryForegroundColor: preset.primaryForeground,
+      secondaryColor: preset.secondary,
+      secondaryForegroundColor: preset.secondaryForeground,
+      backgroundColor: preset.background,
+      foregroundColor: preset.foreground,
+      accentColor: preset.accent,
+      mutedColor: preset.muted,
+      mutedForegroundColor: preset.mutedForeground,
+    })
+    setHasChanges(true)
+  }
+
+  const handleColorChange = (key: keyof ThemeColors, value: string) => {
+    setLocalColors((prev) => ({ ...prev, [key]: value }))
+    setHasChanges(true)
+  }
+
+  const handleSaveTheme = () => {
+    updateThemeMutation.mutate(localColors)
+  }
+
+  const handleResetTheme = () => {
+    if (orgSettings) {
+      setLocalColors({
+        primaryColor: orgSettings.primaryColor,
+        primaryForegroundColor: orgSettings.primaryForegroundColor,
+        secondaryColor: orgSettings.secondaryColor,
+        secondaryForegroundColor: orgSettings.secondaryForegroundColor,
+        backgroundColor: orgSettings.backgroundColor,
+        foregroundColor: orgSettings.foregroundColor,
+        accentColor: orgSettings.accentColor,
+        mutedColor: orgSettings.mutedColor,
+        mutedForegroundColor: orgSettings.mutedForegroundColor,
+      })
+      setHasChanges(false)
+    }
+  }
+
+  const handleSaveDomain = () => {
+    updateDomainMutation.mutate({
+      customDomain: customDomain.trim() || null,
+    })
+  }
+
+  if (isLoading) {
+    return null // Suspense fallback will show
+  }
+
+  if (!orgSettings) {
+    return (
+      <div className="text-muted-foreground py-8 text-center">
+        Nao foi possivel carregar as configuracoes.
+      </div>
+    )
+  }
+
+  const effectiveColors = getEffectiveColors(localColors)
+  const currentPreset = (Object.keys(PRESET_THEMES) as PresetThemeKey[]).find(
+    (key) => colorsMatchPreset(effectiveColors, PRESET_THEMES[key])
+  )
+
+  return (
+    <div className="space-y-6">
+      {/* Custom Domain Card */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-display flex items-center gap-2">
+            <Globe className="text-primary h-5 w-5" />
+            Dominio Personalizado
+          </CardTitle>
+          <CardDescription>
+            Configure um dominio proprio para sua organizacao
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="customDomain">Dominio</Label>
+            <div className="flex gap-2">
+              <Input
+                id="customDomain"
+                placeholder="queroadotar.com.br"
+                value={customDomain}
+                onChange={(e) => setCustomDomain(e.target.value)}
+                className="max-w-sm"
+              />
+              <Button
+                onClick={handleSaveDomain}
+                disabled={
+                  updateDomainMutation.isPending ||
+                  customDomain === (orgSettings.customDomain ?? '')
+                }
+              >
+                {updateDomainMutation.isPending ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Save className="h-4 w-4" />
+                )}
+                Salvar
+              </Button>
+            </div>
+            <p className="text-muted-foreground flex items-start gap-1.5 text-sm">
+              <Info className="mt-0.5 h-4 w-4 shrink-0" />
+              Apos configurar o dominio aqui, voce precisa apontar o DNS para a
+              Vercel. Entre em contato para obter as instrucoes.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Theme Picker Card */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-display flex items-center gap-2">
+            <Palette className="text-primary h-5 w-5" />
+            Tema de Cores
+          </CardTitle>
+          <CardDescription>
+            Escolha um tema pre-definido ou customize as cores
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Preset Themes */}
+          <div className="space-y-3">
+            <Label>Temas Pre-definidos</Label>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5">
+              {(Object.keys(PRESET_THEMES) as PresetThemeKey[]).map((key) => {
+                const preset = PRESET_THEMES[key]
+                const isSelected = currentPreset === key
+                return (
+                  <button
+                    key={key}
+                    onClick={() => handlePresetSelect(key)}
+                    className={cn(
+                      'group relative flex flex-col items-center gap-2 rounded-xl border-2 p-3 transition-all',
+                      isSelected
+                        ? 'border-primary bg-primary/5'
+                        : 'hover:border-primary/50 bg-card hover:bg-muted/50 border-transparent'
+                    )}
+                  >
+                    {isSelected && (
+                      <div className="bg-primary text-primary-foreground absolute -top-2 -right-2 rounded-full p-1">
+                        <Check className="h-3 w-3" />
+                      </div>
+                    )}
+                    <div className="flex gap-1">
+                      <div
+                        className="h-6 w-6 rounded-full border"
+                        style={{ backgroundColor: preset.primary }}
+                      />
+                      <div
+                        className="h-6 w-6 rounded-full border"
+                        style={{ backgroundColor: preset.background }}
+                      />
+                      <div
+                        className="h-6 w-6 rounded-full border"
+                        style={{ backgroundColor: preset.foreground }}
+                      />
+                    </div>
+                    <span className="text-xs font-medium">{preset.name}</span>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* Custom Color Pickers */}
+          <div className="space-y-3">
+            <Label>Cores Personalizadas</Label>
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+              <ColorPicker
+                label="Primaria"
+                value={effectiveColors.primary}
+                onChange={(v) => handleColorChange('primaryColor', v)}
+              />
+              <ColorPicker
+                label="Fundo"
+                value={effectiveColors.background}
+                onChange={(v) => handleColorChange('backgroundColor', v)}
+              />
+              <ColorPicker
+                label="Texto"
+                value={effectiveColors.foreground}
+                onChange={(v) => handleColorChange('foregroundColor', v)}
+              />
+              <ColorPicker
+                label="Destaque"
+                value={effectiveColors.accent}
+                onChange={(v) => handleColorChange('accentColor', v)}
+              />
+              <ColorPicker
+                label="Secundaria"
+                value={effectiveColors.secondary}
+                onChange={(v) => handleColorChange('secondaryColor', v)}
+              />
+              <ColorPicker
+                label="Texto Secundario"
+                value={effectiveColors.secondaryForeground}
+                onChange={(v) =>
+                  handleColorChange('secondaryForegroundColor', v)
+                }
+              />
+              <ColorPicker
+                label="Suave"
+                value={effectiveColors.muted}
+                onChange={(v) => handleColorChange('mutedColor', v)}
+              />
+              <ColorPicker
+                label="Texto Suave"
+                value={effectiveColors.mutedForeground}
+                onChange={(v) => handleColorChange('mutedForegroundColor', v)}
+              />
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex justify-end gap-2 border-t pt-4">
+            <Button
+              variant="outline"
+              onClick={handleResetTheme}
+              disabled={!hasChanges}
+            >
+              <RotateCcw className="mr-2 h-4 w-4" />
+              Desfazer
+            </Button>
+            <Button
+              onClick={handleSaveTheme}
+              disabled={!hasChanges || updateThemeMutation.isPending}
+            >
+              {updateThemeMutation.isPending ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Save className="mr-2 h-4 w-4" />
+              )}
+              Salvar Tema
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Live Preview Card */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-display">Preview</CardTitle>
+          <CardDescription>
+            Veja como ficara a aparencia do sistema
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ThemePreview colors={effectiveColors} orgName={orgSettings.name} />
+        </CardContent>
+      </Card>
+    </div>
+  )
+}

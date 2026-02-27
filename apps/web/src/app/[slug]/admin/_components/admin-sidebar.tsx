@@ -8,6 +8,7 @@ import {
   LayoutDashboard,
   Menu,
   PawPrint,
+  Settings,
   Users,
   X,
 } from 'lucide-react'
@@ -77,6 +78,13 @@ export function AdminSidebar({
       icon: Users,
       adminOnly: true,
       description: 'Gerenciar usuários',
+    },
+    {
+      title: 'Configuracoes',
+      href: `/${slug}/admin/configuracoes` as Route,
+      icon: Settings,
+      adminOnly: true,
+      description: 'Aparencia e dominio',
     },
   ]
 
