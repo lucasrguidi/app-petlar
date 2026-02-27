@@ -1,0 +1,11 @@
+ALTER TABLE `orgs` ADD `custom_domain` text;--> statement-breakpoint
+ALTER TABLE `orgs` ADD `primary_color` text;--> statement-breakpoint
+ALTER TABLE `orgs` ADD `primary_foreground_color` text;--> statement-breakpoint
+ALTER TABLE `orgs` ADD `secondary_color` text;--> statement-breakpoint
+ALTER TABLE `orgs` ADD `secondary_foreground_color` text;--> statement-breakpoint
+ALTER TABLE `orgs` ADD `background_color` text;--> statement-breakpoint
+ALTER TABLE `orgs` ADD `foreground_color` text;--> statement-breakpoint
+ALTER TABLE `orgs` ADD `accent_color` text;--> statement-breakpoint
+ALTER TABLE `orgs` ADD `muted_color` text;--> statement-breakpoint
+ALTER TABLE `orgs` ADD `muted_foreground_color` text;--> statement-breakpoint
+CREATE UNIQUE INDEX `orgs_custom_domain_idx` ON `orgs` (`custom_domain`);
