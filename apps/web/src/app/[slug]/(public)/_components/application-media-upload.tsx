@@ -257,21 +257,21 @@ export function ApplicationMediaUpload({
           className={cn(
             'group relative w-full overflow-hidden rounded-2xl',
             'border-2 border-dashed',
-            'bg-gradient-to-br from-white to-[#F8FBFF]',
+            'bg-gradient-to-br from-white to-muted/20',
             'min-h-[140px] p-6',
             'flex flex-col items-center justify-center gap-3',
             'cursor-pointer transition-all duration-300',
-            'hover:border-[#E35915]/50 hover:bg-white',
-            isDragging && ['border-[#E35915] bg-[#E35915]/5', 'scale-[1.01]'],
+            'hover:border-primary/50 hover:bg-white',
+            isDragging && ['border-primary bg-primary/5', 'scale-[1.01]'],
             isDisabled && 'cursor-not-allowed opacity-60',
-            !isDragging && !isDisabled && 'border-[#AEC7E2]'
+            !isDragging && !isDisabled && 'border-muted'
           )}
         >
           {/* Background decoration */}
           <div
             className={cn(
               'absolute inset-0 opacity-0 transition-opacity duration-300',
-              'bg-gradient-to-br from-[#E35915]/5 via-transparent to-[#F07B3D]/5',
+              'bg-gradient-to-br from-primary/5 via-transparent to-accent/5',
               (isDragging || isUploading) && 'opacity-100'
             )}
             aria-hidden="true"
@@ -281,30 +281,30 @@ export function ApplicationMediaUpload({
           <div
             className={cn(
               'relative flex h-14 w-14 items-center justify-center rounded-2xl',
-              'bg-gradient-to-br from-[#E35915]/15 to-[#F07B3D]/10',
-              'ring-1 ring-[#E35915]/20',
+              'bg-gradient-to-br from-primary/15 to-accent/10',
+              'ring-1 ring-primary/20',
               'transition-all duration-300',
-              'group-hover:scale-110 group-hover:shadow-lg group-hover:shadow-[#E35915]/20',
-              isDragging && 'scale-110 shadow-lg shadow-[#E35915]/20'
+              'group-hover:scale-110 group-hover:shadow-lg group-hover:shadow-primary/20',
+              isDragging && 'scale-110 shadow-lg shadow-primary/20'
             )}
           >
             {isUploading ? (
-              <Loader2 className="h-7 w-7 animate-spin text-[#E35915]" />
+              <Loader2 className="h-7 w-7 animate-spin text-primary" />
             ) : (
-              <Upload className="h-7 w-7 text-[#E35915]" />
+              <Upload className="h-7 w-7 text-primary" />
             )}
           </div>
 
           {/* Text */}
           <div className="relative text-center">
-            <p className="font-medium text-[#783201]">
+            <p className="font-medium text-foreground">
               {isUploading
                 ? `Enviando... ${progress}%`
                 : isDragging
                   ? 'Solte o arquivo aqui'
                   : `Arraste ou clique para enviar ${kind === 'image' ? 'imagem' : 'vídeo'}`}
             </p>
-            <p className="mt-1 flex items-center justify-center gap-2 text-sm text-[#8B5A2B]/70">
+            <p className="mt-1 flex items-center justify-center gap-2 text-sm text-muted-foreground/70">
               <MediaIcon className="h-4 w-4" />
               {kind === 'image'
                 ? 'JPG, PNG ou WEBP • até 5MB'
@@ -315,9 +315,9 @@ export function ApplicationMediaUpload({
           {/* Progress bar during upload */}
           {isUploading && (
             <div className="relative mt-2 w-full max-w-xs">
-              <div className="h-2 overflow-hidden rounded-full bg-[#AEC7E2]/35">
+              <div className="h-2 overflow-hidden rounded-full bg-muted/35">
                 <div
-                  className="h-full rounded-full bg-gradient-to-r from-[#E35915] to-[#F07B3D] transition-all duration-200"
+                  className="h-full rounded-full bg-gradient-to-r from-primary to-accent transition-all duration-200"
                   style={{ width: `${progress}%` }}
                 />
               </div>
@@ -339,7 +339,7 @@ export function ApplicationMediaUpload({
               <img
                 src={value}
                 alt={`Arquivo enviado para ${label}`}
-                className="h-48 w-full bg-[#AEC7E2]/10 object-contain"
+                className="h-48 w-full bg-muted/10 object-contain"
                 loading="lazy"
               />
             ) : (
@@ -377,7 +377,7 @@ export function ApplicationMediaUpload({
               disabled={isDisabled}
               className={cn(
                 'h-9 rounded-xl px-3',
-                'text-[#783201]/70 hover:bg-red-50 hover:text-red-600'
+                'text-foreground/70 hover:bg-red-50 hover:text-red-600'
               )}
             >
               <X className="mr-1.5 h-4 w-4" />

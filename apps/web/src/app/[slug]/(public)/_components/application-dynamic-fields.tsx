@@ -46,11 +46,11 @@ interface ApplicationDynamicFieldsProps {
 
 const baseInputClassName = cn(
   'h-12 rounded-xl',
-  'border border-[#AEC7E2]',
+  'border border-muted',
   'bg-white/90 backdrop-blur-sm',
-  'text-[#783201] placeholder:text-[#8B5A2B]/45',
+  'text-foreground placeholder:text-muted-foreground/45',
   'transition-all duration-200',
-  'focus-visible:border-[#E35915] focus-visible:bg-white focus-visible:ring-2 focus-visible:ring-[#E35915]/20'
+  'focus-visible:border-primary focus-visible:bg-white focus-visible:ring-2 focus-visible:ring-primary/20'
 )
 
 const emptySelectValue = '__empty__'
@@ -229,20 +229,20 @@ export function ApplicationDynamicFields({
         <div
           className={cn(
             'flex h-10 w-10 items-center justify-center rounded-xl',
-            'bg-gradient-to-br from-[#AEC7E2]/30 to-[#AEC7E2]/10',
-            'ring-1 ring-[#AEC7E2]/40'
+            'bg-gradient-to-br from-muted/30 to-muted/10',
+            'ring-1 ring-muted/40'
           )}
         >
-          <FileQuestion className="h-5 w-5 text-[#783201]/70" />
+          <FileQuestion className="h-5 w-5 text-foreground/70" />
         </div>
         <div>
           <h4
-            className="text-base font-semibold text-[#783201]"
+            className="text-base font-semibold text-foreground"
             style={{ fontFamily: 'var(--font-display)' }}
           >
             Perguntas da ONG
           </h4>
-          <p className="text-sm text-[#8B5A2B]/70">
+          <p className="text-sm text-muted-foreground/70">
             {visibleFields.length}{' '}
             {visibleFields.length === 1 ? 'pergunta' : 'perguntas'} para
             responder
@@ -263,10 +263,10 @@ export function ApplicationDynamicFields({
               key={field.id}
               className={cn(
                 'relative overflow-hidden rounded-2xl',
-                'bg-gradient-to-br from-white to-[#F8FBFF]',
-                'border border-[#AEC7E2]/40',
+                'bg-gradient-to-br from-white to-background',
+                'border border-muted/40',
                 'shadow-sm transition-all duration-200',
-                'hover:border-[#AEC7E2]/60 hover:shadow-md',
+                'hover:border-muted/60 hover:shadow-md',
                 'animate-fade-in'
               )}
               style={{ animationDelay: `${index * 50}ms` }}
@@ -274,7 +274,7 @@ export function ApplicationDynamicFields({
               {/* Required indicator bar */}
               {field.required && (
                 <div
-                  className="absolute top-0 bottom-0 left-0 w-1 bg-gradient-to-b from-[#E35915] to-[#F07B3D]"
+                  className="absolute top-0 bottom-0 left-0 w-1 bg-gradient-to-b from-primary to-accent"
                   aria-hidden="true"
                 />
               )}
@@ -285,30 +285,30 @@ export function ApplicationDynamicFields({
                   <div
                     className={cn(
                       'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg',
-                      'bg-[#AEC7E2]/30 text-[#8B5A2B]'
+                      'bg-muted/30 text-muted-foreground'
                     )}
                   >
                     <FieldIcon className="h-4 w-4" />
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-medium text-[#8B5A2B]/70">
+                      <span className="text-xs font-medium text-muted-foreground/70">
                         Pergunta {index + 1}
                       </span>
                       {field.required && (
-                        <span className="rounded-full bg-[#E35915]/10 px-2 py-0.5 text-xs font-medium text-[#E35915]">
+                        <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
                           Obrigatória
                         </span>
                       )}
                     </div>
-                    <label className="mt-1 block text-sm font-medium text-[#783201]">
+                    <label className="mt-1 block text-sm font-medium text-foreground">
                       {field.label}
                       {field.required && (
-                        <span className="ml-1 text-[#E35915]">*</span>
+                        <span className="ml-1 text-primary">*</span>
                       )}
                     </label>
                     {field.helpText && (
-                      <p className="mt-0.5 text-xs text-[#8B5A2B]/65">
+                      <p className="mt-0.5 text-xs text-muted-foreground/65">
                         {field.helpText}
                       </p>
                     )}
@@ -345,11 +345,11 @@ export function ApplicationDynamicFields({
                       placeholder="Digite sua resposta"
                       className={cn(
                         'min-h-24 resize-y rounded-xl',
-                        'border border-[#AEC7E2]',
+                        'border border-muted',
                         'bg-white/90 backdrop-blur-sm',
-                        'text-[#783201] placeholder:text-[#8B5A2B]/45',
+                        'text-foreground placeholder:text-muted-foreground/45',
                         'transition-all duration-200',
-                        'focus-visible:border-[#E35915] focus-visible:bg-white focus-visible:ring-2 focus-visible:ring-[#E35915]/20',
+                        'focus-visible:border-primary focus-visible:bg-white focus-visible:ring-2 focus-visible:ring-primary/20',
                         shouldShowError && 'border-red-300'
                       )}
                       disabled={disabled}
@@ -399,7 +399,7 @@ export function ApplicationDynamicFields({
                       >
                         <SelectValue placeholder="Selecione" />
                       </SelectTrigger>
-                      <SelectContent className="rounded-xl border-[#AEC7E2]/40">
+                      <SelectContent className="rounded-xl border-muted/40">
                         <SelectItem value={emptySelectValue}>
                           Selecione
                         </SelectItem>
@@ -414,7 +414,7 @@ export function ApplicationDynamicFields({
                       const options = getValidOptions(field.options)
                       if (options.length === 0) {
                         return (
-                          <p className="text-sm text-[#8B5A2B]/65">
+                          <p className="text-sm text-muted-foreground/65">
                             Esta pergunta ainda não possui opções disponíveis.
                           </p>
                         )
@@ -444,7 +444,7 @@ export function ApplicationDynamicFields({
                           >
                             <SelectValue placeholder="Selecione uma opção" />
                           </SelectTrigger>
-                          <SelectContent className="rounded-xl border-[#AEC7E2]/40">
+                          <SelectContent className="rounded-xl border-muted/40">
                             <SelectItem value={emptySelectValue}>
                               Selecione
                             </SelectItem>

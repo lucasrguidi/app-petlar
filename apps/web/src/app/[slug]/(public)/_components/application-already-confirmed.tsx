@@ -94,10 +94,10 @@ export function ApplicationAlreadyConfirmed({
       <div
         className={cn(
           'rounded-2xl p-4',
-          'border border-[#AEC7E2]/40 bg-gradient-to-br from-white to-[#F8FBFF]'
+          'border border-muted/40 bg-gradient-to-br from-white to-muted/20'
         )}
       >
-        <h5 className="mb-3 text-sm font-semibold text-[#783201]">
+        <h5 className="mb-3 text-sm font-semibold text-foreground">
           O que acontece agora?
         </h5>
 
@@ -108,28 +108,28 @@ export function ApplicationAlreadyConfirmed({
               1
             </div>
             <div className="pt-0.5">
-              <p className="text-sm font-medium text-[#783201]">
+              <p className="text-sm font-medium text-foreground">
                 Análise da candidatura
               </p>
-              <p className="text-xs text-[#8B5A2B]/70">
+              <p className="text-xs text-muted-foreground/70">
                 Nossa equipe vai avaliar suas respostas
               </p>
             </div>
           </div>
 
           {/* Connector */}
-          <div className="ml-3.5 h-3 w-px bg-[#AEC7E2]/40" aria-hidden="true" />
+          <div className="ml-3.5 h-3 w-px bg-muted/40" aria-hidden="true" />
 
           {/* Step 2 */}
           <div className="flex items-start gap-3">
-            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#AEC7E2]/30 text-xs font-bold text-[#8B5A2B]/70">
+            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-muted/30 text-xs font-bold text-muted-foreground/70">
               2
             </div>
             <div className="pt-0.5">
-              <p className="text-sm font-medium text-[#783201]">
+              <p className="text-sm font-medium text-foreground">
                 Aguarde nosso contato
               </p>
-              <p className="text-xs text-[#8B5A2B]/70">
+              <p className="text-xs text-muted-foreground/70">
                 Caso seja aprovado, entraremos em contato via WhatsApp
               </p>
             </div>
@@ -141,33 +141,33 @@ export function ApplicationAlreadyConfirmed({
       <div
         className={cn(
           'rounded-2xl p-4',
-          'border border-[#AEC7E2]/40 bg-white/80'
+          'border border-muted/40 bg-white/80'
         )}
       >
-        <h5 className="mb-3 text-sm font-semibold text-[#783201]">
+        <h5 className="mb-3 text-sm font-semibold text-foreground">
           Dados da sua candidatura
         </h5>
 
         <div className="space-y-3">
-          <div className="flex items-center gap-3 rounded-xl bg-[#AEC7E2]/15 p-3">
-            <div className="rounded-lg bg-[#E35915]/10 p-2">
-              <Mail className="h-4 w-4 text-[#E35915]" />
+          <div className="flex items-center gap-3 rounded-xl bg-muted/15 p-3">
+            <div className="rounded-lg bg-primary/10 p-2">
+              <Mail className="h-4 w-4 text-primary" />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-xs text-[#8B5A2B]/60">E-mail</p>
-              <p className="truncate text-sm font-medium text-[#783201]">
+              <p className="text-xs text-muted-foreground/60">E-mail</p>
+              <p className="truncate text-sm font-medium text-foreground">
                 {applicantEmail}
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 rounded-xl bg-[#AEC7E2]/15 p-3">
+          <div className="flex items-center gap-3 rounded-xl bg-muted/15 p-3">
             <div className="rounded-lg bg-emerald-500/10 p-2">
               <MessageCircle className="h-4 w-4 text-emerald-600" />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-xs text-[#8B5A2B]/60">WhatsApp</p>
-              <p className="truncate text-sm font-medium text-[#783201]">
+              <p className="text-xs text-muted-foreground/60">WhatsApp</p>
+              <p className="truncate text-sm font-medium text-foreground">
                 {applicantWhatsapp}
               </p>
             </div>
@@ -180,9 +180,9 @@ export function ApplicationAlreadyConfirmed({
         asChild
         className={cn(
           'h-12 w-full rounded-xl text-base font-semibold',
-          'bg-gradient-to-r from-[#E35915] to-[#F07B3D]',
-          'shadow-lg shadow-[#E35915]/25 transition-all duration-200',
-          'hover:shadow-xl hover:shadow-[#E35915]/35 hover:brightness-110'
+          'bg-gradient-to-r from-primary to-accent',
+          'shadow-lg shadow-primary/25 transition-all duration-200',
+          'hover:shadow-xl hover:shadow-primary/35 hover:brightness-110'
         )}
       >
         <Link href={`/${slug}` as Route}>

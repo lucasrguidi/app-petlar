@@ -47,7 +47,7 @@ function CatInfoCard({
       className={cn(
         'overflow-hidden rounded-2xl',
         'bg-white/95 backdrop-blur-sm',
-        'shadow-lg shadow-[#783201]/5',
+        'shadow-lg shadow-foreground/5',
         'border border-white/60'
       )}
     >
@@ -55,7 +55,7 @@ function CatInfoCard({
       <div
         className={cn(
           'relative overflow-hidden',
-          'bg-gradient-to-br from-[#AEC7E2]/30 to-white',
+          'bg-gradient-to-br from-background/30 to-white',
           isCompact ? 'h-24' : 'aspect-square'
         )}
       >
@@ -82,7 +82,7 @@ function CatInfoCard({
           </>
         ) : (
           <div className="flex h-full items-center justify-center">
-            <Cat className="h-12 w-12 text-[#8B5A2B]/30" />
+            <Cat className="h-12 w-12 text-muted-foreground/30" />
           </div>
         )}
 
@@ -104,8 +104,8 @@ function CatInfoCard({
           className={cn(
             'absolute right-3 bottom-3 z-20',
             'flex h-10 w-10 items-center justify-center rounded-full',
-            'bg-gradient-to-br from-[#E35915] to-[#F07B3D]',
-            'shadow-lg shadow-[#E35915]/30',
+            'bg-gradient-to-br from-primary to-accent',
+            'shadow-lg shadow-primary/30',
             'ring-2 ring-white/80'
           )}
         >
@@ -118,7 +118,7 @@ function CatInfoCard({
         <div className="flex items-center gap-2">
           <h3
             className={cn(
-              'font-bold text-[#783201]',
+              'font-bold text-foreground',
               isCompact ? 'text-lg' : 'text-xl'
             )}
             style={{ fontFamily: 'var(--font-display)' }}
@@ -145,13 +145,13 @@ function CatInfoCard({
           </span>
         </div>
 
-        <p className="text-sm text-[#8B5A2B]/70">
+        <p className="text-sm text-muted-foreground/70">
           {formatAge(cat.ageYears, cat.ageMonths)}
         </p>
 
         {!isCompact && (
-          <div className="mt-3 rounded-xl bg-[#E35915]/5 px-3 py-2">
-            <p className="text-center text-xs font-medium text-[#783201]/80">
+          <div className="mt-3 rounded-xl bg-primary/5 px-3 py-2">
+            <p className="text-center text-xs font-medium text-foreground/80">
               {cat.sex === 'female' ? 'Ela' : 'Ele'} está esperando por você
             </p>
           </div>
@@ -167,39 +167,39 @@ function TipsCard() {
       className={cn(
         'overflow-hidden rounded-2xl',
         'bg-white/95 backdrop-blur-sm',
-        'shadow-lg shadow-[#783201]/5',
+        'shadow-lg shadow-foreground/5',
         'border border-white/60'
       )}
     >
       {/* Accent bar */}
-      <div className="h-1 bg-gradient-to-r from-[#E35915] to-[#F07B3D]" />
+      <div className="h-1 bg-gradient-to-r from-primary to-accent" />
 
       <div className="p-4">
         <div className="flex items-start gap-3">
           <div
             className={cn(
               'flex h-9 w-9 shrink-0 items-center justify-center rounded-xl',
-              'bg-gradient-to-br from-[#E35915]/15 to-[#F07B3D]/10'
+              'bg-gradient-to-br from-primary/15 to-accent/10'
             )}
           >
-            <Lightbulb className="h-4 w-4 text-[#E35915]" />
+            <Lightbulb className="h-4 w-4 text-primary" />
           </div>
           <div>
-            <h4 className="text-sm font-semibold text-[#783201]">
+            <h4 className="text-sm font-semibold text-foreground">
               Dicas para sua candidatura
             </h4>
-            <ul className="mt-2 space-y-1.5 text-xs text-[#8B5A2B]/75">
+            <ul className="mt-2 space-y-1.5 text-xs text-muted-foreground/75">
               <li className="flex items-start gap-1.5">
-                <span className="mt-0.5 text-[#E35915]">•</span>
+                <span className="mt-0.5 text-primary">•</span>
                 Preencha com calma e carinho cada pergunta
               </li>
               <li className="flex items-start gap-1.5">
-                <span className="mt-0.5 text-[#E35915]">•</span>
+                <span className="mt-0.5 text-primary">•</span>
                 Seja honesto sobre seu estilo de vida
               </li>
               <li className="flex items-start gap-1.5">
-                <span className="mt-0.5 text-[#E35915]">•</span>
-                A ONG avalia cada candidatura com atenção
+                <span className="mt-0.5 text-primary">•</span>A ONG avalia
+                cada candidatura com atenção
               </li>
             </ul>
           </div>
@@ -217,7 +217,7 @@ export function ApplicationSidebar({ cat, variant }: ApplicationSidebarProps) {
   }
 
   return (
-    <aside className="lg:sticky lg:top-6 space-y-4">
+    <aside className="space-y-4 lg:sticky lg:top-6">
       <CatInfoCard cat={cat} variant="full" />
       <TipsCard />
     </aside>

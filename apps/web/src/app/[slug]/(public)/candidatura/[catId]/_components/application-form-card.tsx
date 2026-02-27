@@ -23,7 +23,7 @@ export function ApplicationFormCard({
         'rounded-2xl p-5 sm:p-6',
         'bg-white/90 backdrop-blur-sm',
         'border border-white/60',
-        'shadow-lg shadow-[#783201]/5',
+        'shadow-lg shadow-foreground/5',
         className
       )}
     >
@@ -31,14 +31,14 @@ export function ApplicationFormCard({
         <div className="mb-5">
           {title && (
             <h2
-              className="text-xl font-bold text-[#783201]"
+              className="text-xl font-bold text-foreground"
               style={{ fontFamily: 'var(--font-display)' }}
             >
               {title}
             </h2>
           )}
           {description && (
-            <p className="mt-1 text-sm text-[#8B5A2B]/70">{description}</p>
+            <p className="mt-1 text-sm text-muted-foreground/70">{description}</p>
           )}
         </div>
       )}

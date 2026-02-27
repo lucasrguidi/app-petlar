@@ -48,7 +48,7 @@ export function ApplicationStepper({
                   <div
                     className={cn(
                       'absolute -inset-1 rounded-full',
-                      'bg-gradient-to-r from-[#E35915]/30 to-[#F07B3D]/30',
+                      'bg-gradient-to-r from-primary/30 to-accent/30',
                       'animate-pulse blur-md'
                     )}
                     aria-hidden="true"
@@ -68,15 +68,15 @@ export function ApplicationStepper({
                       'shadow-lg shadow-emerald-500/25',
                     ],
                     isActive && [
-                      'bg-gradient-to-br from-[#E35915] to-[#F07B3D]',
+                      'bg-gradient-to-br from-primary to-accent',
                       'text-white',
-                      'shadow-xl shadow-[#E35915]/30',
+                      'shadow-xl shadow-primary/30',
                       'scale-110',
                     ],
                     isPending && [
-                      'border-2 border-[#AEC7E2]',
+                      'border-2 border-muted',
                       'bg-white',
-                      'text-[#8B5A2B]/60',
+                      'text-muted-foreground/60',
                     ]
                   )}
                   aria-current={isActive ? 'step' : undefined}
@@ -95,8 +95,8 @@ export function ApplicationStepper({
                     'transition-all duration-300',
                     'hidden min-[400px]:block',
                     isCompleted && 'text-emerald-600',
-                    isActive && 'font-semibold text-[#783201]',
-                    isPending && 'text-[#8B5A2B]/50'
+                    isActive && 'font-semibold text-foreground',
+                    isPending && 'text-muted-foreground/50'
                   )}
                 >
                   <span className="hidden sm:inline">{step.label}</span>
@@ -113,7 +113,7 @@ export function ApplicationStepper({
                   <div
                     className={cn(
                       'absolute inset-0 rounded-full',
-                      'bg-[#AEC7E2]/40'
+                      'bg-muted/40'
                     )}
                   />
 
@@ -125,7 +125,7 @@ export function ApplicationStepper({
                       isCompleted
                         ? 'w-full bg-gradient-to-r from-emerald-400 to-emerald-500'
                         : isActive
-                          ? 'w-1/2 bg-gradient-to-r from-[#E35915] to-[#F07B3D]/50'
+                          ? 'w-1/2 bg-gradient-to-r from-primary to-accent/50'
                           : 'w-0'
                     )}
                   />
@@ -135,7 +135,7 @@ export function ApplicationStepper({
                     <div
                       className={cn(
                         'absolute inset-y-0 left-0 w-1/2 rounded-full',
-                        'bg-gradient-to-r from-[#E35915]/0 via-white/40 to-transparent',
+                        'bg-gradient-to-r from-primary/0 via-white/40 to-transparent',
                         'animate-[shimmer_2s_infinite]'
                       )}
                       style={{
@@ -152,10 +152,10 @@ export function ApplicationStepper({
 
       {/* Mobile: Current step indicator */}
       <div className="mt-3 text-center min-[400px]:hidden">
-        <span className="text-xs font-medium text-[#8B5A2B]/70">
+        <span className="text-xs font-medium text-muted-foreground/70">
           Etapa {currentStep} de {steps.length}:
         </span>
-        <span className="ml-1 text-xs font-semibold text-[#783201]">
+        <span className="ml-1 text-xs font-semibold text-foreground">
           {steps.find((s) => s.id === currentStep)?.label}
         </span>
       </div>

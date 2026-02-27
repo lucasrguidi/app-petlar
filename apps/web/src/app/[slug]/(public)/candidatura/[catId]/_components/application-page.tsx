@@ -335,10 +335,10 @@ export function ApplicationPage({ slug, catId }: ApplicationPageProps) {
         {/* Mobile: Sidebar skeleton at top */}
         <div className="lg:hidden">
           <div className="overflow-hidden rounded-2xl bg-white/90 shadow-lg backdrop-blur-sm">
-            <div className="h-24 animate-pulse bg-gradient-to-br from-[#AEC7E2]/30 to-white" />
+            <div className="h-24 animate-pulse bg-gradient-to-br from-background/30 to-white" />
             <div className="space-y-2 p-3">
-              <div className="h-5 w-2/3 animate-pulse rounded-lg bg-[#AEC7E2]/30" />
-              <div className="h-4 w-1/3 animate-pulse rounded-lg bg-[#AEC7E2]/20" />
+              <div className="h-5 w-2/3 animate-pulse rounded-lg bg-background/30" />
+              <div className="h-4 w-1/3 animate-pulse rounded-lg bg-background/20" />
             </div>
           </div>
         </div>
@@ -347,33 +347,33 @@ export function ApplicationPage({ slug, catId }: ApplicationPageProps) {
         <div className="space-y-4">
           {/* Header card */}
           <div className="rounded-2xl bg-white/90 p-5 shadow-lg backdrop-blur-sm sm:p-6">
-            <div className="h-6 w-3/4 animate-pulse rounded-lg bg-[#AEC7E2]/30" />
-            <div className="mt-2 h-4 w-1/2 animate-pulse rounded-lg bg-[#AEC7E2]/20" />
-            <div className="mt-4 h-4 w-full animate-pulse rounded-lg bg-[#AEC7E2]/15" />
+            <div className="h-6 w-3/4 animate-pulse rounded-lg bg-background/30" />
+            <div className="mt-2 h-4 w-1/2 animate-pulse rounded-lg bg-background/20" />
+            <div className="mt-4 h-4 w-full animate-pulse rounded-lg bg-background/15" />
           </div>
 
           {/* Contact fields card */}
           <div className="rounded-2xl bg-white/90 p-5 shadow-lg backdrop-blur-sm sm:p-6">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 animate-pulse rounded-xl bg-[#AEC7E2]/30" />
+              <div className="h-10 w-10 animate-pulse rounded-xl bg-background/30" />
               <div className="flex-1 space-y-1.5">
-                <div className="h-4 w-24 animate-pulse rounded-lg bg-[#AEC7E2]/30" />
-                <div className="h-3 w-40 animate-pulse rounded-lg bg-[#AEC7E2]/20" />
+                <div className="h-4 w-24 animate-pulse rounded-lg bg-background/30" />
+                <div className="h-3 w-40 animate-pulse rounded-lg bg-background/20" />
               </div>
             </div>
-            <div className="mt-5 space-y-4 rounded-2xl border border-[#AEC7E2]/30 bg-white/50 p-4">
+            <div className="mt-5 space-y-4 rounded-2xl border border-background/30 bg-white/50 p-4">
               <div className="space-y-1.5">
-                <div className="h-3.5 w-28 animate-pulse rounded bg-[#AEC7E2]/25" />
-                <div className="h-12 w-full animate-pulse rounded-xl bg-[#AEC7E2]/20" />
+                <div className="h-3.5 w-28 animate-pulse rounded bg-background/25" />
+                <div className="h-12 w-full animate-pulse rounded-xl bg-background/20" />
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-1.5">
-                  <div className="h-3.5 w-16 animate-pulse rounded bg-[#AEC7E2]/25" />
-                  <div className="h-12 w-full animate-pulse rounded-xl bg-[#AEC7E2]/20" />
+                  <div className="h-3.5 w-16 animate-pulse rounded bg-background/25" />
+                  <div className="h-12 w-full animate-pulse rounded-xl bg-background/20" />
                 </div>
                 <div className="space-y-1.5">
-                  <div className="h-3.5 w-20 animate-pulse rounded bg-[#AEC7E2]/25" />
-                  <div className="h-12 w-full animate-pulse rounded-xl bg-[#AEC7E2]/20" />
+                  <div className="h-3.5 w-20 animate-pulse rounded bg-background/25" />
+                  <div className="h-12 w-full animate-pulse rounded-xl bg-background/20" />
                 </div>
               </div>
             </div>
@@ -382,34 +382,34 @@ export function ApplicationPage({ slug, catId }: ApplicationPageProps) {
           {/* Questions card */}
           <div className="rounded-2xl bg-white/90 p-5 shadow-lg backdrop-blur-sm sm:p-6">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 animate-pulse rounded-xl bg-[#AEC7E2]/30" />
+              <div className="h-10 w-10 animate-pulse rounded-xl bg-background/30" />
               <div className="flex-1 space-y-1.5">
-                <div className="h-4 w-32 animate-pulse rounded-lg bg-[#AEC7E2]/30" />
-                <div className="h-3 w-24 animate-pulse rounded-lg bg-[#AEC7E2]/20" />
+                <div className="h-4 w-32 animate-pulse rounded-lg bg-background/30" />
+                <div className="h-3 w-24 animate-pulse rounded-lg bg-background/20" />
               </div>
             </div>
             <div className="mt-5 space-y-4">
               {[1, 2, 3].map((i) => (
                 <div
                   key={i}
-                  className="rounded-2xl border border-[#AEC7E2]/40 bg-gradient-to-br from-white to-[#F8FBFF] p-4"
+                  className="rounded-2xl border border-background/40 bg-gradient-to-br from-white to-muted/20 p-4"
                 >
                   <div className="flex items-start gap-3">
-                    <div className="h-8 w-8 animate-pulse rounded-lg bg-[#AEC7E2]/30" />
+                    <div className="h-8 w-8 animate-pulse rounded-lg bg-background/30" />
                     <div className="flex-1 space-y-2">
-                      <div className="h-3 w-20 animate-pulse rounded bg-[#AEC7E2]/20" />
-                      <div className="h-4 w-3/4 animate-pulse rounded bg-[#AEC7E2]/30" />
+                      <div className="h-3 w-20 animate-pulse rounded bg-background/20" />
+                      <div className="h-4 w-3/4 animate-pulse rounded bg-background/30" />
                     </div>
                   </div>
-                  <div className="mt-3 h-12 w-full animate-pulse rounded-xl bg-[#AEC7E2]/20" />
+                  <div className="mt-3 h-12 w-full animate-pulse rounded-xl bg-background/20" />
                 </div>
               ))}
             </div>
           </div>
 
           {/* Submit button */}
-          <div className="rounded-2xl border border-[#AEC7E2]/30 bg-white/95 p-4 shadow-lg">
-            <div className="h-12 w-full animate-pulse rounded-xl bg-[#E35915]/20" />
+          <div className="rounded-2xl border border-background/30 bg-white/95 p-4 shadow-lg">
+            <div className="h-12 w-full animate-pulse rounded-xl bg-primary/20" />
           </div>
         </div>
 
@@ -417,22 +417,22 @@ export function ApplicationPage({ slug, catId }: ApplicationPageProps) {
         <div className="hidden lg:block">
           <div className="space-y-4">
             <div className="overflow-hidden rounded-2xl bg-white/90 shadow-lg backdrop-blur-sm">
-              <div className="aspect-square animate-pulse bg-gradient-to-br from-[#AEC7E2]/30 to-white" />
+              <div className="aspect-square animate-pulse bg-gradient-to-br from-background/30 to-white" />
               <div className="space-y-2 p-4">
                 <div className="flex items-center gap-2">
-                  <div className="h-6 w-24 animate-pulse rounded-lg bg-[#AEC7E2]/30" />
-                  <div className="h-5 w-16 animate-pulse rounded-full bg-[#AEC7E2]/20" />
+                  <div className="h-6 w-24 animate-pulse rounded-lg bg-background/30" />
+                  <div className="h-5 w-16 animate-pulse rounded-full bg-background/20" />
                 </div>
-                <div className="h-4 w-20 animate-pulse rounded-lg bg-[#AEC7E2]/20" />
+                <div className="h-4 w-20 animate-pulse rounded-lg bg-background/20" />
               </div>
             </div>
             <div className="rounded-2xl bg-white/90 p-4 shadow-lg backdrop-blur-sm">
               <div className="flex items-start gap-3">
-                <div className="h-9 w-9 animate-pulse rounded-xl bg-[#AEC7E2]/30" />
+                <div className="h-9 w-9 animate-pulse rounded-xl bg-background/30" />
                 <div className="flex-1 space-y-2">
-                  <div className="h-4 w-32 animate-pulse rounded bg-[#AEC7E2]/30" />
-                  <div className="h-3 w-full animate-pulse rounded bg-[#AEC7E2]/20" />
-                  <div className="h-3 w-full animate-pulse rounded bg-[#AEC7E2]/20" />
+                  <div className="h-4 w-32 animate-pulse rounded bg-background/30" />
+                  <div className="h-3 w-full animate-pulse rounded bg-background/20" />
+                  <div className="h-3 w-full animate-pulse rounded bg-background/20" />
                 </div>
               </div>
             </div>
@@ -532,10 +532,10 @@ export function ApplicationPage({ slug, catId }: ApplicationPageProps) {
                 title="Candidatura para adoção"
                 description={`Preencha com carinho para adotar ${catData.sex === 'female' ? 'a' : 'o'} ${catData.name}`}
               >
-                <div className="text-sm text-[#8B5A2B]/70">
+                <div className="text-sm text-muted-foreground/70">
                   <p>
                     A ONG analisará sua candidatura e entrará em contato. Campos
-                    com <span className="text-[#E35915]">*</span> são
+                    com <span className="text-primary">*</span> são
                     obrigatórios.
                   </p>
                 </div>
@@ -575,7 +575,7 @@ export function ApplicationPage({ slug, catId }: ApplicationPageProps) {
                 className={cn(
                   'sticky bottom-4 rounded-2xl p-4',
                   'bg-white/95 shadow-lg backdrop-blur-sm',
-                  'border border-[#AEC7E2]/30'
+                  'border border-background/30'
                 )}
               >
                 <Button
@@ -588,9 +588,9 @@ export function ApplicationPage({ slug, catId }: ApplicationPageProps) {
                   }}
                   className={cn(
                     'h-12 w-full rounded-xl text-base font-semibold',
-                    'bg-gradient-to-r from-[#E35915] to-[#F07B3D]',
-                    'shadow-lg shadow-[#E35915]/25 transition-all duration-200',
-                    'hover:shadow-xl hover:shadow-[#E35915]/35 hover:brightness-110',
+                    'bg-gradient-to-r from-primary to-accent',
+                    'shadow-lg shadow-primary/25 transition-all duration-200',
+                    'hover:shadow-xl hover:shadow-primary/35 hover:brightness-110',
                     'active:scale-[0.99]'
                   )}
                 >

@@ -41,17 +41,17 @@ export function ApplicationSheetHeader({
     <div
       className={cn(
         'relative overflow-hidden rounded-2xl',
-        'bg-gradient-to-br from-white/90 via-white to-[#AEC7E2]/25',
+        'bg-gradient-to-br from-white/90 via-white to-muted/25',
         'border border-white/60',
         'p-4 backdrop-blur-sm',
-        'shadow-lg shadow-[#783201]/5',
+        'shadow-lg shadow-foreground/5',
         'animate-fade-in',
         className
       )}
     >
       {/* Decorative background pattern */}
       <div
-        className="pointer-events-none absolute -top-4 -right-4 h-24 w-24 rounded-full bg-gradient-to-br from-[#E35915]/10 to-transparent blur-2xl"
+        className="pointer-events-none absolute -top-4 -right-4 h-24 w-24 rounded-full bg-gradient-to-br from-primary/10 to-transparent blur-2xl"
         aria-hidden="true"
       />
 
@@ -60,7 +60,7 @@ export function ApplicationSheetHeader({
         <div className="relative shrink-0">
           {/* Glow effect behind photo */}
           <div
-            className="absolute inset-0 rounded-2xl bg-gradient-to-br from-[#E35915]/20 to-[#AEC7E2]/30 blur-md"
+            className="absolute inset-0 rounded-2xl bg-gradient-to-br from-primary/20 to-muted/30 blur-md"
             aria-hidden="true"
           />
 
@@ -68,7 +68,7 @@ export function ApplicationSheetHeader({
             className={cn(
               'relative h-20 w-20 overflow-hidden rounded-2xl',
               'ring-4 ring-white/80',
-              'shadow-xl shadow-[#783201]/10',
+              'shadow-xl shadow-foreground/10',
               'transition-transform duration-300 hover:scale-105'
             )}
           >
@@ -80,8 +80,8 @@ export function ApplicationSheetHeader({
                 loading="lazy"
               />
             ) : (
-              <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#AEC7E2]/40 to-[#AEC7E2]/20">
-                <Cat className="h-9 w-9 text-[#8B5A2B]/40" />
+              <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-muted/40 to-muted/20">
+                <Cat className="h-9 w-9 text-muted-foreground/40" />
               </div>
             )}
           </div>
@@ -91,9 +91,9 @@ export function ApplicationSheetHeader({
             className={cn(
               'absolute -right-1 -bottom-1',
               'flex h-7 w-7 items-center justify-center rounded-full',
-              'bg-gradient-to-br from-[#E35915] to-[#F07B3D]',
+              'bg-gradient-to-br from-primary to-accent',
               'ring-2 ring-white',
-              'shadow-lg shadow-[#E35915]/30'
+              'shadow-lg shadow-primary/30'
             )}
           >
             <Heart className="h-3.5 w-3.5 fill-white text-white" />
@@ -105,7 +105,7 @@ export function ApplicationSheetHeader({
           {/* Name + Status */}
           <div className="flex flex-wrap items-center gap-2">
             <h3
-              className="truncate text-xl font-bold text-[#783201] sm:text-2xl"
+              className="truncate text-xl font-bold text-foreground sm:text-2xl"
               style={{ fontFamily: 'var(--font-display)' }}
             >
               {cat.name}
@@ -147,15 +147,15 @@ export function ApplicationSheetHeader({
           </div>
 
           {/* Age */}
-          <p className="text-sm text-[#8B5A2B]/70">
+          <p className="text-sm text-muted-foreground/70">
             {formatAge(cat.ageYears, cat.ageMonths)}
           </p>
         </div>
       </div>
 
       {/* Encouraging message */}
-      <div className="mt-3 rounded-xl bg-[#E35915]/5 px-3 py-2">
-        <p className="text-center text-xs font-medium text-[#783201]/80">
+      <div className="mt-3 rounded-xl bg-primary/5 px-3 py-2">
+        <p className="text-center text-xs font-medium text-foreground/80">
           {cat.sex === 'female' ? 'Ela' : 'Ele'} está esperando por você
         </p>
       </div>

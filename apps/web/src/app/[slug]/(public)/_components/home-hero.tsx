@@ -31,14 +31,14 @@ export function HomeHero({ slug }: HomeHeroProps) {
                 'inline-flex items-center gap-2 rounded-full px-4 py-2',
                 'bg-white/60 backdrop-blur-sm',
                 'border border-white/50',
-                'shadow-lg shadow-[#783201]/5'
+                'shadow-lg shadow-foreground/5'
               )}
             >
               <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#E35915] opacity-75" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-[#E35915]" />
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
               </span>
-              <span className="text-sm font-semibold text-[#783201]">
+              <span className="text-sm font-semibold text-foreground">
                 Adoção com carinho e responsabilidade
               </span>
             </div>
@@ -46,12 +46,17 @@ export function HomeHero({ slug }: HomeHeroProps) {
             {/* Headline */}
             <div className="space-y-4">
               <h1
-                className="text-4xl leading-[1.1] font-bold tracking-tight text-[#783201] sm:text-5xl lg:text-6xl"
+                className="text-4xl leading-[1.1] font-bold tracking-tight text-foreground sm:text-5xl lg:text-6xl"
                 style={{ fontFamily: 'var(--font-display)' }}
               >
                 Encontre seu novo{' '}
                 <span className="relative inline-block">
-                  <span className="relative z-10 bg-gradient-to-r from-[#E35915] to-[#F07B3D] bg-clip-text text-transparent">
+                  <span
+                    className="relative z-10 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent"
+                    style={{
+                      backgroundImage: `linear-gradient(to right, var(--theme-primary), var(--theme-accent))`,
+                    }}
+                  >
                     melhor amigo
                   </span>
                   <svg
@@ -73,15 +78,18 @@ export function HomeHero({ slug }: HomeHeroProps) {
                         x2="200"
                         y2="0"
                       >
-                        <stop stopColor="#E35915" stopOpacity="0.4" />
+                        <stop
+                          stopColor="var(--theme-primary)"
+                          stopOpacity="0.4"
+                        />
                         <stop
                           offset="0.5"
-                          stopColor="#F07B3D"
+                          stopColor="var(--theme-accent)"
                           stopOpacity="0.6"
                         />
                         <stop
                           offset="1"
-                          stopColor="#E35915"
+                          stopColor="var(--theme-primary)"
                           stopOpacity="0.4"
                         />
                       </linearGradient>
@@ -89,7 +97,7 @@ export function HomeHero({ slug }: HomeHeroProps) {
                   </svg>
                 </span>
               </h1>
-              <p className="max-w-xl text-lg leading-relaxed text-[#783201]/80 sm:text-xl">
+              <p className="max-w-xl text-lg leading-relaxed text-foreground/80 sm:text-xl">
                 Conheça os gatinhos disponíveis, veja o perfil completo de cada
                 um e envie sua candidatura de forma simples.
               </p>
@@ -102,10 +110,10 @@ export function HomeHero({ slug }: HomeHeroProps) {
                 size="lg"
                 className={cn(
                   'group relative h-14 rounded-2xl px-8 text-base',
-                  'bg-gradient-to-r from-[#E35915] to-[#F07B3D]',
-                  'shadow-xl shadow-[#E35915]/30',
+                  'bg-gradient-to-r from-primary to-accent',
+                  'shadow-xl shadow-primary/30',
                   'transition-all duration-300',
-                  'hover:shadow-2xl hover:shadow-[#E35915]/40',
+                  'hover:shadow-2xl hover:shadow-primary/40',
                   'hover:scale-[1.02] active:scale-[0.98]'
                 )}
               >
@@ -121,7 +129,7 @@ export function HomeHero({ slug }: HomeHeroProps) {
                 size="lg"
                 className={cn(
                   'h-14 rounded-2xl px-8 text-base',
-                  'border-2 border-white/50 bg-white/40 text-[#783201]',
+                  'border-2 border-white/50 bg-white/40 text-foreground',
                   'backdrop-blur-sm',
                   'hover:border-white/70 hover:bg-white/60',
                   'transition-all duration-200'
@@ -141,7 +149,7 @@ export function HomeHero({ slug }: HomeHeroProps) {
                   className="inline-flex items-center gap-2 rounded-full bg-white/70 px-3 py-1.5 text-sm shadow-sm backdrop-blur-sm"
                 >
                   <span>{item.icon}</span>
-                  <span className="text-[#783201]/80">{item.text}</span>
+                  <span className="text-foreground/80">{item.text}</span>
                 </div>
               ))}
             </div>
@@ -155,23 +163,23 @@ export function HomeHero({ slug }: HomeHeroProps) {
             <div
               className={cn(
                 'relative rounded-3xl p-1',
-                'bg-gradient-to-br from-white/80 via-white/60 to-[#E35915]/20'
+                'bg-gradient-to-br from-white/80 via-white/60 to-primary/20'
               )}
             >
-              <div className="rounded-[22px] bg-white/90 p-6 shadow-xl shadow-[#783201]/10 backdrop-blur-sm sm:p-8">
+              <div className="rounded-[22px] bg-white/90 p-6 shadow-xl shadow-foreground/10 backdrop-blur-sm sm:p-8">
                 {/* Header */}
                 <div className="mb-6 flex items-center gap-3">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[#16A34A] to-[#22C55E] shadow-lg shadow-[#16A34A]/25">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-success to-[#22C55E] shadow-lg shadow-success/25">
                     <Heart className="h-6 w-6 text-white" />
                   </div>
                   <div>
                     <p
-                      className="font-semibold text-[#783201]"
+                      className="font-semibold text-foreground"
                       style={{ fontFamily: 'var(--font-display)' }}
                     >
                       Processo seguro
                     </p>
-                    <p className="text-sm text-[#8B5A2B]/70">
+                    <p className="text-sm text-muted-foreground/70">
                       Adoção responsável
                     </p>
                   </div>
@@ -184,14 +192,14 @@ export function HomeHero({ slug }: HomeHeroProps) {
                       key={item.text}
                       className={cn(
                         'flex items-center gap-4 rounded-2xl p-4',
-                        'bg-gradient-to-r from-[#AEC7E2]/30 to-white',
-                        'border border-[#AEC7E2]/30',
+                        'bg-gradient-to-r from-background/30 to-white',
+                        'border border-background/30',
                         'transform transition-all duration-300 hover:scale-[1.02] hover:shadow-md'
                       )}
                       style={{ animationDelay: `${index * 100}ms` }}
                     >
                       <span className="text-2xl">{item.icon}</span>
-                      <p className="font-medium text-[#783201]">{item.text}</p>
+                      <p className="font-medium text-foreground">{item.text}</p>
                     </div>
                   ))}
                 </div>

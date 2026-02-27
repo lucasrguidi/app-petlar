@@ -70,7 +70,7 @@ function formatTestResult(result: 'positive' | 'negative' | 'not_tested'): {
     return { text: 'Positivo', color: 'text-amber-600' }
   if (result === 'negative')
     return { text: 'Negativo', color: 'text-emerald-600' }
-  return { text: 'Não testado', color: 'text-[#8B5A2B]/60' }
+  return { text: 'Não testado', color: 'text-muted-foreground/60' }
 }
 
 function HealthBadge({
@@ -88,14 +88,14 @@ function HealthBadge({
         'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1',
         value
           ? 'bg-emerald-100 text-emerald-700'
-          : 'bg-[#AEC7E2]/40 text-[#8B5A2B]/60'
+          : 'bg-background/40 text-muted-foreground/60'
       )}
     >
       <Icon className="h-3 w-3" />
       <span
         className={cn(
           'text-[11px] font-medium',
-          !value && 'line-through decoration-[#8B5A2B]/40'
+          !value && 'line-through decoration-muted-foreground/40'
         )}
       >
         {label}
@@ -151,15 +151,15 @@ export function PublicCatCard({ cat }: PublicCatCardProps) {
       className={cn(
         'group relative flex h-full flex-col overflow-hidden rounded-3xl',
         'bg-white/90 backdrop-blur-sm',
-        'shadow-xl shadow-[#783201]/5 transition-all duration-300',
-        'hover:shadow-2xl hover:shadow-[#E35915]/10',
+        'shadow-xl shadow-foreground/5 transition-all duration-300',
+        'hover:shadow-2xl hover:shadow-primary/10',
         'hover:-translate-y-1'
       )}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
       {/* Photo area */}
-      <div className="relative h-56 overflow-hidden bg-gradient-to-br from-[#AEC7E2]/30 to-white sm:h-60">
+      <div className="relative h-56 overflow-hidden bg-gradient-to-br from-background/30 to-white sm:h-60">
         {currentPhoto ? (
           <>
             {/* Blurred background */}
@@ -185,7 +185,7 @@ export function PublicCatCard({ cat }: PublicCatCardProps) {
           </>
         ) : (
           <div className="flex h-full items-center justify-center">
-            <div className="flex flex-col items-center gap-2 text-[#8B5A2B]/40">
+            <div className="flex flex-col items-center gap-2 text-muted-foreground/40">
               <Cat className="h-12 w-12" />
               <span className="text-sm">Sem foto</span>
             </div>
@@ -247,7 +247,7 @@ export function PublicCatCard({ cat }: PublicCatCardProps) {
                 className="flex h-8 w-8 items-center justify-center rounded-full bg-white/90 shadow-lg transition-transform hover:scale-110"
                 aria-label="Foto anterior"
               >
-                <ChevronLeft className="h-4 w-4 text-[#783201]" />
+                <ChevronLeft className="h-4 w-4 text-foreground" />
               </button>
 
               <div className="flex items-center gap-1.5">
@@ -278,7 +278,7 @@ export function PublicCatCard({ cat }: PublicCatCardProps) {
                 className="flex h-8 w-8 items-center justify-center rounded-full bg-white/90 shadow-lg transition-transform hover:scale-110"
                 aria-label="Próxima foto"
               >
-                <ChevronRight className="h-4 w-4 text-[#783201]" />
+                <ChevronRight className="h-4 w-4 text-foreground" />
               </button>
             </div>
           </>
@@ -290,12 +290,12 @@ export function PublicCatCard({ cat }: PublicCatCardProps) {
         {/* Header */}
         <div>
           <h3
-            className="text-xl font-bold text-[#783201]"
+            className="text-xl font-bold text-foreground"
             style={{ fontFamily: 'var(--font-display)' }}
           >
             {cat.name}
           </h3>
-          <p className="text-sm text-[#8B5A2B]/70">
+          <p className="text-sm text-muted-foreground/70">
             {formatAge(cat.ageYears, cat.ageMonths)}
           </p>
         </div>
@@ -304,7 +304,7 @@ export function PublicCatCard({ cat }: PublicCatCardProps) {
         <div className="space-y-1.5">
           <p
             className={cn(
-              'text-sm leading-relaxed text-[#783201]/80',
+              'text-sm leading-relaxed text-foreground/80',
               !expandedDescription && canExpandDescription && 'line-clamp-2'
             )}
           >
@@ -314,7 +314,7 @@ export function PublicCatCard({ cat }: PublicCatCardProps) {
             <button
               type="button"
               onClick={() => setExpandedDescription(!expandedDescription)}
-              className="text-xs font-semibold text-[#E35915] hover:underline"
+              className="text-xs font-semibold text-primary hover:underline"
             >
               {expandedDescription ? 'Ver menos' : 'Ver mais'}
             </button>
@@ -325,21 +325,21 @@ export function PublicCatCard({ cat }: PublicCatCardProps) {
         <div
           className={cn(
             'space-y-3 rounded-2xl p-4',
-            'bg-gradient-to-br from-[#AEC7E2]/20 to-white',
-            'border border-[#AEC7E2]/30'
+            'bg-gradient-to-br from-background/20 to-white',
+            'border border-background/30'
           )}
         >
           {/* Test results */}
           <div className="flex items-center gap-4 text-xs">
             <div className="flex items-center gap-1.5">
-              <span className="font-medium text-[#8B5A2B]/60">FIV:</span>
+              <span className="font-medium text-muted-foreground/60">FIV:</span>
               <span className={cn('font-semibold', fivResult.color)}>
                 {fivResult.text}
               </span>
             </div>
-            <div className="h-3 w-px bg-[#AEC7E2]/50" />
+            <div className="h-3 w-px bg-background/50" />
             <div className="flex items-center gap-1.5">
-              <span className="font-medium text-[#8B5A2B]/60">FeLV:</span>
+              <span className="font-medium text-muted-foreground/60">FeLV:</span>
               <span className={cn('font-semibold', felvResult.color)}>
                 {felvResult.text}
               </span>
@@ -363,7 +363,7 @@ export function PublicCatCard({ cat }: PublicCatCardProps) {
 
           {/* Health notes */}
           {(cat.vaccinationNotes || cat.dewormingNotes) && (
-            <p className="border-t border-[#AEC7E2]/30 pt-2 text-xs leading-relaxed text-[#8B5A2B]/60">
+            <p className="border-t border-background/30 pt-2 text-xs leading-relaxed text-muted-foreground/60">
               {cat.vaccinationNotes && (
                 <span>Vacinação: {cat.vaccinationNotes}</span>
               )}
@@ -380,10 +380,10 @@ export function PublicCatCard({ cat }: PublicCatCardProps) {
           asChild
           className={cn(
             'mt-auto h-12 w-full rounded-2xl text-base',
-            'bg-gradient-to-r from-[#E35915] to-[#F07B3D]',
-            'shadow-lg shadow-[#E35915]/20',
+            'bg-gradient-to-r from-primary to-accent',
+            'shadow-lg shadow-primary/20',
             'transition-all duration-200',
-            'hover:shadow-xl hover:shadow-[#E35915]/30',
+            'hover:shadow-xl hover:shadow-primary/30',
             'hover:scale-[1.01] active:scale-[0.99]'
           )}
         >

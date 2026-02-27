@@ -11,7 +11,9 @@ interface CandidaturaPageProps {
   params: Promise<{ slug: string; catId: string }>
 }
 
-export default async function CandidaturaPage({ params }: CandidaturaPageProps) {
+export default async function CandidaturaPage({
+  params,
+}: CandidaturaPageProps) {
   const { slug, catId } = await params
 
   const org = await getOrgBySlug(slug)
@@ -25,7 +27,7 @@ export default async function CandidaturaPage({ params }: CandidaturaPageProps) 
         {/* Back navigation */}
         <Link
           href={`/${slug}` as Route}
-          className="group inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-[#783201]/80 transition-all hover:bg-white/50 hover:text-[#783201]"
+          className="group inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-foreground/80 transition-all hover:bg-white/50 hover:text-foreground"
         >
           <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
           Voltar aos gatos

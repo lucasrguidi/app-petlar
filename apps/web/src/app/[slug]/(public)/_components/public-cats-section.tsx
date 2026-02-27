@@ -65,15 +65,15 @@ function LoadingGrid() {
           className="overflow-hidden rounded-3xl bg-white/80 shadow-lg backdrop-blur-sm"
           style={{ animationDelay: `${index * 100}ms` }}
         >
-          <div className="h-56 animate-pulse bg-gradient-to-br from-[#AEC7E2]/40 to-white" />
+          <div className="h-56 animate-pulse bg-gradient-to-br from-background/40 to-white" />
           <div className="space-y-3 p-5">
-            <div className="h-6 w-2/3 animate-pulse rounded-lg bg-[#AEC7E2]/30" />
-            <div className="h-4 w-1/2 animate-pulse rounded-lg bg-[#AEC7E2]/20" />
+            <div className="h-6 w-2/3 animate-pulse rounded-lg bg-background/30" />
+            <div className="h-4 w-1/2 animate-pulse rounded-lg bg-background/20" />
             <div className="grid grid-cols-2 gap-2">
-              <div className="h-10 animate-pulse rounded-xl bg-[#AEC7E2]/20" />
-              <div className="h-10 animate-pulse rounded-xl bg-[#AEC7E2]/20" />
+              <div className="h-10 animate-pulse rounded-xl bg-background/20" />
+              <div className="h-10 animate-pulse rounded-xl bg-background/20" />
             </div>
-            <div className="h-12 animate-pulse rounded-xl bg-[#E35915]/10" />
+            <div className="h-12 animate-pulse rounded-xl bg-primary/10" />
           </div>
         </div>
       ))}
@@ -84,16 +84,16 @@ function LoadingGrid() {
 function EmptyState({ onClearFilters }: { onClearFilters: () => void }) {
   return (
     <div className="rounded-3xl bg-white/80 py-16 text-center shadow-lg backdrop-blur-sm">
-      <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-[#AEC7E2]/50 to-[#E35915]/20">
-        <PawPrint className="h-10 w-10 text-[#E35915]" />
+      <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-background/50 to-primary/20">
+        <PawPrint className="h-10 w-10 text-primary" />
       </div>
       <h3
-        className="mb-2 text-2xl font-bold text-[#783201]"
+        className="mb-2 text-2xl font-bold text-foreground"
         style={{ fontFamily: 'var(--font-display)' }}
       >
         Nenhum gatinho encontrado
       </h3>
-      <p className="mx-auto mb-6 max-w-md text-[#783201]/80">
+      <p className="mx-auto mb-6 max-w-md text-foreground/80">
         Não encontramos gatinhos com os filtros escolhidos. Que tal limpar os
         filtros para ver todos os disponíveis?
       </p>
@@ -101,8 +101,8 @@ function EmptyState({ onClearFilters }: { onClearFilters: () => void }) {
         onClick={onClearFilters}
         className={cn(
           'rounded-xl px-6',
-          'bg-gradient-to-r from-[#E35915] to-[#F07B3D]',
-          'shadow-lg shadow-[#E35915]/25'
+          'bg-gradient-to-r from-primary to-accent',
+          'shadow-lg shadow-primary/25'
         )}
       >
         <Sparkles className="mr-2 h-4 w-4" />
@@ -197,18 +197,18 @@ export function PublicCatsSection() {
         {/* Header */}
         <div className="space-y-4">
           <div className="inline-flex items-center gap-2 rounded-full bg-white/60 px-4 py-2 backdrop-blur-sm">
-            <PawPrint className="h-4 w-4 text-[#E35915]" />
-            <span className="text-sm font-semibold text-[#783201]">
+            <PawPrint className="h-4 w-4 text-primary" />
+            <span className="text-sm font-semibold text-foreground">
               Vitrine de adoção
             </span>
           </div>
           <h2
-            className="text-3xl font-bold tracking-tight text-[#783201] sm:text-4xl lg:text-5xl"
+            className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl lg:text-5xl"
             style={{ fontFamily: 'var(--font-display)' }}
           >
             Gatinhos esperando um lar
           </h2>
-          <p className="max-w-2xl text-lg text-[#783201]/80">
+          <p className="max-w-2xl text-lg text-foreground/80">
             Cada gatinho tem sua história. Encontre aquele que vai fazer parte
             da sua.
           </p>
@@ -220,14 +220,14 @@ export function PublicCatsSection() {
             'rounded-2xl p-4 sm:p-5',
             'bg-white/70 backdrop-blur-sm',
             'border border-white/50',
-            'shadow-lg shadow-[#783201]/5'
+            'shadow-lg shadow-foreground/5'
           )}
         >
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
             <div className="flex flex-1 flex-col gap-4 sm:flex-row">
               {/* Sex filter */}
               <div className="flex-1 space-y-1.5">
-                <label className="text-xs font-semibold tracking-wide text-[#783201]/60 uppercase">
+                <label className="text-xs font-semibold tracking-wide text-foreground/60 uppercase">
                   Sexo
                 </label>
                 <Select
@@ -241,9 +241,9 @@ export function PublicCatsSection() {
                 >
                   <SelectTrigger
                     className={cn(
-                      'h-12 rounded-xl border-[#AEC7E2]/50 bg-white/80',
-                      'text-[#783201]',
-                      'transition-all focus:border-[#E35915]/30 focus:ring-[#E35915]/20'
+                      'h-12 rounded-xl border-background/50 bg-white/80',
+                      'text-foreground',
+                      'transition-all focus:border-primary/30 focus:ring-primary/20'
                     )}
                   >
                     <SelectValue placeholder="Todos" />
@@ -267,7 +267,7 @@ export function PublicCatsSection() {
 
               {/* Age filter */}
               <div className="flex-1 space-y-1.5">
-                <label className="text-xs font-semibold tracking-wide text-[#783201]/60 uppercase">
+                <label className="text-xs font-semibold tracking-wide text-foreground/60 uppercase">
                   Faixa etária
                 </label>
                 <Select
@@ -282,9 +282,9 @@ export function PublicCatsSection() {
                 >
                   <SelectTrigger
                     className={cn(
-                      'h-12 rounded-xl border-[#AEC7E2]/50 bg-white/80',
-                      'text-[#783201]',
-                      'transition-all focus:border-[#E35915]/30 focus:ring-[#E35915]/20'
+                      'h-12 rounded-xl border-background/50 bg-white/80',
+                      'text-foreground',
+                      'transition-all focus:border-primary/30 focus:ring-primary/20'
                     )}
                   >
                     <SelectValue placeholder="Todas as idades" />
@@ -313,7 +313,7 @@ export function PublicCatsSection() {
                 variant="ghost"
                 onClick={clearFilters}
                 disabled={isPending}
-                className="h-12 rounded-xl text-[#783201]/70 hover:bg-[#AEC7E2]/30 hover:text-[#783201]"
+                className="h-12 rounded-xl text-foreground/70 hover:bg-background/30 hover:text-foreground"
               >
                 <X className="mr-1.5 h-4 w-4" />
                 Limpar filtros
@@ -323,11 +323,11 @@ export function PublicCatsSection() {
 
           {/* Active filters chips */}
           {hasActiveFilters && (
-            <div className="mt-4 flex flex-wrap gap-2 border-t border-[#AEC7E2]/30 pt-4">
+            <div className="mt-4 flex flex-wrap gap-2 border-t border-background/30 pt-4">
               {filters.sex && (
                 <button
                   onClick={() => updateFilters({ sex: undefined })}
-                  className="inline-flex items-center gap-1.5 rounded-full bg-[#E35915]/10 px-3 py-1.5 text-sm font-medium text-[#E35915] transition-colors hover:bg-[#E35915]/20"
+                  className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1.5 text-sm font-medium text-primary transition-colors hover:bg-primary/20"
                 >
                   {SEX_OPTIONS.find((o) => o.value === filters.sex)?.emoji}{' '}
                   {SEX_OPTIONS.find((o) => o.value === filters.sex)?.label}
@@ -337,7 +337,7 @@ export function PublicCatsSection() {
               {filters.ageRange && (
                 <button
                   onClick={() => updateFilters({ ageRange: undefined })}
-                  className="inline-flex items-center gap-1.5 rounded-full bg-[#E35915]/10 px-3 py-1.5 text-sm font-medium text-[#E35915] transition-colors hover:bg-[#E35915]/20"
+                  className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1.5 text-sm font-medium text-primary transition-colors hover:bg-primary/20"
                 >
                   {AGE_OPTIONS.find((o) => o.value === filters.ageRange)?.emoji}{' '}
                   {AGE_OPTIONS.find((o) => o.value === filters.ageRange)?.label}
@@ -385,12 +385,12 @@ export function PublicCatsSection() {
                 'border border-white/50'
               )}
             >
-              <p className="inline-flex items-center gap-2 text-sm font-medium text-[#783201]">
-                <PawPrint className="h-4 w-4 text-[#E35915]" />
+              <p className="inline-flex items-center gap-2 text-sm font-medium text-foreground">
+                <PawPrint className="h-4 w-4 text-primary" />
                 {totalLabel}
               </p>
               {isFetching && (
-                <span className="inline-flex items-center gap-1.5 text-xs text-[#783201]/60">
+                <span className="inline-flex items-center gap-1.5 text-xs text-foreground/60">
                   <Loader2 className="h-3.5 w-3.5 animate-spin" />
                   Atualizando...
                 </span>

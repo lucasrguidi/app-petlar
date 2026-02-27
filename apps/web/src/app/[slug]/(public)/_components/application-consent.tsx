@@ -66,10 +66,10 @@ function ConsentCard({
         'w-full rounded-2xl p-4 text-left',
         'border-2 transition-all duration-200',
         'group cursor-pointer select-none',
-        'focus-visible:ring-2 focus-visible:ring-[#E35915]/30 focus-visible:ring-offset-2 focus-visible:outline-none',
+        'focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2 focus-visible:outline-none',
         checked
           ? 'border-emerald-300 bg-gradient-to-br from-emerald-50/80 to-white'
-          : 'border-[#AEC7E2]/40 bg-white/65 hover:border-[#AEC7E2]/60 hover:bg-white/80',
+          : 'border-muted/40 bg-white/65 hover:border-muted/60 hover:bg-white/80',
         hasError && !checked && 'border-red-300 bg-red-50/30',
         disabled && 'cursor-not-allowed opacity-60'
       )}
@@ -81,7 +81,7 @@ function ConsentCard({
             'shrink-0 rounded-xl p-3 transition-all duration-200',
             checked
               ? 'bg-emerald-100 text-emerald-600'
-              : 'bg-[#AEC7E2]/25 text-[#8B5A2B]/60 group-hover:bg-[#AEC7E2]/35'
+              : 'bg-muted/25 text-muted-foreground/60 group-hover:bg-muted/35'
           )}
         >
           {checked ? iconChecked : icon}
@@ -97,7 +97,7 @@ function ConsentCard({
                 'border-2 transition-all duration-200',
                 checked
                   ? 'border-emerald-500 bg-emerald-500'
-                  : 'border-[#AEC7E2] bg-white'
+                  : 'border-muted bg-white'
               )}
             >
               {checked && (
@@ -119,7 +119,7 @@ function ConsentCard({
             <span
               className={cn(
                 'text-sm font-semibold transition-colors',
-                checked ? 'text-emerald-700' : 'text-[#783201]'
+                checked ? 'text-emerald-700' : 'text-foreground'
               )}
             >
               {title}
@@ -128,7 +128,7 @@ function ConsentCard({
           <p
             className={cn(
               'mt-2 text-sm leading-relaxed',
-              checked ? 'text-emerald-700/80' : 'text-[#8B5A2B]/70'
+              checked ? 'text-emerald-700/80' : 'text-muted-foreground/70'
             )}
           >
             {description}
@@ -157,26 +157,26 @@ export function ApplicationConsent({
             'flex h-10 w-10 items-center justify-center rounded-xl transition-all duration-300',
             bothChecked
               ? 'bg-gradient-to-br from-emerald-100 to-emerald-50 ring-1 ring-emerald-200'
-              : 'bg-gradient-to-br from-[#AEC7E2]/30 to-[#AEC7E2]/10 ring-1 ring-[#AEC7E2]/40'
+              : 'bg-gradient-to-br from-muted/30 to-muted/10 ring-1 ring-muted/40'
           )}
         >
           {bothChecked ? (
             <ShieldCheck className="h-5 w-5 text-emerald-600" />
           ) : (
-            <Shield className="h-5 w-5 text-[#783201]/70" />
+            <Shield className="h-5 w-5 text-foreground/70" />
           )}
         </div>
         <div>
           <h4
             className={cn(
               'text-base font-semibold transition-colors',
-              bothChecked ? 'text-emerald-700' : 'text-[#783201]'
+              bothChecked ? 'text-emerald-700' : 'text-foreground'
             )}
             style={{ fontFamily: 'var(--font-display)' }}
           >
             {bothChecked ? 'Tudo certo!' : 'Quase lá!'}
           </h4>
-          <p className="text-sm text-[#8B5A2B]/70">
+          <p className="text-sm text-muted-foreground/70">
             {bothChecked
               ? 'Você autorizou os termos necessários'
               : 'Precisamos da sua autorização para continuar'}
@@ -241,7 +241,7 @@ export function ApplicationConsent({
 
       {/* Helper text */}
       {!bothChecked && (
-        <p className="text-center text-xs text-[#8B5A2B]/60">
+        <p className="text-center text-xs text-muted-foreground/60">
           Marque ambas as autorizações para enviar sua candidatura
         </p>
       )}

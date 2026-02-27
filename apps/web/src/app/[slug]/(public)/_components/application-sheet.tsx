@@ -469,8 +469,8 @@ export function ApplicationSheet({
       <SheetContent
         side="right"
         className={cn(
-          'w-full overflow-hidden border-l border-[#AEC7E2]/40 p-0',
-          'bg-gradient-to-b from-white via-white to-[#F0F7FF]',
+          'w-full overflow-hidden border-l border-background/40 p-0',
+          'bg-gradient-to-b from-white via-white to-muted/30',
           'rounded-l-2xl sm:max-w-lg',
           'flex flex-col'
         )}
@@ -478,17 +478,17 @@ export function ApplicationSheet({
         {/* Header */}
         <SheetHeader
           className={cn(
-            'shrink-0 space-y-1 border-b border-[#AEC7E2]/30 px-5 py-4 sm:px-6',
-            'bg-gradient-to-r from-white to-[#F8FBFF]'
+            'shrink-0 space-y-1 border-b border-background/30 px-5 py-4 sm:px-6',
+            'bg-gradient-to-r from-white to-muted/20'
           )}
         >
           <SheetTitle
-            className="text-xl font-bold text-[#783201] sm:text-2xl"
+            className="text-xl font-bold text-foreground sm:text-2xl"
             style={{ fontFamily: 'var(--font-display)' }}
           >
             Candidatura para adoção
           </SheetTitle>
-          <SheetDescription className="text-sm text-[#8B5A2B]/80">
+          <SheetDescription className="text-sm text-muted-foreground/80">
             {step === 'form'
               ? 'Preencha as informações com cuidado'
               : step === 'confirm'
@@ -500,7 +500,7 @@ export function ApplicationSheet({
         {/* Content */}
         <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
           {!cat ? (
-            <div className="px-6 py-8 text-sm text-[#8B5A2B]/80">
+            <div className="px-6 py-8 text-sm text-muted-foreground/80">
               Escolha um gatinho para iniciar a candidatura.
             </div>
           ) : formQuery.isLoading ? (
@@ -508,14 +508,14 @@ export function ApplicationSheet({
               <div
                 className={cn(
                   'flex h-12 w-12 items-center justify-center rounded-xl',
-                  'bg-[#E35915]/10'
+                  'bg-primary/10'
                 )}
               >
-                <Loader2 className="h-6 w-6 animate-spin text-[#E35915]" />
+                <Loader2 className="h-6 w-6 animate-spin text-primary" />
               </div>
               <div>
-                <p className="font-medium text-[#783201]">Carregando...</p>
-                <p className="text-sm text-[#8B5A2B]/70">
+                <p className="font-medium text-foreground">Carregando...</p>
+                <p className="text-sm text-muted-foreground/70">
                   Preparando o formulário
                 </p>
               </div>
@@ -588,8 +588,8 @@ export function ApplicationSheet({
                 {/* Stepper */}
                 <div
                   className={cn(
-                    'shrink-0 border-b border-[#AEC7E2]/25 px-5 py-4 sm:px-6',
-                    'bg-gradient-to-b from-[#F8FBFF] to-white'
+                    'shrink-0 border-b border-background/25 px-5 py-4 sm:px-6',
+                    'bg-gradient-to-b from-muted/20 to-white'
                   )}
                 >
                   <ApplicationStepper
@@ -649,7 +649,7 @@ export function ApplicationSheet({
                 {/* Footer with navigation */}
                 <div
                   className={cn(
-                    'shrink-0 border-t border-[#AEC7E2]/30',
+                    'shrink-0 border-t border-background/30',
                     'bg-white/95 px-5 py-4 backdrop-blur-md sm:px-6'
                   )}
                 >
@@ -663,8 +663,8 @@ export function ApplicationSheet({
                         disabled={createMutation.isPending}
                         className={cn(
                           'h-12 rounded-xl px-4',
-                          'border-[#AEC7E2]/60 text-[#783201]',
-                          'hover:bg-[#AEC7E2]/15'
+                          'border-background/60 text-foreground',
+                          'hover:bg-background/15'
                         )}
                       >
                         <ArrowLeft className="mr-2 h-4 w-4" />
@@ -680,9 +680,9 @@ export function ApplicationSheet({
                         onClick={() => setConsentValidationAttempted(true)}
                         className={cn(
                           'h-12 flex-1 rounded-xl text-base font-semibold',
-                          'bg-gradient-to-r from-[#E35915] to-[#F07B3D]',
-                          'shadow-lg shadow-[#E35915]/25 transition-all duration-200',
-                          'hover:shadow-xl hover:shadow-[#E35915]/35 hover:brightness-110'
+                          'bg-gradient-to-r from-primary to-accent',
+                          'shadow-lg shadow-primary/25 transition-all duration-200',
+                          'hover:shadow-xl hover:shadow-primary/35 hover:brightness-110'
                         )}
                       >
                         {createMutation.isPending ? (
@@ -704,9 +704,9 @@ export function ApplicationSheet({
                         disabled={createMutation.isPending}
                         className={cn(
                           'h-12 flex-1 rounded-xl text-base font-semibold',
-                          'bg-gradient-to-r from-[#E35915] to-[#F07B3D]',
-                          'shadow-lg shadow-[#E35915]/25 transition-all duration-200',
-                          'hover:shadow-xl hover:shadow-[#E35915]/35 hover:brightness-110'
+                          'bg-gradient-to-r from-primary to-accent',
+                          'shadow-lg shadow-primary/25 transition-all duration-200',
+                          'hover:shadow-xl hover:shadow-primary/35 hover:brightness-110'
                         )}
                       >
                         Continuar

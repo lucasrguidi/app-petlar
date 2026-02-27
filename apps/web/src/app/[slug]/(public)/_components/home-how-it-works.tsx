@@ -19,9 +19,9 @@ const steps = [
     description:
       'Responda perguntas simples para que a ONG conheça melhor você e seu ambiente.',
     icon: FileText,
-    color: 'from-[#E35915] to-[#F07B3D]',
-    shadowColor: 'shadow-[#E35915]/25',
-    bgAccent: 'bg-[#E35915]/10',
+    color: 'from-primary to-accent',
+    shadowColor: 'shadow-primary/25',
+    bgAccent: 'bg-primary/10',
   },
   {
     step: 3,
@@ -51,17 +51,17 @@ export function HomeHowItWorks() {
         {/* Header */}
         <div className="mb-16 text-center">
           <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-white/60 px-4 py-2 backdrop-blur-sm">
-            <span className="text-sm font-medium text-[#783201]">
+            <span className="text-sm font-medium text-foreground">
               Simples e transparente
             </span>
           </div>
           <h2
-            className="mb-4 text-3xl font-bold tracking-tight text-[#783201] sm:text-4xl lg:text-5xl"
+            className="mb-4 text-3xl font-bold tracking-tight text-foreground sm:text-4xl lg:text-5xl"
             style={{ fontFamily: 'var(--font-display)' }}
           >
             Como funciona a adoção
           </h2>
-          <p className="mx-auto max-w-2xl text-lg text-[#783201]/80">
+          <p className="mx-auto max-w-2xl text-lg text-foreground/80">
             Um processo pensado para ser simples para você e seguro para os
             gatinhos.
           </p>
@@ -75,7 +75,7 @@ export function HomeHowItWorks() {
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/60 to-transparent" />
               {/* Animated dots */}
               <div className="absolute top-1/2 left-[16%] h-2.5 w-2.5 -translate-y-1/2 rounded-full bg-[#3B82F6] shadow-lg shadow-[#3B82F6]/50" />
-              <div className="absolute top-1/2 left-1/2 h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#E35915] shadow-lg shadow-[#E35915]/50" />
+              <div className="absolute top-1/2 left-1/2 h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary shadow-lg shadow-primary/50" />
               <div className="absolute top-1/2 right-[16%] h-2.5 w-2.5 -translate-y-1/2 rounded-full bg-[#16A34A] shadow-lg shadow-[#16A34A]/50" />
             </div>
           </div>
@@ -97,7 +97,7 @@ export function HomeHowItWorks() {
                     'bg-white/80 backdrop-blur-sm',
                     'border border-white/50',
                     'p-8',
-                    'shadow-xl shadow-[#783201]/5 transition-shadow duration-300',
+                    'shadow-xl shadow-foreground/5 transition-shadow duration-300',
                     'group-hover:shadow-2xl'
                   )}
                 >
@@ -136,12 +136,12 @@ export function HomeHowItWorks() {
                   {/* Content */}
                   <div className="relative">
                     <h3
-                      className="mb-3 text-xl font-bold text-[#783201]"
+                      className="mb-3 text-xl font-bold text-foreground"
                       style={{ fontFamily: 'var(--font-display)' }}
                     >
                       {step.title}
                     </h3>
-                    <p className="leading-relaxed text-[#783201]/80">
+                    <p className="leading-relaxed text-foreground/80">
                       {step.description}
                     </p>
                   </div>
@@ -149,9 +149,9 @@ export function HomeHowItWorks() {
                   {/* Arrow indicator - mobile */}
                   {index < steps.length - 1 && (
                     <div className="mt-6 flex justify-center lg:hidden">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#AEC7E2]/30">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-background/30">
                         <svg
-                          className="h-4 w-4 text-[#783201]/40"
+                          className="h-4 w-4 text-foreground/40"
                           fill="none"
                           viewBox="0 0 24 24"
                           stroke="currentColor"
@@ -174,11 +174,11 @@ export function HomeHowItWorks() {
 
         {/* Bottom CTA */}
         <div className="mt-16 text-center">
-          <p className="mb-2 text-sm font-medium text-[#783201]/60">
+          <p className="mb-2 text-sm font-medium text-foreground/60">
             Pronto para começar?
           </p>
           <p
-            className="text-2xl font-bold text-[#783201]"
+            className="text-2xl font-bold text-foreground"
             style={{ fontFamily: 'var(--font-display)' }}
           >
             Veja os gatinhos disponíveis abaixo{' '}

@@ -86,15 +86,15 @@ export default async function PublicLayout({
   }
 
   return (
-    <div className="relative min-h-screen bg-[#AEC7E2]">
-      {/* Gradient overlays for depth */}
+    <div className="bg-background relative min-h-screen">
+      {/* Gradient overlays for depth - uses theme colors */}
       <div className="pointer-events-none fixed inset-0">
         {/* Warm accent top-left */}
         <div
           className="absolute -top-[20%] -left-[10%] h-[600px] w-[600px] rounded-full opacity-60 blur-3xl"
           style={{
             background:
-              'radial-gradient(circle, rgba(227,89,21,0.15) 0%, rgba(240,123,61,0.1) 40%, transparent 70%)',
+              'radial-gradient(circle, color-mix(in srgb, var(--theme-primary) 15%, transparent) 0%, color-mix(in srgb, var(--theme-accent) 10%, transparent) 40%, transparent 70%)',
           }}
         />
         {/* Light center area */}
@@ -110,7 +110,7 @@ export default async function PublicLayout({
           className="absolute -right-[10%] -bottom-[10%] h-[500px] w-[500px] rounded-full opacity-50 blur-3xl"
           style={{
             background:
-              'radial-gradient(circle, rgba(227,89,21,0.12) 0%, rgba(174,199,226,0.3) 50%, transparent 70%)',
+              'radial-gradient(circle, color-mix(in srgb, var(--theme-primary) 12%, transparent) 0%, color-mix(in srgb, var(--theme-background) 30%, transparent) 50%, transparent 70%)',
           }}
         />
       </div>
@@ -119,7 +119,7 @@ export default async function PublicLayout({
       <div
         className="pointer-events-none fixed inset-0 opacity-[0.03]"
         style={{
-          backgroundImage: `radial-gradient(circle at 1px 1px, #783201 1px, transparent 0)`,
+          backgroundImage: `radial-gradient(circle at 1px 1px, var(--theme-foreground) 1px, transparent 0)`,
           backgroundSize: '32px 32px',
         }}
       />

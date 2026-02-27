@@ -48,11 +48,11 @@ export function ApplicationSuccess({
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
           {/* Gradient orbs */}
           <div className="absolute -top-20 -right-20 h-64 w-64 rounded-full bg-gradient-to-br from-emerald-200/30 to-transparent blur-3xl" />
-          <div className="absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-gradient-to-tr from-[#AEC7E2]/30 to-transparent blur-3xl" />
+          <div className="absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-gradient-to-tr from-muted/30 to-transparent blur-3xl" />
 
           {/* Floating hearts decoration */}
           <div className="absolute top-8 right-12 animate-pulse">
-            <Heart className="h-4 w-4 fill-[#E35915]/20 text-[#E35915]/30" />
+            <Heart className="h-4 w-4 fill-primary/20 text-primary/30" />
           </div>
           <div
             className="absolute top-16 right-24 animate-pulse"
@@ -81,7 +81,7 @@ export function ApplicationSuccess({
               <div
                 className={cn(
                   'relative h-24 w-24 overflow-hidden rounded-full',
-                  'ring-4 ring-white shadow-lg'
+                  'shadow-lg ring-4 ring-white'
                 )}
               >
                 {cat.photoUrl ? (
@@ -91,7 +91,7 @@ export function ApplicationSuccess({
                     className="h-full w-full object-cover"
                   />
                 ) : (
-                  <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#AEC7E2] to-[#AEC7E2]/70">
+                  <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-muted to-muted/70">
                     <Heart className="h-10 w-10 text-white" />
                   </div>
                 )}
@@ -100,7 +100,7 @@ export function ApplicationSuccess({
               {/* Check badge */}
               <div
                 className={cn(
-                  'absolute -bottom-1 -right-1',
+                  'absolute -right-1 -bottom-1',
                   'flex h-10 w-10 items-center justify-center rounded-full',
                   'bg-gradient-to-br from-emerald-400 to-emerald-500',
                   'shadow-lg shadow-emerald-500/30',
@@ -115,14 +115,14 @@ export function ApplicationSuccess({
           {/* Success message */}
           <div className="mb-8 text-center">
             <h2
-              className="mb-2 text-2xl font-bold text-[#783201] sm:text-3xl"
+              className="mb-2 text-2xl font-bold text-foreground sm:text-3xl"
               style={{ fontFamily: 'var(--font-display)' }}
             >
               Candidatura enviada!
             </h2>
-            <p className="text-lg text-[#8B5A2B]/80">
+            <p className="text-lg text-muted-foreground/80">
               Sua candidatura para adotar{' '}
-              <span className="font-semibold text-[#783201]">
+              <span className="font-semibold text-foreground">
                 {cat.sex === 'female' ? 'a ' : 'o '}
                 {cat.name}
               </span>{' '}
@@ -134,15 +134,15 @@ export function ApplicationSuccess({
           <div
             className={cn(
               'mb-8 rounded-2xl p-5',
-              'bg-gradient-to-br from-[#AEC7E2]/20 to-[#AEC7E2]/10',
-              'border border-[#AEC7E2]/30'
+              'bg-gradient-to-br from-muted/20 to-muted/10',
+              'border border-muted/30'
             )}
           >
             <h3
-              className="mb-4 flex items-center gap-2 text-base font-semibold text-[#783201]"
+              className="mb-4 flex items-center gap-2 text-base font-semibold text-foreground"
               style={{ fontFamily: 'var(--font-display)' }}
             >
-              <Sparkles className="h-4 w-4 text-[#E35915]" />
+              <Sparkles className="h-4 w-4 text-primary" />
               Próximos passos
             </h3>
 
@@ -151,18 +151,18 @@ export function ApplicationSuccess({
                 <div
                   className={cn(
                     'flex h-8 w-8 shrink-0 items-center justify-center rounded-full',
-                    'bg-white text-[#E35915] shadow-sm'
+                    'bg-white text-primary shadow-sm'
                   )}
                 >
                   <Mail className="h-4 w-4" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-[#783201]">
+                  <p className="text-sm font-medium text-foreground">
                     Confirmação por e-mail
                   </p>
-                  <p className="text-sm text-[#8B5A2B]/70">
+                  <p className="text-sm text-muted-foreground/70">
                     Enviamos um e-mail de confirmação para{' '}
-                    <span className="font-medium text-[#783201]">
+                    <span className="font-medium text-foreground">
                       {applicantEmail}
                     </span>
                   </p>
@@ -173,16 +173,16 @@ export function ApplicationSuccess({
                 <div
                   className={cn(
                     'flex h-8 w-8 shrink-0 items-center justify-center rounded-full',
-                    'bg-white text-[#E35915] shadow-sm'
+                    'bg-white text-primary shadow-sm'
                   )}
                 >
                   <Clock className="h-4 w-4" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-[#783201]">
+                  <p className="text-sm font-medium text-foreground">
                     Análise da ONG
                   </p>
-                  <p className="text-sm text-[#8B5A2B]/70">
+                  <p className="text-sm text-muted-foreground/70">
                     A equipe vai avaliar sua candidatura com carinho e atenção
                   </p>
                 </div>
@@ -192,16 +192,16 @@ export function ApplicationSuccess({
                 <div
                   className={cn(
                     'flex h-8 w-8 shrink-0 items-center justify-center rounded-full',
-                    'bg-white text-[#E35915] shadow-sm'
+                    'bg-white text-primary shadow-sm'
                   )}
                 >
                   <MessageCircle className="h-4 w-4" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-[#783201]">
+                  <p className="text-sm font-medium text-foreground">
                     Aguarde nosso contato
                   </p>
-                  <p className="text-sm text-[#8B5A2B]/70">
+                  <p className="text-sm text-muted-foreground/70">
                     Caso seja aprovado, entraremos em contato via WhatsApp ou
                     e-mail
                   </p>
@@ -214,13 +214,13 @@ export function ApplicationSuccess({
           <div
             className={cn(
               'mb-6 flex items-center gap-3 rounded-xl px-4 py-3',
-              'bg-gradient-to-r from-[#E35915]/5 to-[#F07B3D]/5',
-              'border border-[#E35915]/10'
+              'bg-gradient-to-r from-primary/5 to-accent/5',
+              'border border-primary/10'
             )}
           >
-            <Heart className="h-5 w-5 shrink-0 fill-[#E35915]/20 text-[#E35915]" />
-            <p className="text-sm text-[#783201]/80">
-              <span className="font-medium text-[#783201]">
+            <Heart className="h-5 w-5 shrink-0 fill-primary/20 text-primary" />
+            <p className="text-sm text-foreground/80">
+              <span className="font-medium text-foreground">
                 Obrigado por escolher adotar!
               </span>{' '}
               Cada candidatura é um passo importante para dar um lar a quem
@@ -234,10 +234,10 @@ export function ApplicationSuccess({
               asChild
               className={cn(
                 'h-12 rounded-xl px-6 text-base font-semibold',
-                'bg-gradient-to-r from-[#E35915] to-[#F07B3D]',
-                'shadow-lg shadow-[#E35915]/25',
+                'bg-gradient-to-r from-primary to-accent',
+                'shadow-lg shadow-primary/25',
                 'transition-all duration-200',
-                'hover:shadow-xl hover:shadow-[#E35915]/35 hover:brightness-110'
+                'hover:shadow-xl hover:shadow-primary/35 hover:brightness-110'
               )}
             >
               <Link href={`/${slug}` as Route}>
@@ -249,7 +249,7 @@ export function ApplicationSuccess({
         </div>
 
         {/* Bottom decorative bar */}
-        <div className="h-1.5 bg-gradient-to-r from-emerald-400 via-[#E35915] to-[#F07B3D]" />
+        <div className="h-1.5 bg-gradient-to-r from-emerald-400 via-primary to-accent" />
       </div>
     </div>
   )

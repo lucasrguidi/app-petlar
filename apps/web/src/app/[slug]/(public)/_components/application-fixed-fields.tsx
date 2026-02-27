@@ -32,7 +32,7 @@ interface IconInputProps {
 function IconInput({ icon, isValid, children }: IconInputProps) {
   return (
     <div className="relative">
-      <div className="pointer-events-none absolute top-1/2 left-4 z-10 -translate-y-1/2 text-[#783201]">
+      <div className="pointer-events-none absolute top-1/2 left-4 z-10 -translate-y-1/2 text-foreground">
         {icon}
       </div>
       {children}
@@ -47,11 +47,11 @@ function IconInput({ icon, isValid, children }: IconInputProps) {
 
 const baseInputClassName = cn(
   'h-12 rounded-xl pl-12 pr-4',
-  'border border-[#AEC7E2]',
+  'border border-muted',
   'bg-white/90 backdrop-blur-sm',
-  'text-[#783201] placeholder:text-[#8B5A2B]/45',
+  'text-foreground placeholder:text-muted-foreground/45',
   'transition-all duration-200',
-  'focus-visible:border-[#E35915] focus-visible:bg-white focus-visible:ring-2 focus-visible:ring-[#E35915]/20'
+  'focus-visible:border-primary focus-visible:bg-white focus-visible:ring-2 focus-visible:ring-primary/20'
 )
 
 const validInputClassName = 'pr-12'
@@ -81,34 +81,34 @@ export function ApplicationFixedFields({
         <div
           className={cn(
             'flex h-10 w-10 items-center justify-center rounded-xl',
-            'bg-gradient-to-br from-[#E35915]/10 to-[#F07B3D]/10',
-            'ring-1 ring-[#E35915]/20'
+            'bg-gradient-to-br from-primary/10 to-accent/10',
+            'ring-1 ring-primary/20'
           )}
         >
-          <User className="h-5 w-5 text-[#E35915]" />
+          <User className="h-5 w-5 text-primary" />
         </div>
         <div>
           <h4
-            className="text-base font-semibold text-[#783201]"
+            className="text-base font-semibold text-foreground"
             style={{ fontFamily: 'var(--font-display)' }}
           >
             Seus dados
           </h4>
-          <p className="text-sm text-[#8B5A2B]/70">
+          <p className="text-sm text-muted-foreground/70">
             Para a ONG entrar em contato com você
           </p>
         </div>
       </div>
 
       {/* Fields Container */}
-      <div className="space-y-4 rounded-2xl border border-[#AEC7E2]/30 bg-white/50 p-4 backdrop-blur-sm">
+      <div className="space-y-4 rounded-2xl border border-muted/30 bg-white/50 p-4 backdrop-blur-sm">
         <FormField
           control={form.control}
           name="applicantName"
           render={({ field, fieldState }) => (
             <FormItem className="space-y-1.5">
-              <FormLabel className="text-sm font-medium text-[#783201]">
-                Nome completo <span className="text-[#E35915]">*</span>
+              <FormLabel className="text-sm font-medium text-foreground">
+                Nome completo <span className="text-primary">*</span>
               </FormLabel>
               <FormControl>
                 <IconInput
@@ -142,8 +142,8 @@ export function ApplicationFixedFields({
             name="applicantEmail"
             render={({ field, fieldState }) => (
               <FormItem className="space-y-1.5">
-                <FormLabel className="text-sm font-medium text-[#783201]">
-                  E-mail <span className="text-[#E35915]">*</span>
+                <FormLabel className="text-sm font-medium text-foreground">
+                  E-mail <span className="text-primary">*</span>
                 </FormLabel>
                 <FormControl>
                   <IconInput
@@ -179,8 +179,8 @@ export function ApplicationFixedFields({
             name="applicantWhatsapp"
             render={({ field, fieldState }) => (
               <FormItem className="space-y-1.5">
-                <FormLabel className="text-sm font-medium text-[#783201]">
-                  WhatsApp <span className="text-[#E35915]">*</span>
+                <FormLabel className="text-sm font-medium text-foreground">
+                  WhatsApp <span className="text-primary">*</span>
                 </FormLabel>
                 <FormControl>
                   <IconInput
@@ -215,7 +215,7 @@ export function ApplicationFixedFields({
         </div>
 
         {/* Privacy note */}
-        <p className="flex items-center gap-2 rounded-xl bg-[#AEC7E2]/15 px-3 py-2 text-xs text-[#8B5A2B]/70">
+        <p className="flex items-center gap-2 rounded-xl bg-muted/15 px-3 py-2 text-xs text-muted-foreground/70">
           <span className="shrink-0">🔒</span>
           <span>
             Seus dados são usados apenas para contato sobre a adoção e são

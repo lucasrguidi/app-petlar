@@ -22,7 +22,7 @@ export function PublicFooter({ orgName, slug }: PublicFooterProps) {
       {/* Main footer content */}
       <div className="relative bg-white/50 pt-16 pb-8 backdrop-blur-sm">
         {/* Decorative top wave */}
-        <div className="absolute top-0 right-0 left-0 h-1 bg-gradient-to-r from-transparent via-[#E35915]/20 to-transparent" />
+        <div className="absolute top-0 right-0 left-0 h-1 bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
 
         <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
           {/* Top section */}
@@ -33,25 +33,25 @@ export function PublicFooter({ orgName, slug }: PublicFooterProps) {
                 <div
                   className={cn(
                     'flex h-12 w-12 items-center justify-center rounded-2xl',
-                    'bg-gradient-to-br from-[#E35915] to-[#F07B3D]',
-                    'shadow-lg shadow-[#E35915]/25'
+                    'bg-gradient-to-br from-primary to-accent',
+                    'shadow-lg shadow-primary/25'
                   )}
                 >
                   <PawPrint className="h-6 w-6 text-white" />
                 </div>
                 <div>
                   <p
-                    className="text-lg font-bold text-[#783201]"
+                    className="text-lg font-bold text-foreground"
                     style={{ fontFamily: 'var(--font-display)' }}
                   >
                     {orgName}
                   </p>
-                  <p className="text-xs font-medium text-[#8B5A2B]/60">
+                  <p className="text-xs font-medium text-muted-foreground/60">
                     Adoção responsável
                   </p>
                 </div>
               </div>
-              <p className="max-w-sm text-sm leading-relaxed text-[#783201]/80">
+              <p className="max-w-sm text-sm leading-relaxed text-foreground/80">
                 Conectamos pessoas e gatinhos com um processo de adoção simples,
                 transparente e cheio de carinho. Cada adoção é uma nova história
                 de amor.
@@ -61,7 +61,7 @@ export function PublicFooter({ orgName, slug }: PublicFooterProps) {
             {/* Navigation */}
             <div className="space-y-4">
               <p
-                className="text-sm font-bold text-[#783201]"
+                className="text-sm font-bold text-foreground"
                 style={{ fontFamily: 'var(--font-display)' }}
               >
                 Navegação
@@ -72,11 +72,11 @@ export function PublicFooter({ orgName, slug }: PublicFooterProps) {
                     key={link.id}
                     href={`/${slug}#${link.id}` as Route}
                     className={cn(
-                      'flex items-center gap-2 text-sm text-[#783201]/70',
-                      'transition-colors hover:text-[#E35915]'
+                      'flex items-center gap-2 text-sm text-foreground/70',
+                      'transition-colors hover:text-primary'
                     )}
                   >
-                    <div className="h-1.5 w-1.5 rounded-full bg-[#AEC7E2]" />
+                    <div className="h-1.5 w-1.5 rounded-full bg-background" />
                     {link.label}
                   </Link>
                 ))}
@@ -86,20 +86,20 @@ export function PublicFooter({ orgName, slug }: PublicFooterProps) {
             {/* Admin access */}
             <div className="space-y-4">
               <p
-                className="text-sm font-bold text-[#783201]"
+                className="text-sm font-bold text-foreground"
                 style={{ fontFamily: 'var(--font-display)' }}
               >
                 Área administrativa
               </p>
-              <p className="text-sm text-[#783201]/70">
+              <p className="text-sm text-foreground/70">
                 É membro da ONG? Acesse o painel para gerenciar os gatinhos.
               </p>
               <Button
                 asChild
                 variant="outline"
                 className={cn(
-                  'rounded-xl border-[#AEC7E2] text-[#783201]',
-                  'hover:border-[#E35915]/30 hover:bg-[#E35915]/5 hover:text-[#E35915]'
+                  'rounded-xl border-background text-foreground',
+                  'hover:border-primary/30 hover:bg-primary/5 hover:text-primary'
                 )}
               >
                 <Link href={`/${slug}/login` as Route}>Acessar painel</Link>
@@ -110,24 +110,24 @@ export function PublicFooter({ orgName, slug }: PublicFooterProps) {
           {/* Divider */}
           <div className="relative my-8">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-[#AEC7E2]/50" />
+              <div className="w-full border-t border-background/50" />
             </div>
             <div className="relative flex justify-center">
               <span className="bg-white/50 px-4">
-                <PawPrint className="h-5 w-5 text-[#E35915]/40" />
+                <PawPrint className="h-5 w-5 text-primary/40" />
               </span>
             </div>
           </div>
 
           {/* Bottom section */}
           <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
-            <p className="text-xs text-[#783201]/60">
+            <p className="text-xs text-foreground/60">
               {new Date().getFullYear()} {orgName}. Todos os direitos
               reservados.
             </p>
-            <p className="inline-flex items-center gap-1.5 text-xs text-[#783201]/60">
+            <p className="inline-flex items-center gap-1.5 text-xs text-foreground/60">
               Feito com{' '}
-              <Heart className="h-3.5 w-3.5 fill-[#E35915] text-[#E35915]" />{' '}
+              <Heart className="h-3.5 w-3.5 fill-primary text-primary" />{' '}
               para facilitar adoções responsáveis
             </p>
           </div>
@@ -137,14 +137,14 @@ export function PublicFooter({ orgName, slug }: PublicFooterProps) {
       {/* Floating paw prints decoration */}
       <div className="pointer-events-none absolute right-0 bottom-0 left-0 overflow-hidden opacity-[0.04]">
         <svg
-          className="absolute -bottom-2 left-[10%] h-20 w-20 rotate-[-20deg] text-[#783201]"
+          className="absolute -bottom-2 left-[10%] h-20 w-20 rotate-[-20deg] text-foreground"
           viewBox="0 0 24 24"
           fill="currentColor"
         >
           <path d="M12 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0-4c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm4 4c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-8 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm4 6c-2.2 0-4 1.8-4 4h8c0-2.2-1.8-4-4-4z" />
         </svg>
         <svg
-          className="absolute right-[15%] -bottom-4 h-24 w-24 rotate-[15deg] text-[#783201]"
+          className="absolute right-[15%] -bottom-4 h-24 w-24 rotate-[15deg] text-foreground"
           viewBox="0 0 24 24"
           fill="currentColor"
         >

@@ -145,20 +145,20 @@ function OtpInput({ value, onChange, disabled }: OtpInputProps) {
             'h-14 w-12 rounded-xl text-center',
             'text-2xl font-bold',
             'border-2 transition-all duration-150',
-            'bg-white/90 text-[#783201]',
+            'bg-white/90 text-foreground',
             digits[index]
-              ? 'border-[#E35915]/50 bg-[#E35915]/5'
-              : 'border-[#AEC7E2]',
-            'focus:border-[#E35915] focus:ring-2 focus:ring-[#E35915]/20 focus:outline-none',
+              ? 'border-primary/50 bg-primary/5'
+              : 'border-muted',
+            'focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none',
             'disabled:cursor-not-allowed disabled:opacity-50',
-            'placeholder:text-[#8B5A2B]/30'
+            'placeholder:text-muted-foreground/30'
           )}
           placeholder="•"
           aria-label={`Dígito ${index + 1}`}
         />
       ))}
 
-      <span className="mx-1 text-2xl font-light text-[#8B5A2B]/40">-</span>
+      <span className="mx-1 text-2xl font-light text-muted-foreground/40">-</span>
 
       {[3, 4, 5].map((index) => (
         <input
@@ -179,13 +179,13 @@ function OtpInput({ value, onChange, disabled }: OtpInputProps) {
             'h-14 w-12 rounded-xl text-center',
             'text-2xl font-bold',
             'border-2 transition-all duration-150',
-            'bg-white/90 text-[#783201]',
+            'bg-white/90 text-foreground',
             digits[index]
-              ? 'border-[#E35915]/50 bg-[#E35915]/5'
-              : 'border-[#AEC7E2]',
-            'focus:border-[#E35915] focus:ring-2 focus:ring-[#E35915]/20 focus:outline-none',
+              ? 'border-primary/50 bg-primary/5'
+              : 'border-muted',
+            'focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none',
             'disabled:cursor-not-allowed disabled:opacity-50',
-            'placeholder:text-[#8B5A2B]/30'
+            'placeholder:text-muted-foreground/30'
           )}
           placeholder="•"
           aria-label={`Dígito ${index + 1}`}
@@ -237,19 +237,19 @@ export function ApplicationCodeConfirmation({
         <div
           className={cn(
             'mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl',
-            'bg-gradient-to-br from-[#E35915]/15 to-[#F07B3D]/10',
-            'ring-1 ring-[#E35915]/20'
+            'bg-gradient-to-br from-primary/15 to-accent/10',
+            'ring-1 ring-primary/20'
           )}
         >
-          <Mail className="h-8 w-8 text-[#E35915]" />
+          <Mail className="h-8 w-8 text-primary" />
         </div>
         <h4
-          className="text-xl font-bold text-[#783201]"
+          className="text-xl font-bold text-foreground"
           style={{ fontFamily: 'var(--font-display)' }}
         >
           Verifique seu e-mail
         </h4>
-        <p className="mt-1 text-sm text-[#8B5A2B]/75">
+        <p className="mt-1 text-sm text-muted-foreground/75">
           Enviamos um código de 6 dígitos para confirmar
         </p>
       </div>
@@ -280,18 +280,18 @@ export function ApplicationCodeConfirmation({
       <div
         className={cn(
           'rounded-2xl p-4',
-          'border border-[#AEC7E2]/40 bg-gradient-to-br from-white to-[#F8FBFF]'
+          'border border-muted/40 bg-gradient-to-br from-white to-muted/20'
         )}
       >
         <div className="flex items-center gap-3">
-          <div className="rounded-xl bg-[#E35915]/10 p-2.5">
-            <Mail className="h-5 w-5 text-[#E35915]" />
+          <div className="rounded-xl bg-primary/10 p-2.5">
+            <Mail className="h-5 w-5 text-primary" />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-xs font-medium text-[#8B5A2B]/60">
+            <p className="text-xs font-medium text-muted-foreground/60">
               Código enviado para
             </p>
-            <p className="truncate font-medium text-[#783201]">
+            <p className="truncate font-medium text-foreground">
               {pending.applicantEmail}
             </p>
           </div>
@@ -324,20 +324,20 @@ export function ApplicationCodeConfirmation({
             'flex items-center justify-center gap-3 rounded-xl p-3',
             isTimeLow
               ? 'border border-amber-200 bg-amber-50/50'
-              : 'border border-[#AEC7E2]/30 bg-white/50'
+              : 'border border-muted/30 bg-white/50'
           )}
         >
           <Clock3
             className={cn(
               'h-5 w-5',
-              isTimeLow ? 'animate-pulse text-amber-500' : 'text-[#8B5A2B]/50'
+              isTimeLow ? 'animate-pulse text-amber-500' : 'text-muted-foreground/50'
             )}
           />
           <div className="text-center">
             <span
               className={cn(
                 'text-lg font-bold tabular-nums',
-                isTimeLow ? 'text-amber-600' : 'text-[#783201]'
+                isTimeLow ? 'text-amber-600' : 'text-foreground'
               )}
             >
               {formatCountdown(expiresInSeconds)}
@@ -345,7 +345,7 @@ export function ApplicationCodeConfirmation({
             <span
               className={cn(
                 'ml-2 text-sm',
-                isTimeLow ? 'text-amber-600/80' : 'text-[#8B5A2B]/60'
+                isTimeLow ? 'text-amber-600/80' : 'text-muted-foreground/60'
               )}
             >
               {timerMinutes > 0 ? 'minutos restantes' : 'segundos restantes'}
@@ -382,9 +382,9 @@ export function ApplicationCodeConfirmation({
           disabled={!canSubmit}
           className={cn(
             'h-12 w-full rounded-xl text-base font-semibold',
-            'bg-gradient-to-r from-[#E35915] to-[#F07B3D]',
-            'shadow-lg shadow-[#E35915]/25 transition-all duration-200',
-            'hover:shadow-xl hover:shadow-[#E35915]/35 hover:brightness-110',
+            'bg-gradient-to-r from-primary to-accent',
+            'shadow-lg shadow-primary/25 transition-all duration-200',
+            'hover:shadow-xl hover:shadow-primary/35 hover:brightness-110',
             'disabled:opacity-50 disabled:shadow-none'
           )}
         >
@@ -405,12 +405,12 @@ export function ApplicationCodeConfirmation({
         <div
           className={cn(
             'flex items-center justify-between rounded-xl p-3',
-            'border border-[#AEC7E2]/30 bg-white/50'
+            'border border-muted/30 bg-white/50'
           )}
         >
           <div className="text-sm">
-            <span className="text-[#8B5A2B]/60">Não recebeu? </span>
-            <span className="font-medium text-[#783201]">
+            <span className="text-muted-foreground/60">Não recebeu? </span>
+            <span className="font-medium text-foreground">
               {pending.resendRemaining} tentativa
               {pending.resendRemaining !== 1 ? 's' : ''} restante
               {pending.resendRemaining !== 1 ? 's' : ''}
@@ -424,7 +424,7 @@ export function ApplicationCodeConfirmation({
             disabled={!canResend}
             className={cn(
               'h-9 rounded-lg px-3',
-              'text-[#783201] hover:bg-[#AEC7E2]/20',
+              'text-foreground hover:bg-muted/20',
               'disabled:opacity-50'
             )}
           >
