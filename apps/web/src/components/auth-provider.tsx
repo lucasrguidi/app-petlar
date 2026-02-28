@@ -8,6 +8,7 @@ type User = {
   id: string
   name: string
   email: string
+  contactEmail?: string | null
   image?: string | null
   orgId?: string | null
   role?: string | null

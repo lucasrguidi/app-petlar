@@ -254,6 +254,11 @@ const acceptInviteSchema = z.object({
   password: z.string().min(6, 'Senha deve ter pelo menos 6 caracteres'),
 })
 
+const updateProfileSchema = z.object({
+  name: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres').max(100),
+  image: z.string().url().nullable(),
+})
+
 export const usersRouter = router({
   updateLastLogin: protectedProcedure.mutation(async ({ ctx }) => {
     const now = new Date()
@@ -265,6 +270,17 @@ export const usersRouter = router({
 
     return { success: true }
   }),
+
+  updateProfile: protectedProcedure
+    .input(updateProfileSchema)
+    .mutation(async ({ ctx, input }) => {
+      await db
+        .update(user)
+        .set({ name: input.name, image: input.image })
+        .where(eq(user.id, ctx.session.user.id))
+
+      return { success: true }
+    }),
 
   list: adminProcedure.input(listUsersSchema).query(async ({ ctx, input }) => {
     const orgId = requireOrgId(ctx.session.user)

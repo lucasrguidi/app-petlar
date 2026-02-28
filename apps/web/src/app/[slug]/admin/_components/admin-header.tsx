@@ -1,6 +1,8 @@
 'use client'
 
-import { Bell, ChevronDown, LogOut, Settings, User } from 'lucide-react'
+import { Bell, ChevronDown, LogOut, User } from 'lucide-react'
+import { type Route } from 'next'
+import Link from 'next/link'
 import { useTransition } from 'react'
 
 import { signOut } from '@/actions/auth'
@@ -158,14 +160,11 @@ export function AdminHeader({ user }: AdminHeaderProps) {
                 <div className="mt-2">{getRoleBadge(user.role)}</div>
               </div>
 
-              <DropdownMenuItem className="cursor-pointer rounded-lg">
-                <User className="mr-2 h-4 w-4" />
-                <span>Meu perfil</span>
-              </DropdownMenuItem>
-
-              <DropdownMenuItem className="cursor-pointer rounded-lg">
-                <Settings className="mr-2 h-4 w-4" />
-                <span>Configurações</span>
+              <DropdownMenuItem asChild className="cursor-pointer rounded-lg">
+                <Link href={`/${slug}/admin/perfil` as Route}>
+                  <User className="mr-2 h-4 w-4" />
+                  <span>Meu perfil</span>
+                </Link>
               </DropdownMenuItem>
 
               <DropdownMenuSeparator className="my-2" />
