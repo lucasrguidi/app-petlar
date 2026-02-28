@@ -36,5 +36,17 @@ describe('domain-routing', () => {
         )
       ).toBe('/queroadotar/login')
     })
+
+    it('does not rewrite api routes', () => {
+      expect(
+        buildCustomDomainEffectivePathname(
+          '/api/auth/sign-in/email',
+          'queroadotar'
+        )
+      ).toBe('/api/auth/sign-in/email')
+      expect(buildCustomDomainEffectivePathname('/api/trpc', 'queroadotar')).toBe(
+        '/api/trpc'
+      )
+    })
   })
 })
