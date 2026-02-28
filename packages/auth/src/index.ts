@@ -5,6 +5,8 @@ import { betterAuth } from 'better-auth'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { nextCookies } from 'better-auth/next-js'
 
+import { resolveTrustedOrigins } from './trusted-origins'
+
 const PASSWORD_RESET_EXPIRATION_HOURS = 1
 
 function escapeHtml(value: string): string {
@@ -154,7 +156,7 @@ export const auth = betterAuth({
     provider: 'sqlite',
     schema: schema,
   }),
-  trustedOrigins: [env.CORS_ORIGIN],
+  trustedOrigins: resolveTrustedOrigins,
   emailAndPassword: {
     enabled: true,
     minPasswordLength: 6,

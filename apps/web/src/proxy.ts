@@ -6,6 +6,7 @@ import {
 } from './lib/auth-routing'
 import { getAuthSessionTokenFromCookies } from './lib/auth-session-cookie'
 import { getOrgSlugByDomain, isMainDomain } from './lib/domain-resolution'
+import { buildCustomDomainEffectivePathname } from './lib/domain-routing'
 
 export async function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl
@@ -25,7 +26,7 @@ export async function proxy(request: NextRequest) {
     }
 
     // Effective pathname includes the org slug (for route matching)
-    effectivePathname = `/${orgSlug}${pathname}`
+    effectivePathname = buildCustomDomainEffectivePathname(pathname, orgSlug)
   }
 
   // Auth protection check (works for both main domains and custom domains)
@@ -52,7 +53,7 @@ export async function proxy(request: NextRequest) {
 
   // Custom domain: rewrite URL to include org slug internally
   if (isCustomDomain && orgSlug) {
-    const rewrittenUrl = new URL(`/${orgSlug}${pathname}${search}`, request.url)
+    const rewrittenUrl = new URL(`${effectivePathname}${search}`, request.url)
     return NextResponse.rewrite(rewrittenUrl)
   }
 
