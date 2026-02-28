@@ -1,12 +1,14 @@
 'use client'
 
 import { Loader2, Search, UserPlus } from 'lucide-react'
-import { useDeferredValue, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
+
+const SEARCH_DEBOUNCE_MS = 450
 
 interface UsersFilterBarProps {
   search: string
@@ -26,17 +28,22 @@ export function UsersFilterBar({
   onIncludeInactiveChange,
 }: UsersFilterBarProps) {
   const [localSearch, setLocalSearch] = useState(search)
-  const deferredSearch = useDeferredValue(localSearch)
 
-  useEffect(() => {
-    if (deferredSearch !== search) {
-      onSearchChange(deferredSearch)
-    }
-  }, [deferredSearch, search, onSearchChange])
-
+  // Sync local search with prop
   useEffect(() => {
     setLocalSearch(search)
   }, [search])
+
+  // Debounce search with cleanup to avoid firing requests on every keystroke
+  useEffect(() => {
+    if (localSearch === search) return
+
+    const timeoutId = window.setTimeout(() => {
+      onSearchChange(localSearch)
+    }, SEARCH_DEBOUNCE_MS)
+
+    return () => window.clearTimeout(timeoutId)
+  }, [localSearch, search, onSearchChange])
 
   return (
     <Card className="border-border/60 bg-card/95 shadow-warm-sm rounded-xl border">
