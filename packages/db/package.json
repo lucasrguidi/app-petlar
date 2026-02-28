@@ -19,6 +19,7 @@
     "db:studio": "drizzle-kit studio",
     "db:migrate": "drizzle-kit migrate",
     "db:seed": "tsx src/seed.ts",
+    "db:seed:preview": "tsx src/seed-preview.ts",
     "lint": "eslint . --max-warnings 0",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
