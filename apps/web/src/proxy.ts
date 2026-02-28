@@ -4,6 +4,7 @@ import {
   buildLoginRedirectPathForProtectedRoute,
   isProtectedRoute,
 } from './lib/auth-routing'
+import { getAuthSessionTokenFromCookies } from './lib/auth-session-cookie'
 import { getOrgSlugByDomain, isMainDomain } from './lib/domain-resolution'
 
 export async function proxy(request: NextRequest) {
@@ -29,7 +30,7 @@ export async function proxy(request: NextRequest) {
 
   // Auth protection check (works for both main domains and custom domains)
   if (isProtectedRoute(effectivePathname)) {
-    const sessionToken = request.cookies.get('better-auth.session_token')
+    const sessionToken = getAuthSessionTokenFromCookies(request.cookies)
 
     if (!sessionToken) {
       const loginPath = buildLoginRedirectPathForProtectedRoute(
