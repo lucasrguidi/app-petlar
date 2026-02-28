@@ -5,7 +5,7 @@ export function ProfileLoadingSkeleton() {
   return (
     <div className="space-y-6">
       {/* Personal Info Card Skeleton */}
-      <Card className="border-border/60 shadow-warm-sm rounded-xl">
+      <Card className="border-border/60 bg-card/95 shadow-warm-sm rounded-xl">
         <CardHeader className="space-y-1.5">
           <div className="flex items-center gap-2">
             <Skeleton className="h-5 w-5 rounded" />
@@ -43,7 +43,7 @@ export function ProfileLoadingSkeleton() {
       </Card>
 
       {/* Security Card Skeleton */}
-      <Card className="border-border/60 shadow-warm-sm rounded-xl">
+      <Card className="border-border/60 bg-card/95 shadow-warm-sm rounded-xl">
         <CardHeader className="space-y-1.5">
           <div className="flex items-center gap-2">
             <Skeleton className="h-5 w-5 rounded" />

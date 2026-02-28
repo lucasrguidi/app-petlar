@@ -77,11 +77,11 @@ export function PersonalInfoCard({ user }: PersonalInfoCardProps) {
   }
 
   return (
-    <Card className="border-border/60 shadow-warm-sm rounded-xl">
+    <Card className="border-border/60 bg-card/95 shadow-warm-sm rounded-xl">
       <CardHeader>
         <CardTitle className="text-display flex items-center gap-2">
           <User className="text-primary h-5 w-5" />
-          Informacoes Pessoais
+          Informações Pessoais
         </CardTitle>
         <CardDescription>
           Atualize seu nome e foto de perfil
@@ -109,7 +109,7 @@ export function PersonalInfoCard({ user }: PersonalInfoCardProps) {
 
         {/* Email field (readonly) */}
         <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="email">E-mail</Label>
           <Input
             id="email"
             value={displayEmail}
@@ -117,7 +117,7 @@ export function PersonalInfoCard({ user }: PersonalInfoCardProps) {
             className="bg-muted/50 h-11 rounded-lg"
           />
           <p className="text-muted-foreground text-xs">
-            O email nao pode ser alterado
+            O e-mail não pode ser alterado
           </p>
         </div>
 

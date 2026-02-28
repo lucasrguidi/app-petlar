@@ -28,10 +28,10 @@ export default async function ConfiguracoesPage({
         <div className="space-y-1">
           <h1 className="text-display flex items-center gap-2 text-2xl font-bold tracking-tight">
             <Settings className="text-primary h-6 w-6" />
-            Configuracoes
+            Configurações
           </h1>
           <p className="text-muted-foreground">
-            Personalize a aparencia do sistema para sua organizacao
+            Personalize a aparência do sistema para sua organização
           </p>
         </div>
       </div>

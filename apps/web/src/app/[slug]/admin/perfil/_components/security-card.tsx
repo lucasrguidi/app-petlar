@@ -34,7 +34,7 @@ export function SecurityCard() {
   const handleSubmit = async () => {
     if (!isFormValid) {
       if (newPassword !== confirmPassword) {
-        toast.error('As senhas nao coincidem.')
+        toast.error('As senhas não coincidem.')
         return
       }
       if (newPassword.length < 6) {
@@ -72,11 +72,11 @@ export function SecurityCard() {
   }
 
   return (
-    <Card className="border-border/60 shadow-warm-sm rounded-xl">
+    <Card className="border-border/60 bg-card/95 shadow-warm-sm rounded-xl">
       <CardHeader>
         <CardTitle className="text-display flex items-center gap-2">
           <ShieldCheck className="text-primary h-5 w-5" />
-          Seguranca
+          Segurança
         </CardTitle>
         <CardDescription>Altere sua senha de acesso</CardDescription>
       </CardHeader>
@@ -134,7 +134,7 @@ export function SecurityCard() {
             </button>
           </div>
           <p className="text-muted-foreground text-xs">
-            Minimo de 6 caracteres
+            Mínimo de 6 caracteres
           </p>
         </div>
 
@@ -164,7 +164,7 @@ export function SecurityCard() {
             </button>
           </div>
           {confirmPassword && newPassword !== confirmPassword && (
-            <p className="text-destructive text-xs">As senhas nao coincidem</p>
+            <p className="text-destructive text-xs">As senhas não coincidem</p>
           )}
         </div>
 

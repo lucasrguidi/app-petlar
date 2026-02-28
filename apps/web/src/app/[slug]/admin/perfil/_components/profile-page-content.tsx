@@ -17,7 +17,7 @@ export function ProfilePageContent() {
   if (!user) {
     return (
       <div className="text-muted-foreground py-8 text-center">
-        Nao foi possivel carregar os dados do usuario.
+        Não foi possível carregar os dados do usuário.
       </div>
     )
   }

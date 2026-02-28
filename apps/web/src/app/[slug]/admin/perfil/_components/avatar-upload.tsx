@@ -91,13 +91,13 @@ export function AvatarUpload({
 
       // Validate file type
       if (!ALLOWED_TYPES.includes(file.type)) {
-        toast.error('Tipo de arquivo nao suportado. Use JPG, PNG, WebP ou GIF.')
+        toast.error('Tipo de arquivo não suportado. Use JPG, PNG, WebP ou GIF.')
         return
       }
 
       // Validate file size
       if (file.size > MAX_FILE_SIZE) {
-        toast.error('Arquivo muito grande. Maximo 5MB.')
+        toast.error('Arquivo muito grande. Máximo 5MB.')
         return
       }
 
@@ -174,7 +174,7 @@ export function AvatarUpload({
       <div className="space-y-1">
         <p className="text-foreground text-sm font-medium">Foto de perfil</p>
         <p className="text-muted-foreground text-xs">
-          Clique na foto para alterar. JPG, PNG, WebP ou GIF (max 5MB)
+          Clique na foto para alterar. JPG, PNG, WebP ou GIF (máx. 5MB)
         </p>
       </div>
     </div>
