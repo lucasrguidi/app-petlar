@@ -238,13 +238,24 @@ export function ApplicationSheet({
 
         setConfirmedApplicationContact(null)
 
+        // Handle auto-confirmed applications (SKIP_EMAIL_CONFIRMATION)
+        if (result.status === 'confirmed') {
+          clearPending()
+          form.reset(defaultApplicationFormValues)
+          setConfirmationCode('')
+          setStep('form')
+          onOpenChange(false)
+          toast.success('Candidatura enviada com sucesso!')
+          return
+        }
+
         const nextPending: PendingConfirmationState = {
           applicationId: result.applicationId,
-          confirmationToken: result.confirmationToken,
+          confirmationToken: result.confirmationToken!,
           applicantEmail: result.applicantEmail,
-          confirmationExpiresAt: result.confirmationExpiresAt,
-          resendRemaining: result.resendRemaining,
-          resendAvailableAt: result.resendAvailableAt,
+          confirmationExpiresAt: result.confirmationExpiresAt!,
+          resendRemaining: result.resendRemaining!,
+          resendAvailableAt: result.resendAvailableAt!,
           catId: cat.id,
           source: result.status,
         }
@@ -373,16 +384,6 @@ export function ApplicationSheet({
     resendCodeMutation.mutate({
       confirmationToken: pendingConfirmation.confirmationToken,
     })
-  }
-
-  const handleAlreadyConfirmedClose = () => {
-    form.reset(defaultApplicationFormValues)
-    setStep('form')
-    clearPending()
-    setConfirmedApplicationContact(null)
-    setConfirmationCode('')
-    setNowMs(Date.now())
-    onOpenChange(false)
   }
 
   const handleSheetOpenChange = (nextOpen: boolean) => {
@@ -555,7 +556,7 @@ export function ApplicationSheet({
                 <ApplicationAlreadyConfirmed
                   applicantEmail={confirmedApplicationContact.email}
                   applicantWhatsapp={confirmedApplicationContact.whatsapp}
-                  onClose={handleAlreadyConfirmedClose}
+                  slug={slug}
                 />
               </div>
             </div>

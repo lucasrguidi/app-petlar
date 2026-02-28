@@ -68,6 +68,7 @@ interface Cat {
   photoUrl: string | null
   photos?: CatPhoto[]
   interestedCount?: number
+  pendingApplicationsCount?: number
 }
 
 interface CatsDataTableProps {
