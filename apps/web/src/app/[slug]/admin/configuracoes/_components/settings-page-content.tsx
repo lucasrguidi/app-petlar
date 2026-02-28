@@ -10,6 +10,7 @@ import {
   Palette,
   RotateCcw,
   Save,
+  Sparkles,
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
@@ -25,7 +26,6 @@ import { revalidateTheme } from '../_actions/revalidate-theme'
 import { ColorPicker } from './color-picker'
 import { SettingsLoadingSkeleton } from './settings-loading-skeleton'
 import { ThemePreview } from './theme-preview'
-
 
 import { Button } from '@/components/ui/button'
 import {
@@ -188,7 +188,7 @@ export function SettingsPageContent() {
   if (!orgSettings) {
     return (
       <div className="text-muted-foreground py-8 text-center">
-        Nao foi possivel carregar as configuracoes.
+        Não foi possível carregar as configurações.
       </div>
     )
   }
@@ -199,201 +199,214 @@ export function SettingsPageContent() {
   )
 
   return (
-    <div className="space-y-6">
-      {/* Custom Domain Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-display flex items-center gap-2">
-            <Globe className="text-primary h-5 w-5" />
-            Domínio
-          </CardTitle>
-          <CardDescription>
-            Este é o endereço que as pessoas usam para acessar seu site
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Current domain display */}
-          <div className="bg-muted/50 rounded-lg border p-4">
-            <Label className="text-muted-foreground text-xs uppercase tracking-wide">
-              Domínio atual
-            </Label>
-            <p className="mt-1 text-lg font-medium">
-              {orgSettings.customDomain ? (
-                <span className="text-foreground">
-                  {orgSettings.customDomain}
-                </span>
-              ) : (
-                <span className="text-muted-foreground">
-                  Nenhum domínio configurado
-                </span>
-              )}
+    <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
+      {/* Left Column - Settings */}
+      <div className="space-y-6">
+        {/* Domain Card */}
+        <Card className="border-border/60 bg-card/95 shadow-warm-sm rounded-xl">
+          <CardHeader>
+            <CardTitle className="text-display flex items-center gap-2">
+              <Globe className="text-primary h-5 w-5" />
+              Domínio Personalizado
+            </CardTitle>
+            <CardDescription>
+              O endereço que os visitantes usam para acessar seu site de adoção
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="bg-muted/30 rounded-lg border p-4">
+              <Label className="text-muted-foreground text-xs font-medium uppercase tracking-wide">
+                Domínio Atual
+              </Label>
+              <p className="mt-1.5 text-lg font-semibold">
+                {orgSettings.customDomain ? (
+                  <span className="text-foreground">
+                    {orgSettings.customDomain}
+                  </span>
+                ) : (
+                  <span className="text-muted-foreground italic">
+                    Nenhum domínio configurado
+                  </span>
+                )}
+              </p>
+            </div>
+
+            <p className="text-muted-foreground text-sm">
+              Para configurar ou alterar seu domínio personalizado, entre em
+              contato com nossa equipe de suporte.
             </p>
-          </div>
 
-          {/* Contact message */}
-          <p className="text-muted-foreground text-sm">
-            Para configurar ou alterar seu domínio personalizado, entre em
-            contato com o administrador do sistema.
-          </p>
+            {env.NEXT_PUBLIC_SUPPORT_WHATSAPP && (
+              <Button variant="outline" className="gap-2" asChild>
+                <a
+                  href={`https://wa.me/${env.NEXT_PUBLIC_SUPPORT_WHATSAPP}?text=Olá! Gostaria de configurar/alterar o domínio da minha organização.`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <MessageCircle className="h-4 w-4" />
+                  Falar no WhatsApp
+                </a>
+              </Button>
+            )}
+          </CardContent>
+        </Card>
 
-          {/* WhatsApp button */}
-          {env.NEXT_PUBLIC_SUPPORT_WHATSAPP && (
-            <Button variant="outline" asChild>
-              <a
-                href={`https://wa.me/${env.NEXT_PUBLIC_SUPPORT_WHATSAPP}?text=Olá! Gostaria de configurar/alterar o domínio da minha organização.`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <MessageCircle className="mr-2 h-4 w-4" />
-                Falar no WhatsApp
-              </a>
-            </Button>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Theme Picker Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-display flex items-center gap-2">
-            <Palette className="text-primary h-5 w-5" />
-            Tema de Cores
-          </CardTitle>
-          <CardDescription>
-            Escolha um tema pre-definido ou customize as cores
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Preset Themes */}
-          <div className="space-y-3">
-            <Label>Temas Pre-definidos</Label>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5">
-              {(Object.keys(PRESET_THEMES) as PresetThemeKey[]).map((key) => {
-                const preset = PRESET_THEMES[key]
-                const isSelected = currentPreset === key
-                return (
-                  <button
-                    key={key}
-                    onClick={() => handlePresetSelect(key)}
-                    className={cn(
-                      'group relative flex flex-col items-center gap-2 rounded-xl border-2 p-3 transition-all',
-                      isSelected
-                        ? 'border-primary bg-primary/5'
-                        : 'hover:border-primary/50 bg-card hover:bg-muted/50 border-transparent'
-                    )}
-                  >
-                    {isSelected && (
-                      <div className="bg-primary text-primary-foreground absolute -top-2 -right-2 rounded-full p-1">
-                        <Check className="h-3 w-3" />
+        {/* Theme Card */}
+        <Card className="border-border/60 bg-card/95 shadow-warm-sm rounded-xl">
+          <CardHeader>
+            <CardTitle className="text-display flex items-center gap-2">
+              <Palette className="text-primary h-5 w-5" />
+              Tema de Cores
+            </CardTitle>
+            <CardDescription>
+              Escolha um tema pré-definido ou personalize as cores do seu site
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Preset Themes */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <Sparkles className="text-primary h-4 w-4" />
+                <Label className="text-sm font-medium">
+                  Temas Pré-definidos
+                </Label>
+              </div>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5">
+                {(Object.keys(PRESET_THEMES) as PresetThemeKey[]).map((key) => {
+                  const preset = PRESET_THEMES[key]
+                  const isSelected = currentPreset === key
+                  return (
+                    <button
+                      key={key}
+                      onClick={() => handlePresetSelect(key)}
+                      className={cn(
+                        'group relative flex flex-col items-center gap-2.5 rounded-xl border-2 p-3 transition-all duration-200',
+                        isSelected
+                          ? 'border-primary bg-primary/5 shadow-sm'
+                          : 'border-border/60 bg-card hover:border-primary/40 hover:bg-muted/30'
+                      )}
+                    >
+                      {isSelected && (
+                        <div className="bg-primary text-primary-foreground absolute -top-1.5 -right-1.5 rounded-full p-0.5 shadow-sm">
+                          <Check className="h-3 w-3" />
+                        </div>
+                      )}
+                      <div className="flex items-center gap-0.5">
+                        <div
+                          className="h-7 w-7 rounded-l-lg border shadow-inner"
+                          style={{ backgroundColor: preset.primary }}
+                        />
+                        <div
+                          className="h-7 w-7 border-y shadow-inner"
+                          style={{ backgroundColor: preset.background }}
+                        />
+                        <div
+                          className="h-7 w-7 rounded-r-lg border shadow-inner"
+                          style={{ backgroundColor: preset.foreground }}
+                        />
                       </div>
-                    )}
-                    <div className="flex gap-1">
-                      <div
-                        className="h-6 w-6 rounded-full border"
-                        style={{ backgroundColor: preset.primary }}
-                      />
-                      <div
-                        className="h-6 w-6 rounded-full border"
-                        style={{ backgroundColor: preset.background }}
-                      />
-                      <div
-                        className="h-6 w-6 rounded-full border"
-                        style={{ backgroundColor: preset.foreground }}
-                      />
-                    </div>
-                    <span className="text-xs font-medium">{preset.name}</span>
-                  </button>
-                )
-              })}
+                      <span className="text-foreground text-xs font-medium">
+                        {preset.name}
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
             </div>
-          </div>
 
-          {/* Custom Color Pickers */}
-          <div className="space-y-3">
-            <Label>Cores Personalizadas</Label>
-            <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-              <ColorPicker
-                label="Primaria"
-                value={effectiveColors.primary}
-                onChange={(v) => handleColorChange('primaryColor', v)}
-              />
-              <ColorPicker
-                label="Fundo"
-                value={effectiveColors.background}
-                onChange={(v) => handleColorChange('backgroundColor', v)}
-              />
-              <ColorPicker
-                label="Texto"
-                value={effectiveColors.foreground}
-                onChange={(v) => handleColorChange('foregroundColor', v)}
-              />
-              <ColorPicker
-                label="Destaque"
-                value={effectiveColors.accent}
-                onChange={(v) => handleColorChange('accentColor', v)}
-              />
-              <ColorPicker
-                label="Secundaria"
-                value={effectiveColors.secondary}
-                onChange={(v) => handleColorChange('secondaryColor', v)}
-              />
-              <ColorPicker
-                label="Texto Secundario"
-                value={effectiveColors.secondaryForeground}
-                onChange={(v) =>
-                  handleColorChange('secondaryForegroundColor', v)
-                }
-              />
-              <ColorPicker
-                label="Suave"
-                value={effectiveColors.muted}
-                onChange={(v) => handleColorChange('mutedColor', v)}
-              />
-              <ColorPicker
-                label="Texto Suave"
-                value={effectiveColors.mutedForeground}
-                onChange={(v) => handleColorChange('mutedForegroundColor', v)}
-              />
+            {/* Custom Colors */}
+            <div className="space-y-3">
+              <Label className="text-sm font-medium">Cores Personalizadas</Label>
+              <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+                <ColorPicker
+                  label="Primária"
+                  value={effectiveColors.primary}
+                  onChange={(v) => handleColorChange('primaryColor', v)}
+                />
+                <ColorPicker
+                  label="Fundo"
+                  value={effectiveColors.background}
+                  onChange={(v) => handleColorChange('backgroundColor', v)}
+                />
+                <ColorPicker
+                  label="Texto"
+                  value={effectiveColors.foreground}
+                  onChange={(v) => handleColorChange('foregroundColor', v)}
+                />
+                <ColorPicker
+                  label="Destaque"
+                  value={effectiveColors.accent}
+                  onChange={(v) => handleColorChange('accentColor', v)}
+                />
+                <ColorPicker
+                  label="Secundária"
+                  value={effectiveColors.secondary}
+                  onChange={(v) => handleColorChange('secondaryColor', v)}
+                />
+                <ColorPicker
+                  label="Texto Secundário"
+                  value={effectiveColors.secondaryForeground}
+                  onChange={(v) =>
+                    handleColorChange('secondaryForegroundColor', v)
+                  }
+                />
+                <ColorPicker
+                  label="Suave"
+                  value={effectiveColors.muted}
+                  onChange={(v) => handleColorChange('mutedColor', v)}
+                />
+                <ColorPicker
+                  label="Texto Suave"
+                  value={effectiveColors.mutedForeground}
+                  onChange={(v) => handleColorChange('mutedForegroundColor', v)}
+                />
+              </div>
             </div>
-          </div>
 
-          {/* Action Buttons */}
-          <div className="flex justify-end gap-2 border-t pt-4">
-            <Button
-              variant="outline"
-              onClick={handleResetTheme}
-              disabled={!hasChanges}
-            >
-              <RotateCcw className="mr-2 h-4 w-4" />
-              Desfazer
-            </Button>
-            <Button
-              onClick={handleSaveTheme}
-              disabled={!hasChanges || updateThemeMutation.isPending}
-            >
-              {updateThemeMutation.isPending ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <Save className="mr-2 h-4 w-4" />
-              )}
-              Salvar Tema
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+            {/* Action Buttons */}
+            <div className="flex justify-end gap-2 border-t pt-4">
+              <Button
+                variant="outline"
+                onClick={handleResetTheme}
+                disabled={!hasChanges}
+                className="gap-2"
+              >
+                <RotateCcw className="h-4 w-4" />
+                Desfazer
+              </Button>
+              <Button
+                onClick={handleSaveTheme}
+                disabled={!hasChanges || updateThemeMutation.isPending}
+                className="gap-2"
+              >
+                {updateThemeMutation.isPending ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Save className="h-4 w-4" />
+                )}
+                Salvar Tema
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
-      {/* Live Preview Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-display">Preview</CardTitle>
-          <CardDescription>
-            Veja como ficara a aparencia do sistema
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ThemePreview colors={effectiveColors} orgName={orgSettings.name} />
-        </CardContent>
-      </Card>
+      {/* Right Column - Preview */}
+      <div className="lg:sticky lg:top-6 lg:h-fit">
+        <Card className="border-border/60 bg-card/95 shadow-warm-sm rounded-xl">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-display text-base">
+              Pré-visualização
+            </CardTitle>
+            <CardDescription className="text-xs">
+              Veja como ficará a aparência do seu site
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ThemePreview colors={effectiveColors} orgName={orgSettings.name} />
+          </CardContent>
+        </Card>
+      </div>
     </div>
   )
 }

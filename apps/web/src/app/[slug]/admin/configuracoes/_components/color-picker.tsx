@@ -42,63 +42,69 @@ export function ColorPicker({ label, value, onChange }: ColorPickerProps) {
   }
 
   return (
-    <div className="space-y-2">
-      <Label htmlFor={id} className="text-muted-foreground text-xs font-medium">
+    <div className="space-y-1.5">
+      <Label
+        htmlFor={id}
+        className="text-muted-foreground text-xs font-medium"
+      >
         {label}
       </Label>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <button
             className={cn(
-              'flex h-10 w-full items-center gap-2 rounded-lg border px-3 transition-colors',
-              'hover:border-primary/50 focus:border-primary focus:ring-primary/20 focus:ring-2 focus:outline-none'
+              'border-border/60 flex h-10 w-full items-center gap-2 rounded-lg border bg-white px-3 transition-all duration-200',
+              'hover:border-primary/50 hover:bg-muted/20',
+              'focus:border-primary focus:ring-primary/20 focus:ring-2 focus:outline-none'
             )}
           >
             <div
-              className="h-5 w-5 shrink-0 rounded border"
+              className="h-5 w-5 shrink-0 rounded-md border shadow-inner"
               style={{ backgroundColor: value }}
             />
-            <span className="text-foreground flex-1 text-left font-mono text-sm">
+            <span className="text-foreground flex-1 text-left font-mono text-xs">
               {value.toUpperCase()}
             </span>
-            <Pipette className="text-muted-foreground h-4 w-4 shrink-0" />
+            <Pipette className="text-muted-foreground h-3.5 w-3.5 shrink-0" />
           </button>
         </PopoverTrigger>
-        <PopoverContent className="w-64 p-4" align="start">
-          <div className="space-y-4">
+        <PopoverContent className="w-56 p-3" align="start">
+          <div className="space-y-3">
             {/* Native color picker */}
-            <div className="space-y-2">
-              <Label className="text-xs">Escolher cor</Label>
-              <div className="flex gap-2">
-                <input
-                  type="color"
-                  value={value}
-                  onChange={(e) => handleColorPickerChange(e.target.value)}
-                  className="h-10 w-full cursor-pointer rounded-lg border"
-                />
-              </div>
+            <div className="space-y-1.5">
+              <Label className="text-muted-foreground text-xs">
+                Selecionar cor
+              </Label>
+              <input
+                type="color"
+                value={value}
+                onChange={(e) => handleColorPickerChange(e.target.value)}
+                className="h-20 w-full cursor-pointer rounded-lg border"
+              />
             </div>
 
             {/* Hex input */}
-            <div className="space-y-2">
-              <Label htmlFor={`${id}-hex`} className="text-xs">
-                Codigo Hex
+            <div className="space-y-1.5">
+              <Label htmlFor={`${id}-hex`} className="text-muted-foreground text-xs">
+                Código Hex
               </Label>
               <Input
                 id={`${id}-hex`}
                 value={inputValue}
                 onChange={(e) => handleInputChange(e.target.value)}
                 placeholder="#000000"
-                className="font-mono"
+                className="h-9 font-mono text-xs"
                 maxLength={7}
               />
             </div>
 
             {/* Preview */}
-            <div className="space-y-2">
-              <Label className="text-xs">Preview</Label>
+            <div className="space-y-1.5">
+              <Label className="text-muted-foreground text-xs">
+                Pré-visualização
+              </Label>
               <div
-                className="h-8 w-full rounded-lg border"
+                className="h-6 w-full rounded-lg border shadow-inner"
                 style={{ backgroundColor: value }}
               />
             </div>

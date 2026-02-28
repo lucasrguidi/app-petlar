@@ -23,7 +23,7 @@ export default async function ConfiguracoesPage({
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-4xl flex-col pb-8">
+    <div className="mx-auto flex w-full max-w-6xl flex-col pb-8">
       <div className="flex shrink-0 flex-col gap-4 pb-6">
         <div className="space-y-1">
           <h1 className="text-display flex items-center gap-2 text-2xl font-bold tracking-tight">
@@ -31,7 +31,7 @@ export default async function ConfiguracoesPage({
             Configurações
           </h1>
           <p className="text-muted-foreground">
-            Personalize a aparência do sistema para sua organização
+            Personalize o domínio e as cores do seu site de adoção
           </p>
         </div>
       </div>
