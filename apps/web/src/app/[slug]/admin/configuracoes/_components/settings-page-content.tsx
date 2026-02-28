@@ -22,6 +22,7 @@ import {
 import { revalidateTheme } from '../_actions/revalidate-theme'
 
 import { ColorPicker } from './color-picker'
+import { SettingsLoadingSkeleton } from './settings-loading-skeleton'
 import { ThemePreview } from './theme-preview'
 
 import { Button } from '@/components/ui/button'
@@ -200,7 +201,7 @@ export function SettingsPageContent() {
   }
 
   if (isLoading) {
-    return null // Suspense fallback will show
+    return <SettingsLoadingSkeleton />
   }
 
   if (!orgSettings) {
