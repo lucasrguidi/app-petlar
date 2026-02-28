@@ -12,13 +12,17 @@ const MAIN_DOMAINS = [
   'petlar.com',
   'www.petlar.com',
   'petlar.vercel.app',
+  'app-petlar-web.vercel.app',
 ]
 
 /**
  * Simple in-memory cache for custom domain lookups.
  * TTL of 5 minutes to balance freshness with performance.
  */
-const domainCache = new Map<string, { slug: string | null; expiresAt: number }>()
+const domainCache = new Map<
+  string,
+  { slug: string | null; expiresAt: number }
+>()
 const CACHE_TTL_MS = 5 * 60 * 1000
 
 /**
@@ -26,7 +30,9 @@ const CACHE_TTL_MS = 5 * 60 * 1000
  */
 export function isMainDomain(hostname: string): boolean {
   const cleanHost = hostname.split(':')[0]?.toLowerCase() ?? ''
-  return MAIN_DOMAINS.some((domain) => cleanHost === domain || cleanHost.endsWith(`.${domain}`))
+  return MAIN_DOMAINS.some(
+    (domain) => cleanHost === domain || cleanHost.endsWith(`.${domain}`)
+  )
 }
 
 /**
