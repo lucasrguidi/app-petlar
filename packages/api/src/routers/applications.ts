@@ -1480,6 +1480,23 @@ export const applicationsRouter = router({
         }
       })
 
+      // Skip email confirmation for preview/testing environments
+      if (env.SKIP_EMAIL_CONFIRMATION) {
+        await db
+          .update(applications)
+          .set({
+            confirmedAt: new Date(),
+          })
+          .where(eq(applications.id, applicationId))
+
+        return {
+          status: 'confirmed' as const,
+          applicationId,
+          applicantEmail: normalizedApplicantEmail,
+          now: Date.now(),
+        }
+      }
+
       const sentAt = new Date()
 
       try {

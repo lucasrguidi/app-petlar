@@ -21,6 +21,11 @@ export const env = createEnv({
     // Email (Resend)
     RESEND_API_KEY: z.string().min(1).optional(),
     EMAIL_FROM: z.string().email().optional(),
+    // Preview/Development
+    SKIP_EMAIL_CONFIRMATION: z
+      .string()
+      .optional()
+      .transform((v) => v === 'true'),
   },
   runtimeEnv: process.env,
   emptyStringAsUndefined: true,

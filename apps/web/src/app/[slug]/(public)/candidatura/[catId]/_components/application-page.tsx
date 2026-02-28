@@ -195,13 +195,24 @@ export function ApplicationPage({ slug, catId }: ApplicationPageProps) {
       onSuccess: (result) => {
         setConfirmedApplicationContact(null)
 
+        // Handle auto-confirmed applications (SKIP_EMAIL_CONFIRMATION)
+        if (result.status === 'confirmed') {
+          setSuccessEmail(result.applicantEmail)
+          clearPending()
+          form.reset(defaultApplicationFormValues)
+          setConfirmationCode('')
+          setStep('success')
+          toast.success('Candidatura enviada com sucesso!')
+          return
+        }
+
         const nextPending: PendingConfirmationState = {
           applicationId: result.applicationId,
-          confirmationToken: result.confirmationToken,
+          confirmationToken: result.confirmationToken!,
           applicantEmail: result.applicantEmail,
-          confirmationExpiresAt: result.confirmationExpiresAt,
-          resendRemaining: result.resendRemaining,
-          resendAvailableAt: result.resendAvailableAt,
+          confirmationExpiresAt: result.confirmationExpiresAt!,
+          resendRemaining: result.resendRemaining!,
+          resendAvailableAt: result.resendAvailableAt!,
           catId,
           source: result.status,
         }
