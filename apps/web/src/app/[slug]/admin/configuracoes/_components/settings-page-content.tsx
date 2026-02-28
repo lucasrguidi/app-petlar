@@ -1,11 +1,12 @@
 'use client'
 
+import { env } from '@app-petlar/env/web'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   Check,
   Globe,
-  Info,
   Loader2,
+  MessageCircle,
   Palette,
   RotateCcw,
   Save,
@@ -25,6 +26,7 @@ import { ColorPicker } from './color-picker'
 import { SettingsLoadingSkeleton } from './settings-loading-skeleton'
 import { ThemePreview } from './theme-preview'
 
+
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -33,7 +35,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useOrgSlug } from '@/hooks/use-org-slug'
 import { cn } from '@/lib/utils'
@@ -102,7 +103,6 @@ export function SettingsPageContent() {
     mutedForegroundColor: null,
   })
 
-  const [customDomain, setCustomDomain] = useState('')
   const [hasChanges, setHasChanges] = useState(false)
 
   // Initialize local state from org settings
@@ -119,7 +119,6 @@ export function SettingsPageContent() {
         mutedColor: orgSettings.mutedColor,
         mutedForegroundColor: orgSettings.mutedForegroundColor,
       })
-      setCustomDomain(orgSettings.customDomain ?? '')
     }
   }, [orgSettings])
 
@@ -133,18 +132,6 @@ export function SettingsPageContent() {
         await revalidateTheme(slug)
         // Refresh the page to apply the new theme
         router.refresh()
-      },
-      onError: (error) => {
-        toast.error(error.message)
-      },
-    })
-  )
-
-  const updateDomainMutation = useMutation(
-    trpc.orgs.updateCustomDomain.mutationOptions({
-      onSuccess: () => {
-        toast.success('Dominio atualizado com sucesso!')
-        queryClient.invalidateQueries({ queryKey: [['orgs', 'getSettings']] })
       },
       onError: (error) => {
         toast.error(error.message)
@@ -194,12 +181,6 @@ export function SettingsPageContent() {
     }
   }
 
-  const handleSaveDomain = () => {
-    updateDomainMutation.mutate({
-      customDomain: customDomain.trim() || null,
-    })
-  }
-
   if (isLoading) {
     return <SettingsLoadingSkeleton />
   }
@@ -224,44 +205,50 @@ export function SettingsPageContent() {
         <CardHeader>
           <CardTitle className="text-display flex items-center gap-2">
             <Globe className="text-primary h-5 w-5" />
-            Dominio Personalizado
+            Domínio
           </CardTitle>
           <CardDescription>
-            Configure um dominio proprio para sua organizacao
+            Este é o endereço que as pessoas usam para acessar seu site
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="customDomain">Dominio</Label>
-            <div className="flex gap-2">
-              <Input
-                id="customDomain"
-                placeholder="queroadotar.com.br"
-                value={customDomain}
-                onChange={(e) => setCustomDomain(e.target.value)}
-                className="max-w-sm"
-              />
-              <Button
-                onClick={handleSaveDomain}
-                disabled={
-                  updateDomainMutation.isPending ||
-                  customDomain === (orgSettings.customDomain ?? '')
-                }
-              >
-                {updateDomainMutation.isPending ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Save className="h-4 w-4" />
-                )}
-                Salvar
-              </Button>
-            </div>
-            <p className="text-muted-foreground flex items-start gap-1.5 text-sm">
-              <Info className="mt-0.5 h-4 w-4 shrink-0" />
-              Apos configurar o dominio aqui, voce precisa apontar o DNS para a
-              Vercel. Entre em contato para obter as instrucoes.
+          {/* Current domain display */}
+          <div className="bg-muted/50 rounded-lg border p-4">
+            <Label className="text-muted-foreground text-xs uppercase tracking-wide">
+              Domínio atual
+            </Label>
+            <p className="mt-1 text-lg font-medium">
+              {orgSettings.customDomain ? (
+                <span className="text-foreground">
+                  {orgSettings.customDomain}
+                </span>
+              ) : (
+                <span className="text-muted-foreground">
+                  Nenhum domínio configurado
+                </span>
+              )}
             </p>
           </div>
+
+          {/* Contact message */}
+          <p className="text-muted-foreground text-sm">
+            Para configurar ou alterar seu domínio personalizado, entre em
+            contato com o administrador do sistema.
+          </p>
+
+          {/* WhatsApp button */}
+          {env.NEXT_PUBLIC_SUPPORT_WHATSAPP && (
+            <Button variant="outline" asChild>
+              <a
+                href={`https://wa.me/${env.NEXT_PUBLIC_SUPPORT_WHATSAPP}?text=Olá! Gostaria de configurar/alterar o domínio da minha organização.`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <MessageCircle className="mr-2 h-4 w-4" />
+                Falar no WhatsApp
+              </a>
+            </Button>
+          )}
         </CardContent>
       </Card>
 
