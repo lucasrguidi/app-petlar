@@ -6,6 +6,7 @@ import { catsRouter } from './cats'
 import { dashboardRouter } from './dashboard'
 import { formsRouter } from './forms'
 import { orgsRouter } from './orgs'
+import { sponsorsRouter } from './sponsors'
 import { uploadRouter } from './upload'
 import { usersRouter } from './users'
 
@@ -26,6 +27,7 @@ export const appRouter = router({
   cats: catsRouter,
   forms: formsRouter,
   orgs: orgsRouter,
+  sponsors: sponsorsRouter,
   users: usersRouter,
 })
 export type AppRouter = typeof appRouter
