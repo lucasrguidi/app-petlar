@@ -44,6 +44,15 @@ export function generateAdoptionTermKey(filename: string): string {
 }
 
 /**
+ * Generate a unique file key for sponsor logos
+ */
+export function generateSponsorFileKey(filename: string): string {
+  const extension = filename.split('.').pop() || 'jpg'
+  const uniqueId = nanoid()
+  return `sponsors/${uniqueId}.${extension}`
+}
+
+/**
  * Get a presigned URL for uploading a file directly to R2
  */
 export async function getPresignedUploadUrl(
