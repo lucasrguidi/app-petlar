@@ -4,6 +4,7 @@ import {
   Cat,
   ChevronRight,
   FileText,
+  Handshake,
   Heart,
   LayoutDashboard,
   Menu,
@@ -31,6 +32,12 @@ interface NavItem {
   description: string
 }
 
+interface NavSection {
+  label: string
+  adminOnly?: boolean
+  items: NavItem[]
+}
+
 interface AdminSidebarProps {
   orgName: string
   orgLogo: string | null
@@ -46,51 +53,81 @@ export function AdminSidebar({
   const slug = useOrgSlug()
   const [mobileOpen, setMobileOpen] = useState(false)
 
-  const navItems: NavItem[] = [
+  const navSections: NavSection[] = [
     {
-      title: 'Dashboard',
-      href: `/${slug}/admin` as Route,
-      icon: LayoutDashboard,
-      description: 'Visão geral',
+      label: 'Menu',
+      items: [
+        {
+          title: 'Dashboard',
+          href: `/${slug}/admin` as Route,
+          icon: LayoutDashboard,
+          description: 'Visão geral',
+        },
+        {
+          title: 'Gatos',
+          href: `/${slug}/admin/gatos` as Route,
+          icon: Cat,
+          description: 'Gerenciar felinos',
+        },
+        {
+          title: 'Adotados',
+          href: `/${slug}/admin/adotados` as Route,
+          icon: Heart,
+          description: 'Histórico de adoções',
+        },
+        {
+          title: 'Formulários',
+          href: `/${slug}/admin/formularios` as Route,
+          icon: FileText,
+          adminOnly: true,
+          description: 'Configurar formulários',
+        },
+        {
+          title: 'Equipe',
+          href: `/${slug}/admin/usuarios` as Route,
+          icon: Users,
+          adminOnly: true,
+          description: 'Gerenciar usuários',
+        },
+      ],
     },
     {
-      title: 'Gatos',
-      href: `/${slug}/admin/gatos` as Route,
-      icon: Cat,
-      description: 'Gerenciar felinos',
-    },
-    {
-      title: 'Adotados',
-      href: `/${slug}/admin/adotados` as Route,
-      icon: Heart,
-      description: 'Histórico de adoções',
-    },
-    {
-      title: 'Formulários',
-      href: `/${slug}/admin/formularios` as Route,
-      icon: FileText,
+      label: 'Meu Site',
       adminOnly: true,
-      description: 'Configurar formulários',
+      items: [
+        {
+          title: 'Patrocinadores',
+          href: `/${slug}/admin/patrocinadores` as Route,
+          icon: Handshake,
+          adminOnly: true,
+          description: 'Logos de patrocinadores',
+        },
+      ],
     },
     {
-      title: 'Equipe',
-      href: `/${slug}/admin/usuarios` as Route,
-      icon: Users,
+      label: 'Sistema',
       adminOnly: true,
-      description: 'Gerenciar usuários',
-    },
-    {
-      title: 'Configuracoes',
-      href: `/${slug}/admin/configuracoes` as Route,
-      icon: Settings,
-      adminOnly: true,
-      description: 'Aparencia e dominio',
+      items: [
+        {
+          title: 'Configurações',
+          href: `/${slug}/admin/configuracoes` as Route,
+          icon: Settings,
+          adminOnly: true,
+          description: 'Aparência e domínio',
+        },
+      ],
     },
   ]
 
-  const filteredNavItems = navItems.filter(
-    (item) => !item.adminOnly || userRole === 'admin'
-  )
+  const filteredSections = navSections
+    .filter((section) => !section.adminOnly || userRole === 'admin')
+    .map((section) => ({
+      ...section,
+      items: section.items.filter(
+        (item) => !item.adminOnly || userRole === 'admin'
+      ),
+    }))
+    .filter((section) => section.items.length > 0)
 
   const isActiveRoute = (href: string) => {
     if (href === `/${slug}/admin`) {
@@ -138,58 +175,62 @@ export function AdminSidebar({
       <div className="via-border mx-4 h-px bg-gradient-to-r from-transparent to-transparent" />
 
       {/* Navigation */}
-      <nav className="flex-1 space-y-1 overflow-y-auto p-3">
-        <p className="text-muted-foreground/70 mb-2 px-3 text-[10px] font-semibold tracking-wider uppercase">
-          Menu
-        </p>
-        {filteredNavItems.map((item) => {
-          const isActive = isActiveRoute(item.href)
-          const Icon = item.icon
+      <nav className="flex-1 space-y-4 overflow-y-auto p-3">
+        {filteredSections.map((section) => (
+          <div key={section.label} className="space-y-1">
+            <p className="text-muted-foreground/70 mb-2 px-3 text-[10px] font-semibold tracking-wider uppercase">
+              {section.label}
+            </p>
+            {section.items.map((item) => {
+              const isActive = isActiveRoute(item.href)
+              const Icon = item.icon
 
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              onClick={() => setMobileOpen(false)}
-              className={cn(
-                'group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200',
-                isActive
-                  ? 'from-primary to-primary/90 text-primary-foreground shadow-primary-glow bg-gradient-to-r'
-                  : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground'
-              )}
-            >
-              {/* Active indicator bar */}
-              {isActive && (
-                <div className="bg-primary-foreground/30 absolute top-1/2 -left-3 h-8 w-1 -translate-y-1/2 rounded-r-full" />
-              )}
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setMobileOpen(false)}
+                  className={cn(
+                    'group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200',
+                    isActive
+                      ? 'from-primary to-primary/90 text-primary-foreground shadow-primary-glow bg-gradient-to-r'
+                      : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground'
+                  )}
+                >
+                  {/* Active indicator bar */}
+                  {isActive && (
+                    <div className="bg-primary-foreground/30 absolute top-1/2 -left-3 h-8 w-1 -translate-y-1/2 rounded-r-full" />
+                  )}
 
-              <div
-                className={cn(
-                  'flex h-8 w-8 items-center justify-center rounded-lg transition-all duration-200',
-                  isActive
-                    ? 'bg-primary-foreground/20'
-                    : 'bg-muted/50 group-hover:bg-primary/10 group-hover:text-primary'
-                )}
-              >
-                <Icon className="h-4 w-4" />
-              </div>
+                  <div
+                    className={cn(
+                      'flex h-8 w-8 items-center justify-center rounded-lg transition-all duration-200',
+                      isActive
+                        ? 'bg-primary-foreground/20'
+                        : 'bg-muted/50 group-hover:bg-primary/10 group-hover:text-primary'
+                    )}
+                  >
+                    <Icon className="h-4 w-4" />
+                  </div>
 
-              <div className="flex-1">
-                <span>{item.title}</span>
-              </div>
+                  <div className="flex-1">
+                    <span>{item.title}</span>
+                  </div>
 
-              {/* Arrow on hover */}
-              <ChevronRight
-                className={cn(
-                  'h-4 w-4 opacity-0 transition-all duration-200',
-                  isActive
-                    ? 'opacity-50'
-                    : 'group-hover:translate-x-0.5 group-hover:opacity-50'
-                )}
-              />
-            </Link>
-          )
-        })}
+                  {/* Arrow on hover */}
+                  <ChevronRight
+                    className={cn(
+                      'h-4 w-4 opacity-0 transition-all duration-200',
+                      isActive
+                        ? 'opacity-50'
+                        : 'group-hover:translate-x-0.5 group-hover:opacity-50'
+                    )}
+                  />
+                </Link>
+              )
+            })}
+          </div>
+        ))}
       </nav>
 
       {/* Footer */}
