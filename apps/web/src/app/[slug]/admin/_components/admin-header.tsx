@@ -1,6 +1,6 @@
 'use client'
 
-import { Bell, ChevronDown, LogOut, User } from 'lucide-react'
+import { ChevronDown, LogOut, User } from 'lucide-react'
 import Link from 'next/link'
 import { useTransition } from 'react'
 
@@ -84,21 +84,6 @@ export function AdminHeader({ user }: AdminHeaderProps) {
 
         {/* Right side - Actions */}
         <div className="flex items-center gap-2">
-          {/* Notifications */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-muted-foreground hover:bg-muted hover:text-foreground relative h-9 w-9 rounded-xl"
-          >
-            <Bell className="h-4 w-4" />
-            {/* Notification dot */}
-            <span className="bg-primary absolute top-2 right-2 h-2 w-2 rounded-full" />
-            <span className="sr-only">Notificações</span>
-          </Button>
-
-          {/* Divider */}
-          <div className="bg-border mx-1 h-6 w-px" />
-
           {/* User Menu */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
