@@ -2,38 +2,15 @@ import { db } from '@app-petlar/db'
 import { orgs } from '@app-petlar/db/schema'
 import { eq } from 'drizzle-orm'
 
-/**
- * Main domains that use slug-based routing (not custom domains).
- * Add production domains here as needed.
- */
-const MAIN_DOMAINS = [
-  'localhost',
-  '127.0.0.1',
-  'petlar.com',
-  'www.petlar.com',
-  'petlar.vercel.app',
-  'app-petlar-web.vercel.app',
-]
+import { isMainDomain } from './main-domains'
 
-/**
- * Simple in-memory cache for custom domain lookups.
- * TTL of 5 minutes to balance freshness with performance.
- */
+export { isMainDomain }
+
 const domainCache = new Map<
   string,
   { slug: string | null; expiresAt: number }
 >()
 const CACHE_TTL_MS = 5 * 60 * 1000
-
-/**
- * Checks if the hostname is a main domain (uses slug-based routing).
- */
-export function isMainDomain(hostname: string): boolean {
-  const cleanHost = hostname.split(':')[0]?.toLowerCase() ?? ''
-  return MAIN_DOMAINS.some(
-    (domain) => cleanHost === domain || cleanHost.endsWith(`.${domain}`)
-  )
-}
 
 /**
  * Gets the org slug for a custom domain.
