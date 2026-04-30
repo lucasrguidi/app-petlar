@@ -3,10 +3,12 @@ import { type Route } from 'next'
 import Link from 'next/link'
 
 import { Button } from '@/components/ui/button'
+import { buildOrgHref } from '@/lib/org-href'
 import { cn } from '@/lib/utils'
 
 interface HomeHeroProps {
   slug: string
+  isCustomDomain: boolean
 }
 
 const trustItems = [
@@ -15,7 +17,9 @@ const trustItems = [
   { icon: '🛡️', text: 'Adoção segura e responsável' },
 ] as const
 
-export function HomeHero({ slug }: HomeHeroProps) {
+export function HomeHero({ slug, isCustomDomain }: HomeHeroProps) {
+  const orgHref = (path: string) =>
+    buildOrgHref(path, slug, isCustomDomain) as Route
   return (
     <section
       id="inicio"
@@ -117,7 +121,7 @@ export function HomeHero({ slug }: HomeHeroProps) {
                   'hover:scale-[1.02] active:scale-[0.98]'
                 )}
               >
-                <Link href={`/${slug}#gatos-disponiveis` as Route}>
+                <Link href={orgHref('#gatos-disponiveis')}>
                   <PawPrint className="mr-2 h-5 w-5 transition-transform group-hover:rotate-12" />
                   Ver gatinhos disponíveis
                   <ArrowDown className="ml-2 h-4 w-4 animate-bounce" />
@@ -135,7 +139,7 @@ export function HomeHero({ slug }: HomeHeroProps) {
                   'transition-all duration-200'
                 )}
               >
-                <Link href={`/${slug}#como-funciona` as Route}>
+                <Link href={orgHref('#como-funciona')}>
                   Como funciona
                 </Link>
               </Button>

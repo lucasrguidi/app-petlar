@@ -9,10 +9,10 @@ import {
   MessageCircle,
   Sparkles,
 } from 'lucide-react'
-import { type Route } from 'next'
 import Link from 'next/link'
 
 import { Button } from '@/components/ui/button'
+import { useOrgHref } from '@/hooks/use-org-href'
 import { cn } from '@/lib/utils'
 
 interface CatSummary {
@@ -25,14 +25,13 @@ interface CatSummary {
 interface ApplicationSuccessProps {
   cat: CatSummary
   applicantEmail: string
-  slug: string
 }
 
 export function ApplicationSuccess({
   cat,
   applicantEmail,
-  slug,
 }: ApplicationSuccessProps) {
+  const homeHref = useOrgHref('')
   return (
     <div className="mx-auto max-w-2xl">
       {/* Success Card */}
@@ -240,7 +239,7 @@ export function ApplicationSuccess({
                 'hover:shadow-xl hover:shadow-primary/35 hover:brightness-110'
               )}
             >
-              <Link href={`/${slug}` as Route}>
+              <Link href={homeHref}>
                 Ver outros gatos
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>

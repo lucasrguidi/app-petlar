@@ -499,7 +499,6 @@ export function ApplicationPage({ slug, catId }: ApplicationPageProps) {
       <ApplicationSuccess
         cat={catData}
         applicantEmail={successEmail}
-        slug={slug}
       />
     )
   }
@@ -518,7 +517,6 @@ export function ApplicationPage({ slug, catId }: ApplicationPageProps) {
             <ApplicationAlreadyConfirmed
               applicantEmail={confirmedApplicationContact.email}
               applicantWhatsapp={confirmedApplicationContact.whatsapp}
-              slug={slug}
             />
           </ApplicationFormCard>
         ) : step === 'confirm' && pendingConfirmation ? (

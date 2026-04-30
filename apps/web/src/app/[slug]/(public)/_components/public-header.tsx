@@ -5,8 +5,10 @@ import { type Route } from 'next'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 
+import { useIsCustomDomain } from '@/components/custom-domain-provider'
 import { Button } from '@/components/ui/button'
 import { useOrgSlug } from '@/hooks/use-org-slug'
+import { buildOrgHref } from '@/lib/org-href'
 import { cn } from '@/lib/utils'
 
 interface PublicHeaderProps {
@@ -22,8 +24,12 @@ const navItems = [
 
 export function PublicHeader({ orgName, orgLogo }: PublicHeaderProps) {
   const slug = useOrgSlug()
+  const isCustomDomain = useIsCustomDomain()
   const [menuOpen, setMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+
+  const orgHref = (path: string) =>
+    buildOrgHref(path, slug, isCustomDomain) as Route
 
   useEffect(() => {
     const handleScroll = () => {
@@ -44,7 +50,7 @@ export function PublicHeader({ orgName, orgLogo }: PublicHeaderProps) {
     }
   }, [menuOpen])
 
-  const sectionHref = (sectionId: string) => `/${slug}#${sectionId}` as Route
+  const sectionHref = (sectionId: string) => orgHref(`#${sectionId}`)
 
   return (
     <>
@@ -59,7 +65,7 @@ export function PublicHeader({ orgName, orgLogo }: PublicHeaderProps) {
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
           {/* Logo */}
           <Link
-            href={`/${slug}` as Route}
+            href={orgHref('')}
             className="group flex items-center gap-3"
           >
             <div
@@ -122,7 +128,7 @@ export function PublicHeader({ orgName, orgLogo }: PublicHeaderProps) {
               variant="ghost"
               className="rounded-xl text-foreground/80 hover:bg-background/50 hover:text-foreground"
             >
-              <Link href={`/${slug}/login` as Route}>Sou da ONG</Link>
+              <Link href={orgHref('/login')}>Sou da ONG</Link>
             </Button>
             <Button
               asChild
@@ -228,7 +234,7 @@ export function PublicHeader({ orgName, orgLogo }: PublicHeaderProps) {
               className="w-full rounded-xl border-foreground/20 py-6 text-foreground"
             >
               <Link
-                href={`/${slug}/login` as Route}
+                href={orgHref('/login')}
                 onClick={() => setMenuOpen(false)}
               >
                 Sou da ONG

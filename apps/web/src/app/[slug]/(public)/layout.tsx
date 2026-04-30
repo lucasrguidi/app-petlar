@@ -1,11 +1,18 @@
 import { env } from '@app-petlar/env/server'
 import { type Metadata } from 'next'
+import { headers } from 'next/headers'
 import { notFound } from 'next/navigation'
 
 import { getOrgBySlug } from '../_lib/get-org-by-slug'
 
 import { PublicFooter } from './_components/public-footer'
 import { PublicHeader } from './_components/public-header'
+
+import { getIsCustomDomain } from '@/lib/get-is-custom-domain'
+import { isMainDomain } from '@/lib/main-domains'
+import { buildOrgHref } from '@/lib/org-href'
+
+
 
 interface PublicLayoutProps {
   children: React.ReactNode
@@ -22,7 +29,7 @@ const defaultDescription =
 export async function generateMetadata({
   params,
 }: PublicMetadataProps): Promise<Metadata> {
-  const { slug } = await params
+  const [{ slug }, headersList] = await Promise.all([params, headers()])
   const org = await getOrgBySlug(slug)
 
   if (!org) {
@@ -36,8 +43,12 @@ export async function generateMetadata({
     }
   }
 
-  const metadataBase = new URL(env.BETTER_AUTH_URL)
-  const canonicalPath = `/${slug}`
+  const host = headersList.get('host') ?? ''
+  const isCustomDomain = !isMainDomain(host)
+  const metadataBase = isCustomDomain
+    ? new URL(`https://${host}`)
+    : new URL(env.BETTER_AUTH_URL)
+  const canonicalPath = buildOrgHref('/', slug, isCustomDomain)
   const canonicalUrl = new URL(canonicalPath, metadataBase).toString()
   const title = `${org.name} | Adoção de Gatos`
   const description = `Conheça os gatinhos disponíveis para adoção na ${org.name}. Processo simples, acolhedor e responsável.`
@@ -79,7 +90,10 @@ export default async function PublicLayout({
   params,
 }: PublicLayoutProps) {
   const { slug } = await params
-  const org = await getOrgBySlug(slug)
+  const [org, isCustomDomain] = await Promise.all([
+    getOrgBySlug(slug),
+    getIsCustomDomain(),
+  ])
 
   if (!org) {
     notFound()
@@ -127,7 +141,7 @@ export default async function PublicLayout({
       <div className="relative z-10 flex min-h-screen flex-col">
         <PublicHeader orgName={org.name} orgLogo={org.logoUrl} />
         <main className="flex-1">{children}</main>
-        <PublicFooter orgName={org.name} slug={slug} />
+        <PublicFooter orgName={org.name} slug={slug} isCustomDomain={isCustomDomain} />
       </div>
     </div>
   )
