@@ -12,7 +12,6 @@ import {
   PawPrint,
   Phone,
 } from 'lucide-react'
-import { type Route } from 'next'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
@@ -61,7 +60,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
-import { useOrgSlug } from '@/hooks/use-org-slug'
+import { useOrgHref } from '@/hooks/use-org-href'
 import { trpc } from '@/utils/trpc'
 
 interface Photo {
@@ -78,7 +77,7 @@ interface CatFormProps {
 
 export function CatForm({ mode, initialData, catId }: CatFormProps) {
   const [isDonorOpen, setIsDonorOpen] = useState(false)
-  const slug = useOrgSlug()
+  const catListHref = useOrgHref('/admin/gatos')
   const router = useRouter()
   const queryClient = useQueryClient()
   const isEditMode = mode === 'edit'
@@ -121,7 +120,7 @@ export function CatForm({ mode, initialData, catId }: CatFormProps) {
       onSuccess: () => {
         toast.success('Gato cadastrado com sucesso!')
         queryClient.invalidateQueries({ queryKey: [['cats']] })
-        router.push(`/${slug}/admin/gatos` as Route)
+        router.push(catListHref)
       },
       onError: (error) => {
         toast.error(error.message || 'Erro ao cadastrar gato')
@@ -134,7 +133,7 @@ export function CatForm({ mode, initialData, catId }: CatFormProps) {
       onSuccess: () => {
         toast.success('Alterações salvas com sucesso!')
         queryClient.invalidateQueries({ queryKey: [['cats']] })
-        router.push(`/${slug}/admin/gatos` as Route)
+        router.push(catListHref)
       },
       onError: (error) => {
         toast.error(error.message || 'Erro ao atualizar gato')

@@ -1,11 +1,15 @@
 import { auth } from '@app-petlar/auth'
 import { Handshake } from 'lucide-react'
+import { type Route } from 'next'
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { Suspense } from 'react'
 
 import { SponsorsLoadingSkeleton } from './_components/sponsors-loading-skeleton'
 import { SponsorsPageContent } from './_components/sponsors-page-content'
+
+import { getIsCustomDomain } from '@/lib/get-is-custom-domain'
+import { buildOrgHref } from '@/lib/org-href'
 
 interface PatrocinadoresPageProps {
   params: Promise<{ slug: string }>
@@ -14,12 +18,14 @@ interface PatrocinadoresPageProps {
 export default async function PatrocinadoresPage({
   params,
 }: PatrocinadoresPageProps) {
-  const { slug } = await params
-
-  const session = await auth.api.getSession({ headers: await headers() })
+  const [{ slug }, session, isCustomDomain] = await Promise.all([
+    params,
+    auth.api.getSession({ headers: await headers() }),
+    getIsCustomDomain(),
+  ])
 
   if (!session || session.user.role !== 'admin') {
-    redirect(`/${slug}/admin`)
+    redirect(buildOrgHref('/admin', slug, isCustomDomain) as Route)
   }
 
   return (

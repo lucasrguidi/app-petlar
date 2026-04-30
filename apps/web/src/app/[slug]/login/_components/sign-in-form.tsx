@@ -2,7 +2,6 @@
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import { ArrowRight, Eye, EyeOff, Loader2, Lock, Mail } from 'lucide-react'
-import { type Route } from 'next'
 import Link from 'next/link'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
@@ -19,7 +18,7 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { useOrgSlug } from '@/hooks/use-org-slug'
+import { useOrgHref } from '@/hooks/use-org-href'
 import { authClient } from '@/lib/auth-client'
 import { buildOrgScopedAuthEmail } from '@/lib/org-auth-identity'
 import { cn } from '@/lib/utils'
@@ -41,7 +40,8 @@ interface SignInFormProps {
 }
 
 export function SignInForm({ orgId, callbackUrl }: SignInFormProps) {
-  const slug = useOrgSlug()
+  const adminHref = useOrgHref('/admin')
+  const forgotPasswordHref = useOrgHref('/esqueci-senha')
   const [showPassword, setShowPassword] = useState(false)
   const [focusedField, setFocusedField] = useState<string | null>(null)
 
@@ -100,7 +100,7 @@ export function SignInForm({ orgId, callbackUrl }: SignInFormProps) {
       }
 
       toast.success('Login realizado com sucesso!')
-      window.location.assign(callbackUrl ?? `/${slug}/admin`)
+      window.location.assign(callbackUrl ?? adminHref)
     } catch {
       toast.error('Não foi possível entrar. Tente novamente.')
     }
@@ -161,7 +161,7 @@ export function SignInForm({ orgId, callbackUrl }: SignInFormProps) {
                   Senha
                 </FormLabel>
                 <Link
-                  href={`/${slug}/esqueci-senha` as Route}
+                  href={forgotPasswordHref}
                   className="text-primary hover:text-primary/80 text-xs font-medium transition-colors"
                 >
                   Esqueceu a senha?

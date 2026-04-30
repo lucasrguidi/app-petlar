@@ -1,11 +1,15 @@
 import { auth } from '@app-petlar/auth'
 import { Settings } from 'lucide-react'
+import { type Route } from 'next'
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { Suspense } from 'react'
 
 import { SettingsLoadingSkeleton } from './_components/settings-loading-skeleton'
 import { SettingsPageContent } from './_components/settings-page-content'
+
+import { getIsCustomDomain } from '@/lib/get-is-custom-domain'
+import { buildOrgHref } from '@/lib/org-href'
 
 interface ConfiguracoesPageProps {
   params: Promise<{ slug: string }>
@@ -14,12 +18,14 @@ interface ConfiguracoesPageProps {
 export default async function ConfiguracoesPage({
   params,
 }: ConfiguracoesPageProps) {
-  const { slug } = await params
-
-  const session = await auth.api.getSession({ headers: await headers() })
+  const [{ slug }, session, isCustomDomain] = await Promise.all([
+    params,
+    auth.api.getSession({ headers: await headers() }),
+    getIsCustomDomain(),
+  ])
 
   if (!session || session.user.role !== 'admin') {
-    redirect(`/${slug}/admin`)
+    redirect(buildOrgHref('/admin', slug, isCustomDomain) as Route)
   }
 
   return (

@@ -10,7 +10,6 @@ import {
   Lock,
   RefreshCw,
 } from 'lucide-react'
-import { type Route } from 'next'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
@@ -28,7 +27,7 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { useOrgSlug } from '@/hooks/use-org-slug'
+import { useOrgHref } from '@/hooks/use-org-href'
 import { authClient } from '@/lib/auth-client'
 import { cn } from '@/lib/utils'
 
@@ -52,8 +51,9 @@ interface ResetPasswordFormProps {
 }
 
 export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
-  const slug = useOrgSlug()
   const router = useRouter()
+  const loginHref = useOrgHref('/login')
+  const forgotPasswordHref = useOrgHref('/esqueci-senha')
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [focusedField, setFocusedField] = useState<string | null>(null)
@@ -91,7 +91,7 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
       toast.success(
         'Senha redefinida com sucesso! Faça login com sua nova senha.'
       )
-      router.push(`/${slug}/login`)
+      router.push(loginHref)
     } catch {
       toast.error('Não foi possível redefinir a senha. Tente novamente.')
     }
@@ -127,13 +127,13 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
 
         <div className="flex flex-col gap-3 pt-2">
           <Button asChild className="rounded-xl">
-            <Link href={`/${slug}/esqueci-senha` as Route}>
+            <Link href={forgotPasswordHref}>
               <RefreshCw className="mr-2 h-4 w-4" />
               Solicitar novo link
             </Link>
           </Button>
           <Button asChild variant="outline" className="rounded-xl">
-            <Link href={`/${slug}/login` as Route}>Voltar para login</Link>
+            <Link href={loginHref}>Voltar para login</Link>
           </Button>
         </div>
       </div>

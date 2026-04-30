@@ -1,5 +1,6 @@
 import { auth } from '@app-petlar/auth'
 import { FileText, Plus } from 'lucide-react'
+import { type Route } from 'next'
 import { headers } from 'next/headers'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
@@ -9,6 +10,8 @@ import { FormsLoadingSkeleton } from './_components/forms-loading-skeleton'
 import { FormsPageContent } from './_components/forms-page-content'
 
 import { Button } from '@/components/ui/button'
+import { getIsCustomDomain } from '@/lib/get-is-custom-domain'
+import { buildOrgHref } from '@/lib/org-href'
 
 interface FormulariosPageProps {
   params: Promise<{ slug: string }>
@@ -17,13 +20,21 @@ interface FormulariosPageProps {
 export default async function FormulariosPage({
   params,
 }: FormulariosPageProps) {
-  const { slug } = await params
-
-  const session = await auth.api.getSession({ headers: await headers() })
+  const [{ slug }, session, isCustomDomain] = await Promise.all([
+    params,
+    auth.api.getSession({ headers: await headers() }),
+    getIsCustomDomain(),
+  ])
 
   if (!session || session.user.role !== 'admin') {
-    redirect(`/${slug}/admin`)
+    redirect(buildOrgHref('/admin', slug, isCustomDomain) as Route)
   }
+
+  const newFormHref = buildOrgHref(
+    '/admin/formularios/novo',
+    slug,
+    isCustomDomain,
+  ) as Route
 
   return (
     <div className="mx-auto flex h-full w-full max-w-6xl flex-col">
@@ -42,7 +53,7 @@ export default async function FormulariosPage({
           asChild
           className="shadow-primary-glow hover:shadow-primary-glow-hover hidden gap-2 rounded-xl sm:flex"
         >
-          <Link href={`/${slug}/admin/formularios/novo`}>
+          <Link href={newFormHref}>
             <Plus className="h-4 w-4" />
             Criar novo formulário
           </Link>
@@ -54,7 +65,7 @@ export default async function FormulariosPage({
       </Suspense>
 
       <Link
-        href={`/${slug}/admin/formularios/novo`}
+        href={newFormHref}
         className="bg-primary text-primary-foreground shadow-primary-glow fixed right-6 bottom-6 z-50 flex h-14 w-14 items-center justify-center rounded-xl transition-transform hover:scale-105 active:scale-95 sm:hidden"
       >
         <Plus className="h-6 w-6" />

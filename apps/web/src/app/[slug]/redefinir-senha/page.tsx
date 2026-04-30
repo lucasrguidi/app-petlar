@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 
+
 import { getOrgBySlug } from '../_lib/get-org-by-slug'
 
 import { ResetPasswordForm } from './_components/reset-password-form'
@@ -17,6 +18,8 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
+import { getIsCustomDomain } from '@/lib/get-is-custom-domain'
+import { buildOrgHref } from '@/lib/org-href'
 
 interface ResetPasswordPageProps {
   params: Promise<{ slug: string }>
@@ -80,7 +83,9 @@ function FormSkeleton() {
   )
 }
 
-function MissingTokenState({ slug }: { slug: string }) {
+function MissingTokenState({ slug, isCustomDomain }: { slug: string; isCustomDomain: boolean }) {
+  const orgHref = (path: string) =>
+    buildOrgHref(path, slug, isCustomDomain) as Route
   return (
     <div className="space-y-6 text-center">
       <div className="flex justify-center">
@@ -98,13 +103,13 @@ function MissingTokenState({ slug }: { slug: string }) {
 
       <div className="flex flex-col gap-3 pt-2">
         <Button asChild className="rounded-xl">
-          <Link href={`/${slug}/esqueci-senha` as Route}>
+          <Link href={orgHref('/esqueci-senha')}>
             <RefreshCw className="mr-2 h-4 w-4" />
             Solicitar novo link
           </Link>
         </Button>
         <Button asChild variant="outline" className="rounded-xl">
-          <Link href={`/${slug}/login` as Route}>Voltar para login</Link>
+          <Link href={orgHref('/login')}>Voltar para login</Link>
         </Button>
       </div>
     </div>
@@ -115,7 +120,11 @@ export default async function ResetPasswordPage({
   params,
   searchParams,
 }: ResetPasswordPageProps) {
-  const [{ slug }, query] = await Promise.all([params, searchParams])
+  const [{ slug }, query, isCustomDomain] = await Promise.all([
+    params,
+    searchParams,
+    getIsCustomDomain(),
+  ])
   const org = await getOrgBySlug(slug)
 
   if (!org) {
@@ -173,7 +182,7 @@ export default async function ResetPasswordPage({
                 <ResetPasswordForm token={token} />
               </Suspense>
             ) : (
-              <MissingTokenState slug={slug} />
+              <MissingTokenState slug={slug} isCustomDomain={isCustomDomain} />
             )}
           </CardContent>
         </Card>

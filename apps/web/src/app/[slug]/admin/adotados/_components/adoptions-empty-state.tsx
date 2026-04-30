@@ -5,7 +5,7 @@ import Link from 'next/link'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { useOrgSlug } from '@/hooks/use-org-slug'
+import { useOrgHref } from '@/hooks/use-org-href'
 
 interface AdoptionsEmptyStateProps {
   hasFilters: boolean
@@ -16,7 +16,7 @@ export function AdoptionsEmptyState({
   hasFilters,
   onClearFilters,
 }: AdoptionsEmptyStateProps) {
-  const slug = useOrgSlug()
+  const catsHref = useOrgHref('/admin/gatos')
 
   if (hasFilters) {
     return (
@@ -56,7 +56,7 @@ export function AdoptionsEmptyState({
           Quando você marcar um gato como adotado, ele aparecerá aqui.
         </p>
         <Button asChild className="shadow-primary-glow mt-4 gap-2 rounded-xl">
-          <Link href={`/${slug}/admin/gatos`}>Ver gatos disponíveis</Link>
+          <Link href={catsHref}>Ver gatos disponíveis</Link>
         </Button>
       </CardContent>
     </Card>

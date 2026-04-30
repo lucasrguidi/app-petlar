@@ -1,7 +1,6 @@
 'use client'
 
 import { Bell, ChevronDown, LogOut, User } from 'lucide-react'
-import { type Route } from 'next'
 import Link from 'next/link'
 import { useTransition } from 'react'
 
@@ -15,6 +14,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { useOrgHref } from '@/hooks/use-org-href'
 import { useOrgSlug } from '@/hooks/use-org-slug'
 import { cn } from '@/lib/utils'
 
@@ -62,6 +62,7 @@ function getRoleBadge(role: UserRole) {
 
 export function AdminHeader({ user }: AdminHeaderProps) {
   const slug = useOrgSlug()
+  const profileHref = useOrgHref('/admin/perfil')
   const [isPending, startTransition] = useTransition()
 
   function handleSignOut() {
@@ -161,7 +162,7 @@ export function AdminHeader({ user }: AdminHeaderProps) {
               </div>
 
               <DropdownMenuItem asChild className="cursor-pointer rounded-lg">
-                <Link href={`/${slug}/admin/perfil` as Route}>
+                <Link href={profileHref}>
                   <User className="mr-2 h-4 w-4" />
                   <span>Meu perfil</span>
                 </Link>

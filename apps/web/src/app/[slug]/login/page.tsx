@@ -16,6 +16,8 @@ import {
 } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { sanitizeCallbackUrlForOrg } from '@/lib/auth-routing'
+import { getIsCustomDomain } from '@/lib/get-is-custom-domain'
+import { buildOrgHref } from '@/lib/org-href'
 import { getActiveSessionUser } from '@/lib/server-auth'
 
 interface LoginPageProps {
@@ -91,10 +93,11 @@ export default async function OrgLoginPage({
   params,
   searchParams,
 }: LoginPageProps) {
-  const [{ slug }, query, currentUser] = await Promise.all([
+  const [{ slug }, query, currentUser, isCustomDomain] = await Promise.all([
     params,
     searchParams,
     getActiveSessionUser(),
+    getIsCustomDomain(),
   ])
   const org = await getOrgBySlug(slug)
 
@@ -105,7 +108,7 @@ export default async function OrgLoginPage({
   const safeCallbackUrl = sanitizeCallbackUrlForOrg(query.callbackUrl, slug)
 
   if (currentUser?.orgId === org.id) {
-    redirect((safeCallbackUrl ?? `/${slug}/admin`) as Route)
+    redirect((safeCallbackUrl ?? buildOrgHref('/admin', slug, isCustomDomain)) as Route)
   }
 
   return (
