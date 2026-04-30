@@ -20,6 +20,7 @@ import { MarkAdoptedSheet } from './mark-adopted-sheet'
 
 import { useIsCustomDomain } from '@/components/custom-domain-provider'
 import { Button } from '@/components/ui/button'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -51,6 +52,7 @@ export function CatActionsMenu({ cat }: CatActionsMenuProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [isDuplicatingToEdit, setIsDuplicatingToEdit] = useState(false)
   const [isMarkAdoptedSheetOpen, setIsMarkAdoptedSheetOpen] = useState(false)
+  const [deletingCat, setDeletingCat] = useState<Cat | null>(null)
 
   // Query for fetching full cat data when duplicating to edit
   const { refetch: fetchCatData } = useQuery({
@@ -79,6 +81,7 @@ export function CatActionsMenu({ cat }: CatActionsMenuProps) {
       onSuccess: () => {
         toast.success('Gato excluído com sucesso!')
         invalidateQueries()
+        setDeletingCat(null)
       },
       onError: (error) => {
         toast.error(error.message || 'Erro ao excluir gato')
@@ -148,8 +151,7 @@ export function CatActionsMenu({ cat }: CatActionsMenuProps) {
 
   const handleDelete = () => {
     setIsOpen(false)
-    if (!confirm(`Tem certeza que deseja excluir "${cat.name}"?`)) return
-    deleteMutation.mutate({ id: cat.id })
+    setDeletingCat(cat)
   }
 
   const handleToggleStatus = () => {
@@ -252,6 +254,25 @@ export function CatActionsMenu({ cat }: CatActionsMenuProps) {
         open={isMarkAdoptedSheetOpen}
         onOpenChange={setIsMarkAdoptedSheetOpen}
         cat={cat}
+      />
+
+      <ConfirmDialog
+        open={!!deletingCat}
+        onOpenChange={(open) => {
+          if (!open) setDeletingCat(null)
+        }}
+        variant="destructive"
+        icon={Trash2}
+        title="Excluir gato"
+        description={`Tem certeza que deseja excluir "${deletingCat?.name}"? Esta ação não pode ser desfeita.`}
+        actionLabel="Excluir"
+        actionLoadingLabel="Excluindo..."
+        isLoading={deleteMutation.isPending}
+        onAction={() => {
+          if (deletingCat) {
+            deleteMutation.mutate({ id: deletingCat.id })
+          }
+        }}
       />
     </>
   )
