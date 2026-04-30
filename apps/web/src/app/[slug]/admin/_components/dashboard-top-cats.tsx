@@ -1,11 +1,14 @@
 'use client'
 
 import { Cat, Trophy } from 'lucide-react'
+import { type Route } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 
+import { useIsCustomDomain } from '@/components/custom-domain-provider'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useOrgSlug } from '@/hooks/use-org-slug'
+import { buildOrgHref } from '@/lib/org-href'
 
 interface TopCat {
   id: string
@@ -20,6 +23,9 @@ interface DashboardTopCatsProps {
 
 export function DashboardTopCats({ cats }: DashboardTopCatsProps) {
   const slug = useOrgSlug()
+  const isCustomDomain = useIsCustomDomain()
+  const orgHref = (path: string) =>
+    buildOrgHref(path, slug, isCustomDomain) as Route
 
   return (
     <Card className="border-border/60 bg-card/95 shadow-warm-sm rounded-xl border">
@@ -47,7 +53,7 @@ export function DashboardTopCats({ cats }: DashboardTopCatsProps) {
             {cats.map((cat, index) => (
               <Link
                 key={cat.id}
-                href={`/${slug}/admin/gatos/${cat.id}/interessados`}
+                href={orgHref(`/admin/gatos/${cat.id}/interessados`)}
                 className="hover:bg-muted/40 group flex items-center gap-3 rounded-lg p-2 transition-colors"
               >
                 {/* Rank */}

@@ -8,7 +8,6 @@ import {
   Loader2,
   Mail,
 } from 'lucide-react'
-import { type Route } from 'next'
 import Link from 'next/link'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
@@ -25,7 +24,7 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { useOrgSlug } from '@/hooks/use-org-slug'
+import { useOrgHref } from '@/hooks/use-org-href'
 import { authClient } from '@/lib/auth-client'
 import { buildOrgScopedAuthEmail } from '@/lib/org-auth-identity'
 import { cn } from '@/lib/utils'
@@ -41,7 +40,8 @@ interface ForgotPasswordFormProps {
 }
 
 export function ForgotPasswordForm({ orgId }: ForgotPasswordFormProps) {
-  const slug = useOrgSlug()
+  const loginHref = useOrgHref('/login')
+  const resetPasswordHref = useOrgHref('/redefinir-senha')
   const [focusedField, setFocusedField] = useState<string | null>(null)
   const [isSuccess, setIsSuccess] = useState(false)
 
@@ -63,7 +63,7 @@ export function ForgotPasswordForm({ orgId }: ForgotPasswordFormProps) {
 
       const { error } = await authClient.requestPasswordReset({
         email: authEmail,
-        redirectTo: `/${slug}/redefinir-senha`,
+        redirectTo: resetPasswordHref,
       })
 
       if (error) {
@@ -99,7 +99,7 @@ export function ForgotPasswordForm({ orgId }: ForgotPasswordFormProps) {
 
         <div className="pt-2">
           <Button asChild variant="outline" className="rounded-xl">
-            <Link href={`/${slug}/login` as Route}>
+            <Link href={loginHref}>
               <ArrowLeft className="mr-2 h-4 w-4" />
               Voltar para login
             </Link>
@@ -175,7 +175,7 @@ export function ForgotPasswordForm({ orgId }: ForgotPasswordFormProps) {
         {/* Link para voltar */}
         <div className="text-center">
           <Link
-            href={`/${slug}/login` as Route}
+            href={loginHref}
             className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 text-sm transition-colors"
           >
             <ArrowLeft className="h-3 w-3" />

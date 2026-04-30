@@ -9,23 +9,22 @@ import {
   PartyPopper,
   Sparkles,
 } from 'lucide-react'
-import { type Route } from 'next'
 import Link from 'next/link'
 
 import { Button } from '@/components/ui/button'
+import { useOrgHref } from '@/hooks/use-org-href'
 import { cn } from '@/lib/utils'
 
 interface ApplicationAlreadyConfirmedProps {
   applicantEmail: string
   applicantWhatsapp: string
-  slug: string
 }
 
 export function ApplicationAlreadyConfirmed({
   applicantEmail,
   applicantWhatsapp,
-  slug,
 }: ApplicationAlreadyConfirmedProps) {
+  const homeHref = useOrgHref('')
   return (
     <div className="animate-fade-in space-y-5">
       {/* Celebration header */}
@@ -185,7 +184,7 @@ export function ApplicationAlreadyConfirmed({
           'hover:shadow-xl hover:shadow-primary/35 hover:brightness-110'
         )}
       >
-        <Link href={`/${slug}` as Route}>
+        <Link href={homeHref}>
           Que tal conhecer outros gatinhos?
           <ArrowRight className="ml-2 h-5 w-5" />
         </Link>

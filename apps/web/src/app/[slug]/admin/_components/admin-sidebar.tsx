@@ -18,8 +18,10 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 
+import { useIsCustomDomain } from '@/components/custom-domain-provider'
 import { Button } from '@/components/ui/button'
 import { useOrgSlug } from '@/hooks/use-org-slug'
+import { buildOrgHref } from '@/lib/org-href'
 import { cn } from '@/lib/utils'
 
 type UserRole = 'admin' | 'volunteer'
@@ -51,7 +53,11 @@ export function AdminSidebar({
 }: AdminSidebarProps) {
   const pathname = usePathname()
   const slug = useOrgSlug()
+  const isCustomDomain = useIsCustomDomain()
   const [mobileOpen, setMobileOpen] = useState(false)
+
+  const orgHref = (path: string) =>
+    buildOrgHref(path, slug, isCustomDomain) as Route
 
   const navSections: NavSection[] = [
     {
@@ -59,32 +65,32 @@ export function AdminSidebar({
       items: [
         {
           title: 'Dashboard',
-          href: `/${slug}/admin` as Route,
+          href: orgHref('/admin'),
           icon: LayoutDashboard,
           description: 'Visão geral',
         },
         {
           title: 'Gatos',
-          href: `/${slug}/admin/gatos` as Route,
+          href: orgHref('/admin/gatos'),
           icon: Cat,
           description: 'Gerenciar felinos',
         },
         {
           title: 'Adotados',
-          href: `/${slug}/admin/adotados` as Route,
+          href: orgHref('/admin/adotados'),
           icon: Heart,
           description: 'Histórico de adoções',
         },
         {
           title: 'Formulários',
-          href: `/${slug}/admin/formularios` as Route,
+          href: orgHref('/admin/formularios'),
           icon: FileText,
           adminOnly: true,
           description: 'Configurar formulários',
         },
         {
           title: 'Equipe',
-          href: `/${slug}/admin/usuarios` as Route,
+          href: orgHref('/admin/usuarios'),
           icon: Users,
           adminOnly: true,
           description: 'Gerenciar usuários',
@@ -97,7 +103,7 @@ export function AdminSidebar({
       items: [
         {
           title: 'Patrocinadores',
-          href: `/${slug}/admin/patrocinadores` as Route,
+          href: orgHref('/admin/patrocinadores'),
           icon: Handshake,
           adminOnly: true,
           description: 'Logos de patrocinadores',
@@ -110,7 +116,7 @@ export function AdminSidebar({
       items: [
         {
           title: 'Configurações',
-          href: `/${slug}/admin/configuracoes` as Route,
+          href: orgHref('/admin/configuracoes'),
           icon: Settings,
           adminOnly: true,
           description: 'Aparência e domínio',
@@ -130,7 +136,7 @@ export function AdminSidebar({
     .filter((section) => section.items.length > 0)
 
   const isActiveRoute = (href: string) => {
-    if (href === `/${slug}/admin`) {
+    if (href === orgHref('/admin')) {
       return pathname === href
     }
     return pathname.startsWith(href)
@@ -141,7 +147,7 @@ export function AdminSidebar({
       {/* Logo Header */}
       <div className="p-4">
         <Link
-          href={`/${slug}/admin` as Route}
+          href={orgHref('/admin')}
           className="group hover:bg-primary/5 flex items-center gap-3 rounded-xl p-2 transition-colors"
         >
           {/* Logo */}

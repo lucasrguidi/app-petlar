@@ -556,7 +556,6 @@ export function ApplicationSheet({
                 <ApplicationAlreadyConfirmed
                   applicantEmail={confirmedApplicationContact.email}
                   applicantWhatsapp={confirmedApplicationContact.whatsapp}
-                  slug={slug}
                 />
               </div>
             </div>

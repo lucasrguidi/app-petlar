@@ -5,7 +5,7 @@ import Link from 'next/link'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { useOrgSlug } from '@/hooks/use-org-slug'
+import { useOrgHref } from '@/hooks/use-org-href'
 
 interface CatsEmptyStateProps {
   hasFilters: boolean
@@ -16,7 +16,7 @@ export function CatsEmptyState({
   hasFilters,
   onClearFilters,
 }: CatsEmptyStateProps) {
-  const slug = useOrgSlug()
+  const newCatHref = useOrgHref('/admin/gatos/novo')
   if (hasFilters) {
     return (
       <Card className="border-border/60 bg-card/95 shadow-warm-sm rounded-xl border">
@@ -55,7 +55,7 @@ export function CatsEmptyState({
           Comece cadastrando o primeiro gato disponível para adoção.
         </p>
         <Button asChild className="shadow-primary-glow mt-4 gap-2 rounded-xl">
-          <Link href={`/${slug}/admin/gatos/novo`}>
+          <Link href={newCatHref}>
             <Plus className="h-4 w-4" />
             Cadastrar primeiro gato
           </Link>

@@ -3,11 +3,13 @@ import { type Route } from 'next'
 import Link from 'next/link'
 
 import { Button } from '@/components/ui/button'
+import { buildOrgHref } from '@/lib/org-href'
 import { cn } from '@/lib/utils'
 
 interface PublicFooterProps {
   orgName: string
   slug: string
+  isCustomDomain: boolean
 }
 
 const links = [
@@ -16,7 +18,9 @@ const links = [
   { id: 'gatos-disponiveis', label: 'Gatos disponíveis' },
 ] as const
 
-export function PublicFooter({ orgName, slug }: PublicFooterProps) {
+export function PublicFooter({ orgName, slug, isCustomDomain }: PublicFooterProps) {
+  const orgHref = (path: string) =>
+    buildOrgHref(path, slug, isCustomDomain) as Route
   return (
     <footer className="relative overflow-hidden">
       {/* Main footer content */}
@@ -70,7 +74,7 @@ export function PublicFooter({ orgName, slug }: PublicFooterProps) {
                 {links.map((link) => (
                   <Link
                     key={link.id}
-                    href={`/${slug}#${link.id}` as Route}
+                    href={orgHref(`#${link.id}`)}
                     className={cn(
                       'flex items-center gap-2 text-sm text-foreground/70',
                       'transition-colors hover:text-primary'
@@ -102,7 +106,7 @@ export function PublicFooter({ orgName, slug }: PublicFooterProps) {
                   'hover:border-primary/30 hover:bg-primary/5 hover:text-primary'
                 )}
               >
-                <Link href={`/${slug}/login` as Route}>Acessar painel</Link>
+                <Link href={orgHref('/login')}>Acessar painel</Link>
               </Button>
             </div>
           </div>

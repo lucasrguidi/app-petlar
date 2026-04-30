@@ -12,12 +12,11 @@ import {
   Syringe,
   Venus,
 } from 'lucide-react'
-import { type Route } from 'next'
 import Link from 'next/link'
 import { useMemo, useState } from 'react'
 
 import { Button } from '@/components/ui/button'
-import { useOrgSlug } from '@/hooks/use-org-slug'
+import { useOrgHref } from '@/hooks/use-org-href'
 import { cn } from '@/lib/utils'
 
 export interface PublicCatCardData {
@@ -105,7 +104,7 @@ function HealthBadge({
 }
 
 export function PublicCatCard({ cat }: PublicCatCardProps) {
-  const slug = useOrgSlug()
+  const adoptionHref = useOrgHref(`/candidatura/${cat.id}`)
   const [expandedDescription, setExpandedDescription] = useState(false)
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0)
   const [isHovered, setIsHovered] = useState(false)
@@ -387,7 +386,7 @@ export function PublicCatCard({ cat }: PublicCatCardProps) {
             'hover:scale-[1.01] active:scale-[0.99]'
           )}
         >
-          <Link href={`/${slug}/candidatura/${cat.id}` as Route}>
+          <Link href={adoptionHref}>
             <Heart
               className={cn(
                 'mr-2 h-4 w-4 transition-transform',

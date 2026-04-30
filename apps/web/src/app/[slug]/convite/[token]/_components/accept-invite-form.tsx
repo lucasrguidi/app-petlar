@@ -15,6 +15,7 @@ import {
   Shield,
   User,
 } from 'lucide-react'
+import { type Route } from 'next'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
@@ -22,6 +23,7 @@ import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
 
+import { useIsCustomDomain } from '@/components/custom-domain-provider'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -34,7 +36,9 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useOrgHref } from '@/hooks/use-org-href'
 import { useOrgSlug } from '@/hooks/use-org-slug'
+import { buildOrgHref } from '@/lib/org-href'
 import { cn } from '@/lib/utils'
 import { trpc } from '@/utils/trpc'
 
@@ -75,10 +79,12 @@ function LoadingState() {
 
 function ErrorState({
   reason,
-  slug,
+  loginHref,
+  homeHref,
 }: {
   reason: 'org_not_found' | 'invite_not_found' | 'expired' | 'already_used'
-  slug: string
+  loginHref: Route
+  homeHref: Route
 }) {
   const messages = {
     org_not_found: {
@@ -125,14 +131,14 @@ function ErrorState({
       <div className="flex flex-col gap-3 pt-2">
         {reason === 'already_used' && (
           <Button asChild className="gap-2">
-            <Link href={`/${slug}/login`}>
+            <Link href={loginHref}>
               <ArrowRight className="h-4 w-4" />
               Ir para login
             </Link>
           </Button>
         )}
         <Button variant="outline" asChild>
-          <Link href={`/${slug}`}>Voltar ao início</Link>
+          <Link href={homeHref}>Voltar ao início</Link>
         </Button>
       </div>
     </div>
@@ -146,8 +152,8 @@ function InviteForm({
   invite: { email: string; role: string; orgName: string }
   token: string
 }) {
-  const slug = useOrgSlug()
   const router = useRouter()
+  const loginHref = useOrgHref('/login')
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [focusedField, setFocusedField] = useState<string | null>(null)
@@ -165,7 +171,7 @@ function InviteForm({
     trpc.users.acceptInvite.mutationOptions({
       onSuccess: () => {
         toast.success('Conta criada com sucesso!')
-        router.push(`/${slug}/login`)
+        router.push(loginHref)
       },
       onError: (error) => {
         toast.error(error.message)
@@ -392,6 +398,9 @@ function InviteForm({
 
 export function AcceptInviteForm({ token }: AcceptInviteFormProps) {
   const slug = useOrgSlug()
+  const isCustomDomain = useIsCustomDomain()
+  const loginHref = buildOrgHref('/login', slug, isCustomDomain) as Route
+  const homeHref = buildOrgHref('', slug, isCustomDomain) as Route
 
   const { data, isLoading, isError } = useQuery(
     trpc.users.validateInvite.queryOptions({ token, slug })
@@ -402,16 +411,16 @@ export function AcceptInviteForm({ token }: AcceptInviteFormProps) {
   }
 
   if (isError || !data) {
-    return <ErrorState reason="invite_not_found" slug={slug} />
+    return <ErrorState reason="invite_not_found" loginHref={loginHref} homeHref={homeHref} />
   }
 
   if (!data.valid && 'reason' in data) {
-    return <ErrorState reason={data.reason} slug={slug} />
+    return <ErrorState reason={data.reason} loginHref={loginHref} homeHref={homeHref} />
   }
 
   if (data.valid && 'invite' in data) {
     return <InviteForm invite={data.invite} token={token} />
   }
 
-  return <ErrorState reason="invite_not_found" slug={slug} />
+  return <ErrorState reason="invite_not_found" loginHref={loginHref} homeHref={homeHref} />
 }

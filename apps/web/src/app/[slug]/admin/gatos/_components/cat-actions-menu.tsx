@@ -18,6 +18,7 @@ import { toast } from 'sonner'
 
 import { MarkAdoptedSheet } from './mark-adopted-sheet'
 
+import { useIsCustomDomain } from '@/components/custom-domain-provider'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -27,6 +28,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { useOrgSlug } from '@/hooks/use-org-slug'
+import { buildOrgHref } from '@/lib/org-href'
 import { trpc } from '@/utils/trpc'
 
 interface Cat {
@@ -41,6 +43,9 @@ interface CatActionsMenuProps {
 
 export function CatActionsMenu({ cat }: CatActionsMenuProps) {
   const slug = useOrgSlug()
+  const isCustomDomain = useIsCustomDomain()
+  const orgHref = (path: string) =>
+    buildOrgHref(path, slug, isCustomDomain) as Route
   const router = useRouter()
   const queryClient = useQueryClient()
   const [isOpen, setIsOpen] = useState(false)
@@ -130,7 +135,7 @@ export function CatActionsMenu({ cat }: CatActionsMenuProps) {
           formId: data.formId ?? '',
         }
         const encoded = btoa(JSON.stringify(prefillData))
-        router.push(`/${slug}/admin/gatos/novo?prefill=${encoded}` as Route)
+        router.push(orgHref(`/admin/gatos/novo?prefill=${encoded}`))
       } else {
         toast.error('Erro ao carregar dados do gato')
       }
@@ -182,7 +187,7 @@ export function CatActionsMenu({ cat }: CatActionsMenuProps) {
             asChild
             className="hover:!bg-muted/80 focus:!bg-muted/80 hover:!text-foreground focus:!text-foreground cursor-pointer gap-2 rounded-lg px-2.5 py-1.5 text-[13px] transition-colors"
           >
-            <Link href={`/${slug}/admin/gatos/${cat.id}/editar`}>
+            <Link href={orgHref(`/admin/gatos/${cat.id}/editar`)}>
               <Pencil className="text-primary h-3.5 w-3.5" />
               <span className="font-medium">Editar</span>
             </Link>

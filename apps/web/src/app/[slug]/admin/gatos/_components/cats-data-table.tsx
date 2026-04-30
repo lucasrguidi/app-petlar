@@ -28,6 +28,7 @@ function formatPhone(value: string): string {
 
 import type { ColumnDef, Row } from '@tanstack/react-table'
 
+import { useIsCustomDomain } from '@/components/custom-domain-provider'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { DataTable } from '@/components/ui/data-table'
@@ -39,6 +40,7 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet'
 import { useOrgSlug } from '@/hooks/use-org-slug'
+import { buildOrgHref } from '@/lib/org-href'
 import { cn } from '@/lib/utils'
 
 interface CatPhoto {
@@ -263,7 +265,7 @@ function ExpandedContent({ cat }: { cat: Cat }) {
 
 function getColumns(
   onOpenPhotoPreview: (cat: Cat) => void,
-  slug: string
+  orgHref: (path: string) => Route
 ): ColumnDef<Cat>[] {
   return [
     // Expand column - compact toggle
@@ -352,7 +354,7 @@ function getColumns(
               </p>
 
               <Link
-                href={`/${slug}/admin/gatos/${cat.id}/interessados` as Route}
+                href={orgHref(`/admin/gatos/${cat.id}/interessados`)}
                 className={cn(
                   'mt-1 inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-[11px] font-medium sm:hidden',
                   hasPending
@@ -441,7 +443,7 @@ function getColumns(
           <div className="hidden sm:block">
             <Link
               href={
-                `/${slug}/admin/gatos/${row.original.id}/interessados` as Route
+                orgHref(`/admin/gatos/${row.original.id}/interessados`)
               }
               className={cn(
                 'group/int relative inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-medium transition-all duration-200',
@@ -515,6 +517,11 @@ function getColumns(
 
 export function CatsDataTable({ cats }: CatsDataTableProps) {
   const slug = useOrgSlug()
+  const isCustomDomain = useIsCustomDomain()
+  const orgHref = useCallback(
+    (path: string) => buildOrgHref(path, slug, isCustomDomain) as Route,
+    [slug, isCustomDomain]
+  )
   const [previewState, setPreviewState] = useState<{
     cat: Cat
     index: number
@@ -587,8 +594,8 @@ export function CatsDataTable({ cats }: CatsDataTableProps) {
   }, [])
 
   const columns = useMemo(
-    () => getColumns(openPhotoPreview, slug),
-    [openPhotoPreview, slug]
+    () => getColumns(openPhotoPreview, orgHref),
+    [openPhotoPreview, orgHref]
   )
 
   return (

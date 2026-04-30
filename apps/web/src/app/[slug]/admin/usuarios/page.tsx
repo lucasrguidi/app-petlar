@@ -1,11 +1,15 @@
 import { auth } from '@app-petlar/auth'
 import { Users } from 'lucide-react'
+import { type Route } from 'next'
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { Suspense } from 'react'
 
 import { UsersLoadingSkeleton } from './_components/users-loading-skeleton'
 import { UsersPageContent } from './_components/users-page-content'
+
+import { getIsCustomDomain } from '@/lib/get-is-custom-domain'
+import { buildOrgHref } from '@/lib/org-href'
 
 interface UsuariosPageProps {
   params: Promise<{ slug: string }>
@@ -19,13 +23,15 @@ export default async function UsuariosPage({
   params,
   searchParams,
 }: UsuariosPageProps) {
-  const { slug } = await params
-  const filters = await searchParams
-
-  const session = await auth.api.getSession({ headers: await headers() })
+  const [{ slug }, filters, session, isCustomDomain] = await Promise.all([
+    params,
+    searchParams,
+    auth.api.getSession({ headers: await headers() }),
+    getIsCustomDomain(),
+  ])
 
   if (!session || session.user.role !== 'admin') {
-    redirect(`/${slug}/admin`)
+    redirect(buildOrgHref('/admin', slug, isCustomDomain) as Route)
   }
 
   return (

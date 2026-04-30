@@ -5,7 +5,7 @@ import Link from 'next/link'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { useOrgSlug } from '@/hooks/use-org-slug'
+import { useOrgHref } from '@/hooks/use-org-href'
 
 interface FormsEmptyStateProps {
   hasFilters: boolean
@@ -16,7 +16,7 @@ export function FormsEmptyState({
   hasFilters,
   onClearFilters,
 }: FormsEmptyStateProps) {
-  const slug = useOrgSlug()
+  const newFormHref = useOrgHref('/admin/formularios/novo')
 
   if (hasFilters) {
     return (
@@ -56,7 +56,7 @@ export function FormsEmptyState({
           Crie seu primeiro modelo para usar nas candidaturas dos gatos.
         </p>
         <Button asChild className="shadow-primary-glow mt-4 gap-2 rounded-xl">
-          <Link href={`/${slug}/admin/formularios/novo`}>
+          <Link href={newFormHref}>
             <Plus className="h-4 w-4" />
             Criar primeiro formulário
           </Link>

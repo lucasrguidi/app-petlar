@@ -18,6 +18,7 @@ import { useRouter } from 'next/navigation'
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
 
+import { useIsCustomDomain } from '@/components/custom-domain-provider'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -46,6 +47,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { useOrgSlug } from '@/hooks/use-org-slug'
+import { buildOrgHref } from '@/lib/org-href'
 import { trpc } from '@/utils/trpc'
 
 type FieldType = 'text' | 'textarea' | 'boolean' | 'select' | 'media' | 'date'
@@ -267,6 +269,7 @@ function isFieldVisible(
 
 export function FormBuilder({ mode, formId, initialData }: FormBuilderProps) {
   const slug = useOrgSlug()
+  const isCustomDomain = useIsCustomDomain()
   const router = useRouter()
   const queryClient = useQueryClient()
 
@@ -317,7 +320,7 @@ export function FormBuilder({ mode, formId, initialData }: FormBuilderProps) {
       onSuccess: (result) => {
         toast.success('Formulário criado com sucesso')
         queryClient.invalidateQueries({ queryKey: [['forms']] })
-        router.push(`/${slug}/admin/formularios/${result.id}` as Route)
+        router.push(buildOrgHref(`/admin/formularios/${result.id}`, slug, isCustomDomain) as Route)
       },
       onError: (error) => {
         toast.error(error.message || 'Erro ao criar formulário')

@@ -2,7 +2,6 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Copy, MoreVertical, Pencil, Power, Trash2 } from 'lucide-react'
-import { type Route } from 'next'
 import Link from 'next/link'
 import { useState } from 'react'
 import { toast } from 'sonner'
@@ -15,7 +14,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { useOrgSlug } from '@/hooks/use-org-slug'
+import { useOrgHref } from '@/hooks/use-org-href'
 import { trpc } from '@/utils/trpc'
 
 interface Form {
@@ -30,7 +29,7 @@ interface FormActionsMenuProps {
 }
 
 export function FormActionsMenu({ form }: FormActionsMenuProps) {
-  const slug = useOrgSlug()
+  const editHref = useOrgHref(`/admin/formularios/${form.id}`)
   const queryClient = useQueryClient()
   const [isOpen, setIsOpen] = useState(false)
 
@@ -129,7 +128,7 @@ export function FormActionsMenu({ form }: FormActionsMenuProps) {
           asChild
           className="hover:!bg-muted/80 focus:!bg-muted/80 hover:!text-foreground focus:!text-foreground cursor-pointer gap-2 rounded-lg px-2.5 py-1.5 text-[13px] transition-colors"
         >
-          <Link href={`/${slug}/admin/formularios/${form.id}` as Route}>
+          <Link href={editHref}>
             <Pencil className="text-primary h-3.5 w-3.5" />
             <span className="font-medium">Editar</span>
           </Link>

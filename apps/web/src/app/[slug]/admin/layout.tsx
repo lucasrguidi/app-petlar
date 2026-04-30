@@ -3,12 +3,16 @@ import { db } from '@app-petlar/db'
 import { orgs, user as authUser } from '@app-petlar/db/schema'
 import { touchUserLastSeen } from '@app-petlar/db/user-activity'
 import { eq } from 'drizzle-orm'
-import { type Metadata } from 'next'
+import { type Metadata, type Route } from 'next'
 import { headers } from 'next/headers'
 import { notFound, redirect } from 'next/navigation'
 
 import { AdminHeader } from './_components/admin-header'
 import { AdminSidebar } from './_components/admin-sidebar'
+
+import { getIsCustomDomain } from '@/lib/get-is-custom-domain'
+import { buildOrgHref } from '@/lib/org-href'
+
 
 interface AdminLayoutProps {
   children: React.ReactNode
@@ -42,17 +46,19 @@ export default async function AdminLayout({
 }: AdminLayoutProps) {
   const { slug } = await params
 
-  const [org, session] = await Promise.all([
+  const [org, session, isCustomDomain] = await Promise.all([
     getOrg(slug),
     auth.api.getSession({ headers: await headers() }),
+    getIsCustomDomain(),
   ])
+  const loginHref = buildOrgHref('/login', slug, isCustomDomain) as Route
 
   if (!org) {
     notFound()
   }
 
   if (!session?.user) {
-    redirect(`/${slug}/login`)
+    redirect(loginHref)
   }
 
   const user = session.user as {
@@ -69,7 +75,7 @@ export default async function AdminLayout({
   const displayEmail = user.contactEmail ?? user.email
 
   if (user.orgId !== org.id) {
-    redirect(`/${slug}/login`)
+    redirect(loginHref)
   }
 
   const [currentUser] = await db
@@ -83,7 +89,7 @@ export default async function AdminLayout({
     currentUser.active === false ||
     currentUser.orgId !== org.id
   ) {
-    redirect(`/${slug}/login`)
+    redirect(loginHref)
   }
 
   try {
