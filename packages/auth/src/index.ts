@@ -33,12 +33,15 @@ async function sendPasswordResetEmail(params: {
   }
 
   const safeUserName = params.userName ? escapeHtml(params.userName) : 'usuário'
+  const orgDisplayName = params.orgName?.trim() || 'PetLar'
+  const safeOrgName = escapeHtml(orgDisplayName)
+  const safeOrgBadge = escapeHtml(orgDisplayName.toUpperCase())
 
-  const subject = 'Redefinição de senha - PetLar'
+  const subject = `Redefinição de senha - ${orgDisplayName}`
   const text = [
-    `Olá ${safeUserName},`,
+    `Olá ${params.userName ?? 'usuário'},`,
     '',
-    'Recebemos uma solicitação para redefinir a senha da sua conta no PetLar.',
+    `Recebemos uma solicitação para redefinir a senha da sua conta na ${orgDisplayName}.`,
     '',
     `Para criar uma nova senha, acesse: ${params.url}`,
     '',
@@ -46,7 +49,7 @@ async function sendPasswordResetEmail(params: {
     '',
     'Se você não solicitou esta redefinição, ignore este e-mail — sua senha não será alterada.',
     '',
-    'PetLar - Gestão de Adoções',
+    `${orgDisplayName} - Gestão de Adoções`,
   ].join('\n')
 
   const html = `
@@ -59,7 +62,7 @@ async function sendPasswordResetEmail(params: {
       </head>
       <body style="margin:0;padding:0;background:#aec7e2;">
         <span style="display:none!important;visibility:hidden;opacity:0;color:transparent;height:0;width:0;overflow:hidden;">
-          Clique para redefinir sua senha no PetLar.
+          Clique para redefinir sua senha na ${safeOrgName}.
         </span>
 
         <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
@@ -72,7 +75,7 @@ async function sendPasswordResetEmail(params: {
                       <tr>
                         <td style="padding:22px 24px 18px 24px;">
                           <div style="display:inline-block;background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.45);border-radius:999px;padding:6px 10px;color:#ffffff;font-family:'DM Sans',Segoe UI,Arial,sans-serif;font-size:12px;font-weight:700;letter-spacing:0.3px;">
-                            PETLAR • Segurança
+                            ${safeOrgBadge} • Segurança
                           </div>
                           <h1 style="margin:14px 0 8px 0;color:#ffffff;font-family:'Outfit','DM Sans',Segoe UI,Arial,sans-serif;font-size:28px;line-height:1.15;font-weight:700;letter-spacing:-0.3px;">
                             Redefinição de senha
@@ -92,7 +95,7 @@ async function sendPasswordResetEmail(params: {
                       Olá ${safeUserName},
                     </p>
                     <p style="margin:0 0 16px 0;color:#8b5a2b;font-family:'DM Sans',Segoe UI,Arial,sans-serif;font-size:14px;line-height:1.6;">
-                      Recebemos uma solicitação para redefinir a senha da sua conta no PetLar.
+                      Recebemos uma solicitação para redefinir a senha da sua conta na ${safeOrgName}.
                     </p>
 
                     <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:0 0 16px 0;">
@@ -125,7 +128,7 @@ async function sendPasswordResetEmail(params: {
               </table>
 
               <p style="margin:12px 0 0 0;color:#6f4f35;font-family:'DM Sans',Segoe UI,Arial,sans-serif;font-size:11px;line-height:1.4;">
-                PetLar • Sistema de adoção responsável
+                ${safeOrgName} • Sistema de adoção responsável
               </p>
             </td>
           </tr>
