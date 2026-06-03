@@ -1,6 +1,8 @@
 import '@app-petlar/env/web'
+import { env } from '@app-petlar/env/server'
 import type { NextConfig } from 'next'
-import { hostname } from 'os'
+
+const r2Hostname = new URL(env.R2_PUBLIC_URL).hostname
 
 const nextConfig: NextConfig = {
   typedRoutes: true,
@@ -14,7 +16,7 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'pub-2317350396c049578626abefae8595a7.r2.dev',
+        hostname: r2Hostname,
       },
     ],
   },
