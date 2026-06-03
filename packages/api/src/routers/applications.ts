@@ -15,6 +15,7 @@ import {
   orgs,
   type FormFieldCondition,
 } from '@app-petlar/db/schema'
+import { formatEmailFrom } from '@app-petlar/auth/email-from'
 import { env } from '@app-petlar/env/server'
 import { TRPCError } from '@trpc/server'
 import {
@@ -352,7 +353,7 @@ async function sendApplicationConfirmedEmail(params: {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      from: env.EMAIL_FROM,
+      from: formatEmailFrom(params.orgName),
       to: [params.to],
       subject,
       text,
@@ -495,7 +496,7 @@ async function sendApplicationConfirmationEmail(params: {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      from: env.EMAIL_FROM,
+      from: formatEmailFrom(params.orgName),
       to: [params.to],
       subject,
       text,

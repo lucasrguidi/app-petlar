@@ -1,10 +1,13 @@
 import { db } from '@app-petlar/db'
 import * as schema from '@app-petlar/db/schema/auth'
+import { orgs } from '@app-petlar/db/schema/orgs'
 import { env } from '@app-petlar/env/server'
 import { betterAuth } from 'better-auth'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { nextCookies } from 'better-auth/next-js'
+import { eq } from 'drizzle-orm'
 
+import { formatEmailFrom } from './email-from'
 import { resolveTrustedOrigins } from './trusted-origins'
 
 const PASSWORD_RESET_EXPIRATION_HOURS = 1
@@ -22,6 +25,7 @@ async function sendPasswordResetEmail(params: {
   to: string
   url: string
   userName?: string
+  orgName?: string
 }) {
   if (!env.RESEND_API_KEY || !env.EMAIL_FROM) {
     console.error('Configuração de e-mail não encontrada para reset de senha')
@@ -137,7 +141,7 @@ async function sendPasswordResetEmail(params: {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      from: env.EMAIL_FROM,
+      from: formatEmailFrom(params.orgName),
       to: [params.to],
       subject,
       text,
@@ -163,11 +167,21 @@ export const auth = betterAuth({
     sendResetPassword: async ({ user, url }) => {
       const targetEmail =
         (user as { contactEmail?: string }).contactEmail ?? user.email
+      const orgId = (user as { orgId?: string }).orgId
+
+      const [org] = orgId
+        ? await db
+            .select({ name: orgs.name })
+            .from(orgs)
+            .where(eq(orgs.id, orgId))
+            .limit(1)
+        : []
 
       await sendPasswordResetEmail({
         to: targetEmail,
         url,
         userName: user.name,
+        orgName: org?.name,
       })
     },
     resetPasswordTokenExpiresIn: PASSWORD_RESET_EXPIRATION_HOURS * 60 * 60,

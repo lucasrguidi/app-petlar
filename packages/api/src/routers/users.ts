@@ -1,3 +1,4 @@
+import { formatEmailFrom } from '@app-petlar/auth/email-from'
 import { db } from '@app-petlar/db'
 import { buildOrgScopedAuthEmail, normalizeUserEmail } from '@app-petlar/db/auth-identity'
 import { invites, orgs, session, user } from '@app-petlar/db/schema'
@@ -195,7 +196,7 @@ async function sendInviteEmail(params: {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      from: env.EMAIL_FROM,
+      from: formatEmailFrom(params.orgName),
       to: [params.to],
       subject,
       text,
