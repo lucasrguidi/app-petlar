@@ -6,7 +6,7 @@ catalog:
   '@libsql/client': 0.15.15
   '@trpc/client': ^11.7.2
   '@trpc/server': ^11.7.2
-  better-auth: ^1.4.9
+  better-auth: 1.4.17
   dotenv: ^17.2.2
   libsql: 0.5.22
   next: ^16.1.1

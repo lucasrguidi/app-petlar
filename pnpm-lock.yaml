@@ -16,7 +16,7 @@ catalogs:
       specifier: ^11.7.2
       version: 11.8.1
     better-auth:
-      specifier: ^1.4.9
+      specifier: 1.4.17
       version: 1.4.17
     dotenv:
       specifier: ^17.2.2
@@ -371,6 +371,9 @@ importers:
       '@libsql/client':
         specifier: 'catalog:'
         version: 0.15.15
+      better-auth:
+        specifier: 'catalog:'
+        version: 1.4.17(drizzle-kit@0.31.8)(drizzle-orm@0.45.1(@libsql/client@0.15.15)(kysely@0.28.10))(next@16.1.5(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@4.0.18(@types/node@22.19.7)(jiti@2.6.1)(lightningcss@1.30.2)(msw@2.12.7(@types/node@22.19.7)(typescript@5.9.3))(tsx@4.21.0))
       dotenv:
         specifier: 'catalog:'
         version: 17.2.3
@@ -380,6 +383,9 @@ importers:
       libsql:
         specifier: 'catalog:'
         version: 0.5.22
+      nanoid:
+        specifier: ^5.1.6
+        version: 5.1.6
       oslo:
         specifier: ^1.2.1
         version: 1.2.1

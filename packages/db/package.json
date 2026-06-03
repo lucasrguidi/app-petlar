@@ -28,9 +28,11 @@
   "dependencies": {
     "@app-petlar/env": "workspace:*",
     "@libsql/client": "catalog:",
+    "better-auth": "catalog:",
     "dotenv": "catalog:",
     "drizzle-orm": "^0.45.1",
     "libsql": "catalog:",
+    "nanoid": "^5.1.6",
     "oslo": "^1.2.1",
     "zod": "catalog:"
   },
