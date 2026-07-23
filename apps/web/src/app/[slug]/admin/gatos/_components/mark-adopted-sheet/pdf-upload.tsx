@@ -13,10 +13,18 @@ import { trpc } from '@/utils/trpc'
 interface PdfUploadProps {
   value: string | null
   onChange: (url: string | null) => void
+  committedValue?: string | null
+  onUploadingChange?: (isUploading: boolean) => void
   disabled?: boolean
 }
 
-export function PdfUpload({ value, onChange, disabled }: PdfUploadProps) {
+export function PdfUpload({
+  value,
+  onChange,
+  committedValue = null,
+  onUploadingChange,
+  disabled,
+}: PdfUploadProps) {
   const [isUploading, setIsUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
 
@@ -28,9 +36,14 @@ export function PdfUpload({ value, onChange, disabled }: PdfUploadProps) {
     trpc.adoptions.confirmUpload.mutationOptions()
   )
 
+  const discardUploadMutation = useMutation(
+    trpc.adoptions.discardTermUpload.mutationOptions()
+  )
+
   const uploadFile = useCallback(
     async (file: File) => {
       setIsUploading(true)
+      onUploadingChange?.(true)
       setUploadProgress(10)
 
       try {
@@ -70,10 +83,11 @@ export function PdfUpload({ value, onChange, disabled }: PdfUploadProps) {
         )
       } finally {
         setIsUploading(false)
+        onUploadingChange?.(false)
         setUploadProgress(0)
       }
     },
-    [presignedUrlMutation, confirmUploadMutation, onChange]
+    [presignedUrlMutation, confirmUploadMutation, onChange, onUploadingChange]
   )
 
   const onDrop = useCallback(
@@ -106,7 +120,20 @@ export function PdfUpload({ value, onChange, disabled }: PdfUploadProps) {
     },
   })
 
-  const handleRemove = () => {
+  const handleRemove = async () => {
+    if (value && value !== committedValue) {
+      try {
+        await discardUploadMutation.mutateAsync({ url: value })
+      } catch (error) {
+        toast.error(
+          error instanceof Error
+            ? error.message
+            : 'Não foi possível descartar o PDF'
+        )
+        return
+      }
+    }
+
     onChange(null)
   }
 
@@ -133,7 +160,7 @@ export function PdfUpload({ value, onChange, disabled }: PdfUploadProps) {
           size="icon"
           className="text-muted-foreground hover:text-destructive h-8 w-8 shrink-0"
           onClick={handleRemove}
-          disabled={disabled}
+          disabled={disabled || discardUploadMutation.isPending}
           aria-label="Remover PDF"
         >
           <Trash2 className="h-4 w-4" />

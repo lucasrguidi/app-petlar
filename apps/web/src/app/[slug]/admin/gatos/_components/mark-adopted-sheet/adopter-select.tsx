@@ -18,7 +18,12 @@ export interface Applicant {
   applicantName: string
   applicantWhatsapp: string
   applicantEmail: string
-  status: 'pending' | 'reviewing' | 'approved' | 'rejected'
+  status:
+    | 'pending'
+    | 'reviewing'
+    | 'approved'
+    | 'rejected'
+    | 'permanently_rejected'
 }
 
 interface AdopterSelectProps {
@@ -34,6 +39,7 @@ function getApplicantStatusLabel(status: Applicant['status']): string {
   if (status === 'approved') return '(Aprovado)'
   if (status === 'reviewing') return '(Em análise)'
   if (status === 'pending') return '(Pendente)'
+  if (status === 'permanently_rejected') return '(Rejeição permanente)'
   return '(Rejeitado)'
 }
 

@@ -11,6 +11,8 @@ import {
   MessageCircle,
   RefreshCcw,
   Save,
+  ShieldAlert,
+  ShieldOff,
   UserRound,
   Video,
   X,
@@ -29,8 +31,17 @@ import {
 
 import type { ApplicationStatus } from './types'
 
+import { useAuth } from '@/components/auth-provider'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import {
   Select,
@@ -47,6 +58,7 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
 import { trpc } from '@/utils/trpc'
 
@@ -86,6 +98,11 @@ function getStatusConfig(status: ApplicationStatus) {
       label: getStatusLabel(status),
       variant: 'destructive' as const,
       dotClass: 'bg-destructive',
+    },
+    permanently_rejected: {
+      label: getStatusLabel(status),
+      variant: 'destructive' as const,
+      dotClass: 'bg-red-950',
     },
   }
   return config[status]
@@ -206,8 +223,12 @@ export function ApplicantDetailsSheet({
   onOpenChange,
 }: ApplicantDetailsSheetProps) {
   const queryClient = useQueryClient()
+  const { user } = useAuth()
   const [selectedStatus, setSelectedStatus] =
     useState<ApplicationStatus>('pending')
+  const [permanentDialogOpen, setPermanentDialogOpen] = useState(false)
+  const [revokeDialogOpen, setRevokeDialogOpen] = useState(false)
+  const [permanentReason, setPermanentReason] = useState('')
   const [adoptionModalData, setAdoptionModalData] = useState<{
     cat: { id: string; name: string }
     applicant: {
@@ -235,6 +256,35 @@ export function ApplicantDetailsSheet({
     })
   )
 
+  const permanentRejectMutation = useMutation(
+    trpc.applications.permanentlyReject.mutationOptions({
+      onSuccess: ({ affectedCount }) => {
+        toast.success(
+          `${affectedCount} candidatura${affectedCount === 1 ? '' : 's'} marcada${affectedCount === 1 ? '' : 's'} permanentemente`
+        )
+        queryClient.invalidateQueries({ queryKey: [['applications']] })
+        setPermanentReason('')
+        setPermanentDialogOpen(false)
+      },
+      onError: (error) => {
+        toast.error(error.message || 'Não foi possível aplicar o bloqueio')
+      },
+    })
+  )
+
+  const revokePermanentMutation = useMutation(
+    trpc.applications.revokePermanentRejection.mutationOptions({
+      onSuccess: () => {
+        toast.success('Bloqueio removido para candidaturas futuras')
+        queryClient.invalidateQueries({ queryKey: [['applications']] })
+        setRevokeDialogOpen(false)
+      },
+      onError: (error) => {
+        toast.error(error.message || 'Não foi possível remover o bloqueio')
+      },
+    })
+  )
+
   const data = detailsQuery.data
 
   useEffect(() => {
@@ -252,6 +302,12 @@ export function ApplicantDetailsSheet({
   )
 
   const hasStatusChange = data && selectedStatus !== data.application.status
+  const isPermanentlyRejected =
+    data?.application.status === 'permanently_rejected'
+  const isPermanentBlockActive = Boolean(
+    data?.application.isPermanentRejectionActive
+  )
+  const isAdmin = user?.role === 'admin'
 
   return (
     <>
@@ -375,6 +431,67 @@ export function ApplicantDetailsSheet({
                 </div>
               </div>
 
+              {isPermanentlyRejected && (
+                <div className="border-destructive/30 bg-destructive/5 rounded-xl border p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="bg-destructive/10 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg">
+                      <ShieldAlert className="text-destructive h-4.5 w-4.5" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h3 className="text-destructive text-sm font-semibold">
+                          Rejeição permanente por e-mail
+                        </h3>
+                        <Badge
+                          variant={
+                            isPermanentBlockActive ? 'destructive' : 'secondary'
+                          }
+                          className="text-[10px]"
+                        >
+                          {isPermanentBlockActive
+                            ? 'Bloqueio ativo'
+                            : 'Bloqueio removido'}
+                        </Badge>
+                      </div>
+                      <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
+                        Todas as candidaturas desta pessoa na ONG receberam esta
+                        marcação. Novas candidaturas só serão bloqueadas
+                        enquanto o bloqueio estiver ativo.
+                      </p>
+                      <div className="bg-card/70 border-destructive/15 mt-3 rounded-lg border p-3">
+                        <p className="text-muted-foreground text-[11px] font-semibold tracking-wide uppercase">
+                          Motivo registrado
+                        </p>
+                        <p className="mt-1 text-sm whitespace-pre-wrap">
+                          {data.application.permanentRejectionReason ||
+                            'Motivo não informado'}
+                        </p>
+                        {data.application.permanentlyRejectedAt && (
+                          <p className="text-muted-foreground mt-2 text-xs">
+                            Aplicado em{' '}
+                            {formatDateTime(
+                              data.application.permanentlyRejectedAt
+                            )}
+                          </p>
+                        )}
+                      </div>
+                      {isPermanentBlockActive && isAdmin && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="mt-3 rounded-lg"
+                          onClick={() => setRevokeDialogOpen(true)}
+                        >
+                          <ShieldOff className="mr-1.5 h-3.5 w-3.5" />
+                          Remover bloqueio futuro
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <div className="border-border/60 bg-card/95 shadow-warm-sm space-y-3 rounded-xl border p-4">
                 <Label className="text-sm font-semibold">
                   Atualizar status
@@ -382,6 +499,7 @@ export function ApplicantDetailsSheet({
                 <div className="flex flex-col gap-2 sm:flex-row">
                   <Select
                     value={selectedStatus}
+                    disabled={isPermanentBlockActive}
                     onValueChange={(value) =>
                       setSelectedStatus(value as ApplicationStatus)
                     }
@@ -394,6 +512,9 @@ export function ApplicantDetailsSheet({
                       <SelectItem value="reviewing">Em análise</SelectItem>
                       <SelectItem value="approved">Aprovado</SelectItem>
                       <SelectItem value="rejected">Recusado</SelectItem>
+                      <SelectItem value="permanently_rejected" disabled>
+                        Rejeição permanente
+                      </SelectItem>
                     </SelectContent>
                   </Select>
 
@@ -406,7 +527,10 @@ export function ApplicantDetailsSheet({
                       })
                     }
                     disabled={
-                      !hasStatusChange || updateStatusMutation.isPending
+                      !hasStatusChange ||
+                      updateStatusMutation.isPending ||
+                      isPermanentBlockActive ||
+                      selectedStatus === 'permanently_rejected'
                     }
                     className="shadow-primary-glow rounded-xl"
                   >
@@ -423,6 +547,23 @@ export function ApplicantDetailsSheet({
                     )}
                   </Button>
                 </div>
+                {isPermanentBlockActive ? (
+                  <p className="text-muted-foreground text-xs">
+                    Remova o bloqueio permanente antes de alterar este status.
+                  </p>
+                ) : (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive w-full rounded-xl"
+                    onClick={() => setPermanentDialogOpen(true)}
+                  >
+                    <ShieldAlert className="mr-2 h-4 w-4" />
+                    {isPermanentlyRejected
+                      ? 'Aplicar novo bloqueio permanente'
+                      : 'Rejeitar permanentemente'}
+                  </Button>
+                )}
               </div>
 
               <div className="border-border/60 bg-card/95 shadow-warm-sm rounded-xl border p-4">
@@ -501,6 +642,128 @@ export function ApplicantDetailsSheet({
           )}
         </SheetContent>
       </Sheet>
+
+      <Dialog
+        open={permanentDialogOpen}
+        onOpenChange={(nextOpen) => {
+          if (!permanentRejectMutation.isPending) {
+            setPermanentDialogOpen(nextOpen)
+            if (!nextOpen) setPermanentReason('')
+          }
+        }}
+      >
+        <DialogContent className="overflow-hidden rounded-2xl p-0 sm:max-w-lg">
+          <div className="from-destructive/12 via-card to-card border-destructive/15 border-b bg-gradient-to-br p-6">
+            <div className="bg-destructive/10 mb-4 flex h-11 w-11 items-center justify-center rounded-xl">
+              <ShieldAlert className="text-destructive h-5 w-5" />
+            </div>
+            <DialogHeader>
+              <DialogTitle className="font-display text-xl">
+                Rejeitar permanentemente
+              </DialogTitle>
+              <DialogDescription className="leading-relaxed">
+                O e-mail <strong>{data?.application.applicantEmail}</strong>{' '}
+                será bloqueado nesta ONG. Todas as candidaturas existentes e
+                futuras receberão o mesmo motivo.
+              </DialogDescription>
+            </DialogHeader>
+          </div>
+          <div className="space-y-2 px-6">
+            <Label htmlFor="permanent-rejection-reason">
+              Motivo da rejeição <span className="text-destructive">*</span>
+            </Label>
+            <Textarea
+              id="permanent-rejection-reason"
+              value={permanentReason}
+              onChange={(event) => setPermanentReason(event.target.value)}
+              maxLength={1000}
+              placeholder="Registre um motivo objetivo para orientar toda a equipe..."
+              className="min-h-32 resize-none rounded-xl"
+              autoFocus
+            />
+            <p className="text-muted-foreground text-right text-xs tabular-nums">
+              {permanentReason.length}/1000
+            </p>
+          </div>
+          <DialogFooter className="px-6 pb-6">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setPermanentDialogOpen(false)}
+              disabled={permanentRejectMutation.isPending}
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              disabled={
+                !data ||
+                permanentReason.trim().length === 0 ||
+                permanentRejectMutation.isPending
+              }
+              onClick={() => {
+                if (!data) return
+                permanentRejectMutation.mutate({
+                  id: data.application.id,
+                  reason: permanentReason,
+                })
+              }}
+            >
+              {permanentRejectMutation.isPending && (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              )}
+              Confirmar rejeição permanente
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={revokeDialogOpen}
+        onOpenChange={(nextOpen) => {
+          if (!revokePermanentMutation.isPending) {
+            setRevokeDialogOpen(nextOpen)
+          }
+        }}
+      >
+        <DialogContent className="rounded-2xl sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Remover bloqueio futuro?</DialogTitle>
+            <DialogDescription className="leading-relaxed">
+              Novas candidaturas de{' '}
+              <strong>{data?.application.applicantEmail}</strong> voltarão a
+              entrar como pendentes. As rejeições já registradas permanecerão no
+              histórico.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setRevokeDialogOpen(false)}
+              disabled={revokePermanentMutation.isPending}
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              disabled={!data || revokePermanentMutation.isPending}
+              onClick={() => {
+                if (!data) return
+                revokePermanentMutation.mutate({
+                  email: data.application.applicantEmail,
+                })
+              }}
+            >
+              {revokePermanentMutation.isPending && (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              )}
+              Remover bloqueio
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {adoptionModalData && (
         <MarkAdoptedSheet

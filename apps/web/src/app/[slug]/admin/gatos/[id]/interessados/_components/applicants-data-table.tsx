@@ -56,6 +56,11 @@ function getStatusConfig(status: ApplicationStatus) {
       variant: 'destructive' as const,
       dotClass: 'bg-destructive',
     },
+    permanently_rejected: {
+      label: getStatusLabel(status),
+      variant: 'destructive' as const,
+      dotClass: 'bg-red-950',
+    },
   }
 
   return config[status]
@@ -145,7 +150,7 @@ function getColumns(
         const isThisUpdating =
           isUpdatingStatus && updatingApplicationId === applicant.id
 
-        if (!onUpdateStatus) {
+        if (!onUpdateStatus || applicant.status === 'permanently_rejected') {
           return (
             <Badge
               variant={config.variant}

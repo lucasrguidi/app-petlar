@@ -74,6 +74,9 @@ export function ApplicantsFilterBar({
               <SelectItem value="reviewing">Em análise</SelectItem>
               <SelectItem value="approved">Aprovado</SelectItem>
               <SelectItem value="rejected">Recusado</SelectItem>
+              <SelectItem value="permanently_rejected">
+                Rejeição permanente
+              </SelectItem>
             </SelectContent>
           </Select>
         </div>
