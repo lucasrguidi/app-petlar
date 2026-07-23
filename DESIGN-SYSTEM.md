@@ -27,12 +27,12 @@
 
 O PetLar transmite **acolhimento** e **confiança**. Cada elemento visual deve evocar a sensação de um lar seguro para os animais.
 
-| Princípio | Descrição |
-|-----------|-----------|
+| Princípio     | Descrição                                                   |
+| ------------- | ----------------------------------------------------------- |
 | **Acolhedor** | Bordas arredondadas, cores suaves, sensação de calor humano |
-| **Confiável** | Hierarquia clara, espaçamento generoso, fácil de usar |
-| **Amigável** | Micro-interações suaves, feedback visual claro |
-| **Acessível** | Contraste adequado, navegação intuitiva |
+| **Confiável** | Hierarquia clara, espaçamento generoso, fácil de usar       |
+| **Amigável**  | Micro-interações suaves, feedback visual claro              |
+| **Acessível** | Contraste adequado, navegação intuitiva                     |
 
 ### Dois Mundos, Uma Identidade
 
@@ -68,14 +68,14 @@ O PetLar transmite **acolhimento** e **confiança**. Cada elemento visual deve e
      Bordas generosas transmitem suavidade
      ═══════════════════════════════════════════════════════════ */
 
-  --radius-xs: 0.375rem;   /* 6px - chips, badges */
-  --radius-sm: 0.5rem;     /* 8px - inputs, botões pequenos */
-  --radius-md: 0.75rem;    /* 12px - cards internos */
-  --radius-lg: 1rem;       /* 16px - cards principais */
-  --radius-xl: 1.25rem;    /* 20px - modais, sheets */
-  --radius-2xl: 1.5rem;    /* 24px - cards destacados */
-  --radius-3xl: 2rem;      /* 32px - elementos hero */
-  --radius-full: 9999px;   /* círculos, pills */
+  --radius-xs: 0.375rem; /* 6px - chips, badges */
+  --radius-sm: 0.5rem; /* 8px - inputs, botões pequenos */
+  --radius-md: 0.75rem; /* 12px - cards internos */
+  --radius-lg: 1rem; /* 16px - cards principais */
+  --radius-xl: 1.25rem; /* 20px - modais, sheets */
+  --radius-2xl: 1.5rem; /* 24px - cards destacados */
+  --radius-3xl: 2rem; /* 32px - elementos hero */
+  --radius-full: 9999px; /* círculos, pills */
 
   /* ═══════════════════════════════════════════════════════════
      CORES - LIGHT THEME
@@ -83,8 +83,8 @@ O PetLar transmite **acolhimento** e **confiança**. Cada elemento visual deve e
      ═══════════════════════════════════════════════════════════ */
 
   /* Fundos */
-  --color-background: #aec7e2;        /* Azul céu - acolhedor */
-  --color-foreground: #783201;        /* Marrom terra - legível */
+  --color-background: #aec7e2; /* Azul céu - acolhedor */
+  --color-foreground: #783201; /* Marrom terra - legível */
 
   /* Cards e superfícies */
   --color-card: #ffffff;
@@ -95,19 +95,19 @@ O PetLar transmite **acolhimento** e **confiança**. Cada elemento visual deve e
   --color-popover-foreground: #783201;
 
   /* Ação primária - CTA */
-  --color-primary: #e35915;           /* Laranja vibrante - energia */
+  --color-primary: #e35915; /* Laranja vibrante - energia */
   --color-primary-foreground: #ffffff;
 
   /* Ação secundária */
-  --color-secondary: #d4e3f3;         /* Azul mais claro */
+  --color-secondary: #d4e3f3; /* Azul mais claro */
   --color-secondary-foreground: #783201;
 
   /* Estados muted */
   --color-muted: #c5d8ee;
-  --color-muted-foreground: #8b5a2b;  /* Marrom médio */
+  --color-muted-foreground: #8b5a2b; /* Marrom médio */
 
   /* Accent/hover */
-  --color-accent: #f07b3d;            /* Laranja suave */
+  --color-accent: #f07b3d; /* Laranja suave */
   --color-accent-foreground: #ffffff;
 
   /* Destrutivo */
@@ -138,7 +138,7 @@ O PetLar transmite **acolhimento** e **confiança**. Cada elemento visual deve e
   --shadow-xs: 0 1px 2px rgba(120, 50, 1, 0.04);
   --shadow-sm: 0 2px 4px rgba(120, 50, 1, 0.06);
   --shadow-md: 0 4px 12px rgba(120, 50, 1, 0.08);
-  --shadow-lg: 0 8px 24px rgba(120, 50, 1, 0.10);
+  --shadow-lg: 0 8px 24px rgba(120, 50, 1, 0.1);
   --shadow-xl: 0 16px 48px rgba(120, 50, 1, 0.12);
 
   /* Sombra colorida para CTAs */
@@ -153,17 +153,17 @@ O PetLar transmite **acolhimento** e **confiança**. Cada elemento visual deve e
 
 ### Escala Tipográfica
 
-| Token | Tamanho | Line Height | Uso |
-|-------|---------|-------------|-----|
-| `text-xs` | 12px | 16px | Legendas, badges, metadata |
-| `text-sm` | 14px | 20px | Texto secundário, labels |
-| `text-base` | 16px | 24px | Corpo de texto padrão |
-| `text-lg` | 18px | 28px | Texto destacado |
-| `text-xl` | 20px | 28px | Subtítulos de seção |
-| `text-2xl` | 24px | 32px | Títulos de card |
-| `text-3xl` | 30px | 36px | Títulos de página |
-| `text-4xl` | 36px | 40px | Hero headlines |
-| `text-5xl` | 48px | 48px | Display (site público) |
+| Token       | Tamanho | Line Height | Uso                        |
+| ----------- | ------- | ----------- | -------------------------- |
+| `text-xs`   | 12px    | 16px        | Legendas, badges, metadata |
+| `text-sm`   | 14px    | 20px        | Texto secundário, labels   |
+| `text-base` | 16px    | 24px        | Corpo de texto padrão      |
+| `text-lg`   | 18px    | 28px        | Texto destacado            |
+| `text-xl`   | 20px    | 28px        | Subtítulos de seção        |
+| `text-2xl`  | 24px    | 32px        | Títulos de card            |
+| `text-3xl`  | 30px    | 36px        | Títulos de página          |
+| `text-4xl`  | 36px    | 40px        | Hero headlines             |
+| `text-5xl`  | 48px    | 48px        | Display (site público)     |
 
 ### Famílias
 
@@ -181,12 +181,12 @@ O PetLar transmite **acolhimento** e **confiança**. Cada elemento visual deve e
 
 ### Pesos
 
-| Peso | Tailwind | Uso |
-|------|----------|-----|
-| 400 | `font-normal` | Corpo de texto |
-| 500 | `font-medium` | Labels, links, texto enfático |
-| 600 | `font-semibold` | Títulos de cards, botões |
-| 700 | `font-bold` | Headlines, títulos principais |
+| Peso | Tailwind        | Uso                           |
+| ---- | --------------- | ----------------------------- |
+| 400  | `font-normal`   | Corpo de texto                |
+| 500  | `font-medium`   | Labels, links, texto enfático |
+| 600  | `font-semibold` | Títulos de cards, botões      |
+| 700  | `font-bold`     | Headlines, títulos principais |
 
 ### Padrões de Texto
 
@@ -240,27 +240,27 @@ O PetLar transmite **acolhimento** e **confiança**. Cada elemento visual deve e
 
 ### Uso Semântico
 
-| Cor | Token | Quando Usar |
-|-----|-------|-------------|
-| Laranja `#E35915` | `primary` | CTAs principais, ações positivas, links importantes |
-| Laranja claro `#F07B3D` | `accent` | Hover states, destaques secundários |
-| Azul céu `#AEC7E2` | `background` | Fundo geral (site público) |
-| Azul claro `#D4E3F3` | `secondary` | Botões secundários, tags |
-| Branco `#FFFFFF` | `card` | Cards, superfícies elevadas |
-| Marrom `#783201` | `foreground` | Texto principal |
-| Marrom médio `#8B5A2B` | `muted-foreground` | Texto secundário |
-| Vermelho `#DC2626` | `destructive` | Erros, ações destrutivas |
-| Verde `#16A34A` | `success` | Sucesso, confirmações |
-| Amarelo `#F59E0B` | `warning` | Alertas, atenção |
+| Cor                     | Token              | Quando Usar                                         |
+| ----------------------- | ------------------ | --------------------------------------------------- |
+| Laranja `#E35915`       | `primary`          | CTAs principais, ações positivas, links importantes |
+| Laranja claro `#F07B3D` | `accent`           | Hover states, destaques secundários                 |
+| Azul céu `#AEC7E2`      | `background`       | Fundo geral (site público)                          |
+| Azul claro `#D4E3F3`    | `secondary`        | Botões secundários, tags                            |
+| Branco `#FFFFFF`        | `card`             | Cards, superfícies elevadas                         |
+| Marrom `#783201`        | `foreground`       | Texto principal                                     |
+| Marrom médio `#8B5A2B`  | `muted-foreground` | Texto secundário                                    |
+| Vermelho `#DC2626`      | `destructive`      | Erros, ações destrutivas                            |
+| Verde `#16A34A`         | `success`          | Sucesso, confirmações                               |
+| Amarelo `#F59E0B`       | `warning`          | Alertas, atenção                                    |
 
 ### Contraste e Acessibilidade
 
-| Combinação | Ratio | WCAG AA | WCAG AAA |
-|------------|-------|---------|----------|
-| Marrom (#783201) em Branco | 8.2:1 | ✅ | ✅ |
-| Branco em Laranja (#E35915) | 4.5:1 | ✅ | ❌ |
-| Marrom em Azul Céu (#AEC7E2) | 5.1:1 | ✅ | ❌ |
-| Marrom médio em Branco | 5.8:1 | ✅ | ❌ |
+| Combinação                   | Ratio | WCAG AA | WCAG AAA |
+| ---------------------------- | ----- | ------- | -------- |
+| Marrom (#783201) em Branco   | 8.2:1 | ✅      | ✅       |
+| Branco em Laranja (#E35915)  | 4.5:1 | ✅      | ❌       |
+| Marrom em Azul Céu (#AEC7E2) | 5.1:1 | ✅      | ❌       |
+| Marrom médio em Branco       | 5.8:1 | ✅      | ❌       |
 
 ---
 
@@ -270,20 +270,20 @@ O PetLar transmite **acolhimento** e **confiança**. Cada elemento visual deve e
 
 Baseada em múltiplos de 4px para consistência visual.
 
-| Token | Valor | Uso Comum |
-|-------|-------|-----------|
-| `space-0.5` | 2px | Ajustes mínimos |
-| `space-1` | 4px | Gap entre ícone e texto |
-| `space-1.5` | 6px | Padding de badges |
-| `space-2` | 8px | Gap entre elementos inline |
-| `space-3` | 12px | Padding interno pequeno |
-| `space-4` | 16px | Padding padrão de cards |
-| `space-5` | 20px | Gap entre seções pequenas |
-| `space-6` | 24px | Padding de cards |
-| `space-8` | 32px | Gap entre seções |
-| `space-10` | 40px | Margens de página (mobile) |
-| `space-12` | 48px | Separação de seções grandes |
-| `space-16` | 64px | Padding de hero sections |
+| Token       | Valor | Uso Comum                   |
+| ----------- | ----- | --------------------------- |
+| `space-0.5` | 2px   | Ajustes mínimos             |
+| `space-1`   | 4px   | Gap entre ícone e texto     |
+| `space-1.5` | 6px   | Padding de badges           |
+| `space-2`   | 8px   | Gap entre elementos inline  |
+| `space-3`   | 12px  | Padding interno pequeno     |
+| `space-4`   | 16px  | Padding padrão de cards     |
+| `space-5`   | 20px  | Gap entre seções pequenas   |
+| `space-6`   | 24px  | Padding de cards            |
+| `space-8`   | 32px  | Gap entre seções            |
+| `space-10`  | 40px  | Margens de página (mobile)  |
+| `space-12`  | 48px  | Separação de seções grandes |
+| `space-16`  | 64px  | Padding de hero sections    |
 
 ### Padrões de Layout
 
@@ -320,16 +320,16 @@ Bordas **generosamente arredondadas** transmitem acolhimento e suavidade.
 
 ### Aplicação por Componente
 
-| Componente | Radius | Token |
-|------------|--------|-------|
-| Badges, chips | 6px | `rounded` ou `rounded-md` |
-| Inputs, selects | 8px | `rounded-lg` |
-| Botões | 8-12px | `rounded-lg` |
-| Cards internos | 12px | `rounded-xl` |
-| Cards principais | 16px | `rounded-2xl` |
-| Modais, sheets | 20px | `rounded-2xl` |
-| Cards hero | 24px | `rounded-3xl` |
-| Avatares, pills | full | `rounded-full` |
+| Componente       | Radius | Token                     |
+| ---------------- | ------ | ------------------------- |
+| Badges, chips    | 6px    | `rounded` ou `rounded-md` |
+| Inputs, selects  | 8px    | `rounded-lg`              |
+| Botões           | 8-12px | `rounded-lg`              |
+| Cards internos   | 12px   | `rounded-xl`              |
+| Cards principais | 16px   | `rounded-2xl`             |
+| Modais, sheets   | 20px   | `rounded-2xl`             |
+| Cards hero       | 24px   | `rounded-3xl`             |
+| Avatares, pills  | full   | `rounded-full`            |
 
 ### Exemplos
 
@@ -415,12 +415,12 @@ Para CTAs e elementos destacados, usar sombra colorida:
 
 ### Durações
 
-| Tipo | Duração | Uso |
-|------|---------|-----|
-| Micro | 150ms | Hover em botões, foco |
-| Curta | 200ms | Mudança de estados, toggles |
-| Média | 300ms | Transições de cards, expand/collapse |
-| Longa | 500ms | Entrada de modais, animações de página |
+| Tipo  | Duração | Uso                                    |
+| ----- | ------- | -------------------------------------- |
+| Micro | 150ms   | Hover em botões, foco                  |
+| Curta | 200ms   | Mudança de estados, toggles            |
+| Média | 300ms   | Transições de cards, expand/collapse   |
+| Longa | 500ms   | Entrada de modais, animações de página |
 
 ### Animações Definidas
 
@@ -439,14 +439,24 @@ Para CTAs e elementos destacados, usar sombra colorida:
 
 /* Float suave (para ilustrações) */
 @keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
 }
 
 /* Pulse suave (para loading, destaque) */
 @keyframes pulse-soft {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
 }
 ```
 
@@ -490,14 +500,14 @@ Para CTAs e elementos destacados, usar sombra colorida:
 
 Todos os componentes interativos devem ter estes estados:
 
-| Estado | Visual |
-|--------|--------|
-| **Default** | Aparência base |
-| **Hover** | Leve elevação, cor mais intensa |
-| **Focus** | Ring de foco visível (acessibilidade) |
-| **Active/Pressed** | Leve escala para baixo (0.98) |
-| **Disabled** | Opacidade 50%, cursor not-allowed |
-| **Loading** | Spinner, texto "Carregando..." |
+| Estado             | Visual                                |
+| ------------------ | ------------------------------------- |
+| **Default**        | Aparência base                        |
+| **Hover**          | Leve elevação, cor mais intensa       |
+| **Focus**          | Ring de foco visível (acessibilidade) |
+| **Active/Pressed** | Leve escala para baixo (0.98)         |
+| **Disabled**       | Opacidade 50%, cursor not-allowed     |
+| **Loading**        | Spinner, texto "Carregando..."        |
 
 ### Button
 
@@ -628,38 +638,38 @@ Localização: `@/components/ui/confirm-dialog`.
 
 #### Props
 
-| Prop | Tipo | Descrição |
-|------|------|-----------|
-| `mode` | `'alert' \| 'dialog'` | `alert` não fecha ao clicar fora (padrão). `dialog` fecha. |
-| `variant` | `'destructive' \| 'success' \| 'warning' \| 'info'` | Cor da faixa e do botão de ação |
-| `icon` | `LucideIcon` | Ícone exibido na faixa colorida |
-| `title` | `string` | Título principal |
-| `subtitle` | `string` (opcional) | Subtítulo abaixo do título, na faixa |
-| `description` | `ReactNode` (opcional) | Descrição no corpo |
-| `note` | `ReactNode` (opcional) | Nota contextual em card `muted/30` |
-| `children` | `ReactNode` (opcional) | Formulário ou conteúdo adicional |
-| `actionLabel` | `string` | Texto do botão de ação |
-| `actionLoadingLabel` | `string` (opcional) | Texto durante loading |
-| `isLoading` | `boolean` | Estado de carregamento |
-| `isActionDisabled` | `boolean` | Desabilita o botão de ação |
-| `cancelLabel` | `string` | Texto do botão cancelar (padrão: "Cancelar") |
-| `onAction` | `() => void` | Callback do botão de ação |
+| Prop                 | Tipo                                                | Descrição                                                  |
+| -------------------- | --------------------------------------------------- | ---------------------------------------------------------- |
+| `mode`               | `'alert' \| 'dialog'`                               | `alert` não fecha ao clicar fora (padrão). `dialog` fecha. |
+| `variant`            | `'destructive' \| 'success' \| 'warning' \| 'info'` | Cor da faixa e do botão de ação                            |
+| `icon`               | `LucideIcon`                                        | Ícone exibido na faixa colorida                            |
+| `title`              | `string`                                            | Título principal                                           |
+| `subtitle`           | `string` (opcional)                                 | Subtítulo abaixo do título, na faixa                       |
+| `description`        | `ReactNode` (opcional)                              | Descrição no corpo                                         |
+| `note`               | `ReactNode` (opcional)                              | Nota contextual em card `muted/30`                         |
+| `children`           | `ReactNode` (opcional)                              | Formulário ou conteúdo adicional                           |
+| `actionLabel`        | `string`                                            | Texto do botão de ação                                     |
+| `actionLoadingLabel` | `string` (opcional)                                 | Texto durante loading                                      |
+| `isLoading`          | `boolean`                                           | Estado de carregamento                                     |
+| `isActionDisabled`   | `boolean`                                           | Desabilita o botão de ação                                 |
+| `cancelLabel`        | `string`                                            | Texto do botão cancelar (padrão: "Cancelar")               |
+| `onAction`           | `() => void`                                        | Callback do botão de ação                                  |
 
 #### Variant por tipo de ação
 
-| Variant | Cor | Quando usar | Ícones sugeridos |
-|---------|-----|-------------|-----------------|
-| `destructive` | Vermelho | Ação irreversível, perda de acesso | `AlertTriangle`, `Trash2` |
-| `success` | Verde | Confirmação positiva, reativação | `UserCheck2`, `CheckCircle2` |
-| `warning` | Âmbar | Ação com consequência moderada | `MailX`, `AlertCircle` |
-| `info` | Azul | Formulário neutro, alteração reversível | `ShieldCheck`, `Info` |
+| Variant       | Cor      | Quando usar                             | Ícones sugeridos             |
+| ------------- | -------- | --------------------------------------- | ---------------------------- |
+| `destructive` | Vermelho | Ação irreversível, perda de acesso      | `AlertTriangle`, `Trash2`    |
+| `success`     | Verde    | Confirmação positiva, reativação        | `UserCheck2`, `CheckCircle2` |
+| `warning`     | Âmbar    | Ação com consequência moderada          | `MailX`, `AlertCircle`       |
+| `info`        | Azul     | Formulário neutro, alteração reversível | `ShieldCheck`, `Info`        |
 
 #### Quando usar cada mode
 
-| Mode | Fecha ao clicar fora? | Quando usar |
-|------|-----------------------|-------------|
-| `alert` (padrão) | Não | Ações destrutivas ou irreversíveis |
-| `dialog` | Sim | Formulários e ações reversíveis |
+| Mode             | Fecha ao clicar fora? | Quando usar                        |
+| ---------------- | --------------------- | ---------------------------------- |
+| `alert` (padrão) | Não                   | Ações destrutivas ou irreversíveis |
+| `dialog`         | Sim                   | Formulários e ações reversíveis    |
 
 #### Exemplos
 
@@ -745,13 +755,13 @@ Localização: `@/components/base-pagination`.
 
 #### Props
 
-| Prop | Tipo | Descrição |
-|------|------|-----------|
-| `page` | `number` | Página atual |
-| `totalPages` | `number` | Total de páginas |
-| `onPageChange` | `(page: number) => void` | Callback de mudança de página |
-| `variant` | `'admin' \| 'public'` | Estilo visual (padrão: `'admin'`) |
-| `className` | `string` (opcional) | Classes adicionais |
+| Prop           | Tipo                     | Descrição                         |
+| -------------- | ------------------------ | --------------------------------- |
+| `page`         | `number`                 | Página atual                      |
+| `totalPages`   | `number`                 | Total de páginas                  |
+| `onPageChange` | `(page: number) => void` | Callback de mudança de página     |
+| `variant`      | `'admin' \| 'public'`    | Estilo visual (padrão: `'admin'`) |
+| `className`    | `string` (opcional)      | Classes adicionais                |
 
 #### Comportamento
 
@@ -768,7 +778,7 @@ Localização: `@/components/base-pagination`.
 import { BasePagination } from '@/components/base-pagination'
 
 // ✅ Correto - com card wrapper
-<div className="border-border/60 bg-card/95 shadow-warm-sm shrink-0 rounded-xl border px-2">
+;<div className="border-border/60 bg-card/95 shadow-warm-sm shrink-0 rounded-xl border px-2">
   <CatsPagination
     page={data.pagination.page}
     totalPages={data.pagination.totalPages}
@@ -787,7 +797,7 @@ export function CatsPagination(props: CatsPaginationProps) {
 
 ```tsx
 // O variant="public" já inclui o container estilizado
-<PublicCatsPagination
+;<PublicCatsPagination
   page={page}
   totalPages={totalPages}
   onPageChange={setPage}
@@ -802,13 +812,13 @@ export function PublicCatsPagination(props: Props) {
 
 #### Estilos por Variante
 
-| Aspecto | Admin | Public |
-|---------|-------|--------|
-| Container | Card externo (wrapper) | Interno: `rounded-2xl bg-white/70 backdrop-blur-sm` |
-| Página ativa | `buttonVariants({ variant: 'default' })` | `bg-gradient-to-r from-primary to-accent shadow-primary/25` |
-| Página inativa | `buttonVariants({ variant: 'outline' })` | `text-foreground hover:bg-muted/40 hover:text-primary` |
-| Botões prev/next | Componentes UI base | Custom com `text-foreground` |
-| Desabilitado | `opacity-50 pointer-events-none` | `text-muted-foreground/30 cursor-not-allowed` |
+| Aspecto          | Admin                                    | Public                                                      |
+| ---------------- | ---------------------------------------- | ----------------------------------------------------------- |
+| Container        | Card externo (wrapper)                   | Interno: `rounded-2xl bg-white/70 backdrop-blur-sm`         |
+| Página ativa     | `buttonVariants({ variant: 'default' })` | `bg-gradient-to-r from-primary to-accent shadow-primary/25` |
+| Página inativa   | `buttonVariants({ variant: 'outline' })` | `text-foreground hover:bg-muted/40 hover:text-primary`      |
+| Botões prev/next | Componentes UI base                      | Custom com `text-foreground`                                |
+| Desabilitado     | `opacity-50 pointer-events-none`         | `text-muted-foreground/30 cursor-not-allowed`               |
 
 ---
 
@@ -818,15 +828,15 @@ export function PublicCatsPagination(props: Props) {
 
 **Objetivo:** Emocionar e conectar pessoas aos animais
 
-| Aspecto | Diretriz |
-|---------|----------|
-| **Fundo** | Usar `background` (azul céu) como fundo principal |
-| **Cards** | Mais arredondados (`rounded-2xl`), sombras pronunciadas |
-| **Tipografia** | Usar `font-display` (Outfit) para headlines |
-| **Ilustrações** | Permitido elementos temáticos de gatos/pets |
-| **Animações** | Mais expressivas, entrada com stagger |
-| **Espaçamento** | Mais generoso, respiro visual |
-| **Imagens** | Destaque, carrossel de fotos do gato |
+| Aspecto         | Diretriz                                                |
+| --------------- | ------------------------------------------------------- |
+| **Fundo**       | Usar `background` (azul céu) como fundo principal       |
+| **Cards**       | Mais arredondados (`rounded-2xl`), sombras pronunciadas |
+| **Tipografia**  | Usar `font-display` (Outfit) para headlines             |
+| **Ilustrações** | Permitido elementos temáticos de gatos/pets             |
+| **Animações**   | Mais expressivas, entrada com stagger                   |
+| **Espaçamento** | Mais generoso, respiro visual                           |
+| **Imagens**     | Destaque, carrossel de fotos do gato                    |
 
 ```tsx
 // Hero do site público
@@ -863,15 +873,15 @@ export function PublicCatsPagination(props: Props) {
 
 **Objetivo:** Produtividade e eficiência operacional
 
-| Aspecto | Diretriz |
-|---------|----------|
-| **Fundo** | Cards brancos sobre fundo neutro |
-| **Cards** | Arredondamento moderado (`rounded-xl`) |
-| **Tipografia** | `font-display` apenas para título da página |
-| **Ilustrações** | Evitar elementos temáticos, manter neutro |
-| **Animações** | Mais sutis, focadas em feedback |
-| **Espaçamento** | Compacto mas respirável |
-| **Tabelas** | Foco em dados e ações |
+| Aspecto         | Diretriz                                    |
+| --------------- | ------------------------------------------- |
+| **Fundo**       | Cards brancos sobre fundo neutro            |
+| **Cards**       | Arredondamento moderado (`rounded-xl`)      |
+| **Tipografia**  | `font-display` apenas para título da página |
+| **Ilustrações** | Evitar elementos temáticos, manter neutro   |
+| **Animações**   | Mais sutis, focadas em feedback             |
+| **Espaçamento** | Compacto mas respirável                     |
+| **Tabelas**     | Foco em dados e ações                       |
 
 ```tsx
 // Layout admin
@@ -1029,14 +1039,14 @@ Estes padrões foram consolidados nas telas de **cadastro** e **listagem** de ga
 
 ### Requisitos WCAG 2.1 AA
 
-| Critério | Implementação |
-|----------|---------------|
-| **Contraste de texto** | Mínimo 4.5:1 para texto normal, 3:1 para texto grande |
-| **Foco visível** | Ring de foco em todos os elementos interativos |
-| **Navegação por teclado** | Todos os elementos acessíveis via Tab |
-| **Labels** | Todos os inputs com labels associados |
-| **Alt text** | Todas as imagens com descrição |
-| **Hierarquia** | Headings em ordem lógica (h1 > h2 > h3) |
+| Critério                  | Implementação                                         |
+| ------------------------- | ----------------------------------------------------- |
+| **Contraste de texto**    | Mínimo 4.5:1 para texto normal, 3:1 para texto grande |
+| **Foco visível**          | Ring de foco em todos os elementos interativos        |
+| **Navegação por teclado** | Todos os elementos acessíveis via Tab                 |
+| **Labels**                | Todos os inputs com labels associados                 |
+| **Alt text**              | Todas as imagens com descrição                        |
+| **Hierarquia**            | Headings em ordem lógica (h1 > h2 > h3)               |
 
 ### Focus States
 
@@ -1099,45 +1109,45 @@ import { Cat, Heart, Home, Users, FileText } from 'lucide-react'
 
 ### Tamanhos Padrão
 
-| Contexto | Tamanho | Classe |
-|----------|---------|--------|
-| Inline com texto | 16px | `h-4 w-4` |
-| Botões | 16-20px | `h-4 w-4` ou `h-5 w-5` |
-| Cards/Features | 20-24px | `h-5 w-5` ou `h-6 w-6` |
-| Hero/Destaque | 32-48px | `h-8 w-8` ou `h-12 w-12` |
+| Contexto         | Tamanho | Classe                   |
+| ---------------- | ------- | ------------------------ |
+| Inline com texto | 16px    | `h-4 w-4`                |
+| Botões           | 16-20px | `h-4 w-4` ou `h-5 w-5`   |
+| Cards/Features   | 20-24px | `h-5 w-5` ou `h-6 w-6`   |
+| Hero/Destaque    | 32-48px | `h-8 w-8` ou `h-12 w-12` |
 
 ### Ícones Temáticos (Site Público)
 
 Permitidos apenas no site público:
 
-| Ícone | Uso |
-|-------|-----|
-| `Cat` | Representação de gatos, ilustrações |
-| `Heart` | Favoritos, adoção, amor |
-| `Home` | Lar, acolhimento |
-| `PawPrint` | Elementos decorativos |
+| Ícone      | Uso                                 |
+| ---------- | ----------------------------------- |
+| `Cat`      | Representação de gatos, ilustrações |
+| `Heart`    | Favoritos, adoção, amor             |
+| `Home`     | Lar, acolhimento                    |
+| `PawPrint` | Elementos decorativos               |
 
 ### Ícones Funcionais (Admin)
 
-| Ícone | Uso |
-|-------|-----|
-| `Plus` | Adicionar novo |
-| `Pencil` | Editar |
-| `Trash2` | Excluir |
-| `Eye` | Visualizar |
-| `Search` | Buscar |
-| `Filter` / `SlidersHorizontal` | Filtros |
-| `Download` | Exportar |
-| `Upload` | Importar |
-| `ChevronDown` | Expandir |
-| `MoreVertical` | Menu de ações |
-| `PawPrint` | Seção de identificação / contagem |
-| `HeartPulse` | Seção de saúde |
-| `FileText` | Seção de descrição |
-| `Images` | Seção de fotos |
-| `Clock3` | Coluna de idade |
-| `ShieldCheck` | Coluna de status |
-| `CheckCircle2` | Confirmação de sucesso |
+| Ícone                          | Uso                               |
+| ------------------------------ | --------------------------------- |
+| `Plus`                         | Adicionar novo                    |
+| `Pencil`                       | Editar                            |
+| `Trash2`                       | Excluir                           |
+| `Eye`                          | Visualizar                        |
+| `Search`                       | Buscar                            |
+| `Filter` / `SlidersHorizontal` | Filtros                           |
+| `Download`                     | Exportar                          |
+| `Upload`                       | Importar                          |
+| `ChevronDown`                  | Expandir                          |
+| `MoreVertical`                 | Menu de ações                     |
+| `PawPrint`                     | Seção de identificação / contagem |
+| `HeartPulse`                   | Seção de saúde                    |
+| `FileText`                     | Seção de descrição                |
+| `Images`                       | Seção de fotos                    |
+| `Clock3`                       | Coluna de idade                   |
+| `ShieldCheck`                  | Coluna de status                  |
+| `CheckCircle2`                 | Confirmação de sucesso            |
 
 ---
 
@@ -1182,10 +1192,16 @@ Permitidos apenas no site público:
 
 ```html
 <!-- DM Sans -->
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap" rel="stylesheet">
+<link
+  href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap"
+  rel="stylesheet"
+/>
 
 <!-- Outfit -->
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
+<link
+  href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap"
+  rel="stylesheet"
+/>
 ```
 
 ### Dependências
@@ -1201,4 +1217,4 @@ Permitidos apenas no site público:
 
 ---
 
-*PetLar Design System v1.2 - Atualizado em Fevereiro/2026*
+_PetLar Design System v1.2 - Atualizado em Fevereiro/2026_
