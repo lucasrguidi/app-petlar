@@ -85,7 +85,7 @@ export function CatsFilterBar({
             variant="outline"
             onClick={onOpenAdvanced}
             disabled={isPending}
-            className="border-border/60 bg-card hover:bg-sidebar-accent relative h-10 gap-2 rounded-xl px-3"
+            className="border-border/60 bg-card hover:bg-muted hover:text-foreground relative h-10 gap-2 rounded-xl px-3"
           >
             <SlidersHorizontal className="h-4 w-4" />
             Filtros

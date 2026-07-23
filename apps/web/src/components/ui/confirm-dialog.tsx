@@ -2,7 +2,7 @@
 
 import * as AlertDialogPrimitive from '@radix-ui/react-alert-dialog'
 import * as DialogPrimitive from '@radix-ui/react-dialog'
-import { type LucideIcon } from 'lucide-react'
+import { Loader2, type LucideIcon } from 'lucide-react'
 import * as React from 'react'
 
 import { buttonVariants } from '@/components/ui/button'
@@ -165,6 +165,7 @@ function ConfirmDialogInner({
       {/* Footer */}
       <div className="border-border/40 bg-card flex flex-col-reverse gap-2 border-t px-5 py-3 sm:flex-row sm:justify-end">
         <CancelComponent
+          autoFocus
           className={cn(
             buttonVariants({ variant: 'outline' }),
             'h-9 rounded-lg sm:mt-0'
@@ -175,6 +176,7 @@ function ConfirmDialogInner({
         <button
           onClick={onAction}
           disabled={isLoading || isActionDisabled}
+          aria-busy={isLoading}
           className={cn(
             buttonVariants(),
             'h-9 rounded-lg',
@@ -182,7 +184,14 @@ function ConfirmDialogInner({
             (isLoading || isActionDisabled) && 'pointer-events-none opacity-50'
           )}
         >
-          {isLoading ? actionLoadingLabel : actionLabel}
+          {isLoading ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              {actionLoadingLabel}
+            </>
+          ) : (
+            actionLabel
+          )}
         </button>
       </div>
     </>
@@ -204,7 +213,7 @@ function AlertMode({
     <AlertDialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
       <AlertDialogPrimitive.Portal>
         <AlertDialogPrimitive.Overlay className="data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-50 bg-black/80" />
-        <AlertDialogPrimitive.Content className="bg-card data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] fixed top-[50%] left-[50%] z-50 w-full max-w-sm translate-x-[-50%] translate-y-[-50%] overflow-hidden rounded-xl border shadow-lg duration-200">
+        <AlertDialogPrimitive.Content className="bg-card data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] fixed top-[50%] left-[50%] z-50 w-[calc(100%-2rem)] max-w-sm translate-x-[-50%] translate-y-[-50%] overflow-hidden rounded-2xl border shadow-2xl duration-200">
           <ConfirmDialogInner
             {...innerProps}
             cancelLabel={cancelLabel}
@@ -236,7 +245,7 @@ function DialogMode({
     <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay className="data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-50 bg-black/80" />
-        <DialogPrimitive.Content className="bg-card data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] fixed top-[50%] left-[50%] z-50 w-full max-w-sm translate-x-[-50%] translate-y-[-50%] overflow-hidden rounded-xl border shadow-lg duration-200">
+        <DialogPrimitive.Content className="bg-card data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] fixed top-[50%] left-[50%] z-50 w-[calc(100%-2rem)] max-w-sm translate-x-[-50%] translate-y-[-50%] overflow-hidden rounded-2xl border shadow-2xl duration-200">
           <ConfirmDialogInner
             {...innerProps}
             cancelLabel={cancelLabel}

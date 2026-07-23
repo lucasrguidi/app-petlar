@@ -19,8 +19,8 @@ interface PublicHeaderProps {
 const navItems = [
   { id: 'inicio', label: 'Início' },
   { id: 'como-funciona', label: 'Como funciona' },
-  { id: 'termo-de-adocao', label: 'Termo de adoção' },
   { id: 'gatos-disponiveis', label: 'Gatos disponíveis' },
+  { id: 'termo-de-adocao', label: 'Termo de adoção' },
 ] as const
 
 export function PublicHeader({ orgName, orgLogo }: PublicHeaderProps) {

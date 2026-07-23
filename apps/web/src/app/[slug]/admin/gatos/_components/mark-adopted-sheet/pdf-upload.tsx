@@ -76,7 +76,6 @@ export function PdfUpload({
 
         setUploadProgress(100)
         onChange(publicUrl)
-        toast.success('PDF enviado com sucesso')
       } catch (error) {
         toast.error(
           error instanceof Error ? error.message : 'Erro ao enviar PDF'
