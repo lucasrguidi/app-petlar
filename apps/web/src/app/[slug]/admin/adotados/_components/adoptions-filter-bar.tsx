@@ -175,7 +175,7 @@ export function AdoptionsFilterBar({
                 placeholder="De"
                 disabled={isPending}
                 toDate={dateTo}
-                className="h-9 min-w-0 sm:w-[130px]"
+                className="hover:border-border/60 hover:bg-muted hover:text-foreground h-9 min-w-0 sm:w-[130px]"
               />
               <span className="text-muted-foreground px-0.5 text-xs">até</span>
               <DatePicker
@@ -184,7 +184,7 @@ export function AdoptionsFilterBar({
                 placeholder="Até"
                 disabled={isPending}
                 fromDate={dateFrom}
-                className="h-9 min-w-0 sm:w-[130px]"
+                className="hover:border-border/60 hover:bg-muted hover:text-foreground h-9 min-w-0 sm:w-[130px]"
               />
             </div>
           </div>

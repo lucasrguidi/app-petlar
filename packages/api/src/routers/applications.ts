@@ -16,6 +16,7 @@ import {
   orgs,
   permanentRejections,
   type FormFieldCondition,
+  user,
 } from '@app-petlar/db/schema'
 import { env } from '@app-petlar/env/server'
 import { TRPCError } from '@trpc/server'
@@ -1135,9 +1136,18 @@ export const applicationsRouter = router({
           applicantName: applications.applicantName,
           applicantWhatsapp: applications.applicantWhatsapp,
           status: applications.status,
+          activePermanentRejectionId: permanentRejections.id,
           createdAt: applications.createdAt,
         })
         .from(applications)
+        .leftJoin(
+          permanentRejections,
+          and(
+            eq(permanentRejections.orgId, applications.orgId),
+            sql`lower(trim(${applications.applicantEmail})) = ${permanentRejections.applicantEmail}`,
+            eq(permanentRejections.active, true)
+          )
+        )
         .where(and(...whereConditions))
         .orderBy(asc(applications.createdAt))
         .limit(input.limit)
@@ -1153,7 +1163,12 @@ export const applicationsRouter = router({
           photoUrl: photo?.url ?? null,
         },
         filterableFields,
-        applications: rows,
+        applications: rows.map(
+          ({ activePermanentRejectionId, ...application }) => ({
+            ...application,
+            isPermanentRejectionActive: Boolean(activePermanentRejectionId),
+          })
+        ),
         pagination: {
           page: input.page,
           limit: input.limit,
@@ -1178,6 +1193,7 @@ export const applicationsRouter = router({
           permanentRejectionReason: applications.permanentRejectionReason,
           permanentlyRejectedAt: applications.permanentlyRejectedAt,
           permanentlyRejectedBy: applications.permanentlyRejectedBy,
+          permanentlyRejectedByName: user.name,
           responses: applications.responses,
           createdAt: applications.createdAt,
           confirmedAt: applications.confirmedAt,
@@ -1188,6 +1204,7 @@ export const applicationsRouter = router({
         })
         .from(applications)
         .innerJoin(cats, eq(cats.id, applications.catId))
+        .leftJoin(user, eq(user.id, applications.permanentlyRejectedBy))
         .where(
           and(
             eq(applications.id, input.id),
@@ -1281,6 +1298,7 @@ export const applicationsRouter = router({
           permanentRejectionReason: application.permanentRejectionReason,
           permanentlyRejectedAt: application.permanentlyRejectedAt,
           permanentlyRejectedBy: application.permanentlyRejectedBy,
+          permanentlyRejectedByName: application.permanentlyRejectedByName,
           isPermanentRejectionActive: Boolean(activePermanentRejection),
           createdAt: application.createdAt,
           confirmedAt: application.confirmedAt,

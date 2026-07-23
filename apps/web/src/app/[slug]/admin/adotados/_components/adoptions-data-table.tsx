@@ -5,13 +5,14 @@ import {
   Check,
   ChevronRight,
   Download,
-  Eye,
   Mars,
   MessageCircle,
   Venus,
   X,
 } from 'lucide-react'
 import { useMemo } from 'react'
+
+import { AdoptionActionsMenu } from './adoption-actions-menu'
 
 import type { ColumnDef, Row } from '@tanstack/react-table'
 
@@ -381,22 +382,15 @@ function getColumns(onRowClick: (id: string) => void): ColumnDef<Adoption>[] {
       header: () => null,
       cell: ({ row }) => (
         <div className="flex justify-end">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => onRowClick(row.original.id)}
-            className="h-8 rounded-lg px-2 text-xs sm:px-3"
-          >
-            <Eye className="h-3.5 w-3.5 sm:mr-1.5" />
-            <span className="ml-1 sm:hidden">Ver</span>
-            <span className="hidden sm:inline">Detalhes</span>
-          </Button>
+          <AdoptionActionsMenu
+            adoption={row.original}
+            onView={() => onRowClick(row.original.id)}
+          />
         </div>
       ),
       meta: {
-        className: 'w-20 sm:w-28',
-        headerClassName: 'w-20 sm:w-28',
+        className: 'w-12',
+        headerClassName: 'w-12',
       },
     },
   ]

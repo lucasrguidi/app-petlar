@@ -23,8 +23,8 @@ export default async function PublicHomePage({ params }: PublicHomePageProps) {
     <>
       <HomeHero slug={slug} isCustomDomain={isCustomDomain} />
       <HomeHowItWorks />
-      {org && <AdoptionTermSection orgName={org.name} />}
       <PublicCatsSection />
+      {org && <AdoptionTermSection orgName={org.name} />}
       <SponsorsSection />
     </>
   )

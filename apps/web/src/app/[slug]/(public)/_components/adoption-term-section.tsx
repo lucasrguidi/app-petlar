@@ -12,7 +12,8 @@ const pillars = [
     description:
       'Telas, barreiras e transporte seguro fazem parte do compromisso com a integridade do gato.',
     icon: ShieldCheck,
-    color: 'from-[#0EA5E9] to-[#38BDF8]',
+    color: 'from-info to-info/70',
+    iconColor: 'text-info-foreground',
   },
   {
     title: 'Cuidado por toda a vida',
@@ -20,20 +21,23 @@ const pillars = [
       'A adoção considera uma convivência que pode chegar a 20 anos, com presença e responsabilidade.',
     icon: HeartHandshake,
     color: 'from-primary to-accent',
+    iconColor: 'text-primary-foreground',
   },
   {
     title: 'Saúde em dia',
     description:
       'Acompanhamento veterinário, vacinação, vermifugação e castração no momento adequado.',
     icon: Stethoscope,
-    color: 'from-[#16A34A] to-[#4ADE80]',
+    color: 'from-success to-success/70',
+    iconColor: 'text-success-foreground',
   },
   {
     title: 'Guarda responsável',
     description:
       'Mudanças, viagens e imprevistos devem sempre preservar o bem-estar e a segurança do animal.',
     icon: Home,
-    color: 'from-[#EA580C] to-[#FB923C]',
+    color: 'from-warning to-accent',
+    iconColor: 'text-warning-foreground',
   },
 ] as const
 
@@ -90,7 +94,7 @@ export function AdoptionTermSection({ orgName }: AdoptionTermSectionProps) {
       </div>
 
       <div className="relative mx-auto w-full max-w-6xl">
-        <div className="border-foreground/8 shadow-foreground/5 overflow-hidden rounded-[2rem] border bg-white/75 shadow-2xl backdrop-blur-sm">
+        <div className="border-foreground/8 shadow-foreground/5 overflow-hidden rounded-3xl border bg-white/75 shadow-2xl backdrop-blur-sm">
           <div className="grid gap-0 lg:grid-cols-[0.9fr_1.1fr]">
             <div className="from-primary via-primary/90 to-accent relative overflow-hidden bg-gradient-to-br p-8 text-white sm:p-10 lg:p-12">
               <div className="absolute -top-16 -right-16 h-48 w-48 rounded-full border border-white/20" />
@@ -133,7 +137,9 @@ export function AdoptionTermSection({ orgName }: AdoptionTermSectionProps) {
                         pillar.color
                       )}
                     >
-                      <pillar.icon className="h-4.5 w-4.5 text-white" />
+                      <pillar.icon
+                        className={cn('h-4.5 w-4.5', pillar.iconColor)}
+                      />
                     </div>
                     <h3 className="font-display text-foreground font-semibold">
                       {pillar.title}
@@ -168,7 +174,7 @@ export function AdoptionTermSection({ orgName }: AdoptionTermSectionProps) {
               {clauses.map((clause, index) => (
                 <details
                   key={clause.title}
-                  className="group border-foreground/10 open:border-primary/25 open:bg-primary/[0.035] rounded-2xl border bg-white/80 transition-colors"
+                  className="group border-foreground/10 open:border-primary/25 open:bg-primary/5 rounded-2xl border bg-white/80 transition-colors"
                 >
                   <summary className="focus-visible:ring-primary flex cursor-pointer list-none items-center gap-3 rounded-2xl px-4 py-4 text-left focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none [&::-webkit-details-marker]:hidden">
                     <span className="bg-primary/10 text-primary flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xs font-bold tabular-nums">
@@ -188,7 +194,7 @@ export function AdoptionTermSection({ orgName }: AdoptionTermSectionProps) {
               ))}
             </div>
 
-            <div className="border-primary/15 bg-primary/[0.045] mt-8 rounded-2xl border p-5 sm:p-6">
+            <div className="border-primary/15 bg-primary/5 mt-8 rounded-2xl border p-5 sm:p-6">
               <p className="text-foreground/80 text-sm leading-relaxed">
                 O descumprimento dos compromissos pode levar o animal de volta à
                 guarda da {orgName}. A equipe poderá acompanhar a adoção e

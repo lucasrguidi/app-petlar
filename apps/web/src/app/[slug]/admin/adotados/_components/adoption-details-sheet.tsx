@@ -6,6 +6,7 @@ import {
   Cat,
   Download,
   FileText,
+  FileWarning,
   Heart,
   Loader2,
   Mail,
@@ -15,6 +16,7 @@ import {
   RotateCcw,
   Save,
   Trash2,
+  Upload,
   User,
   X,
 } from 'lucide-react'
@@ -26,14 +28,7 @@ import { PdfUpload } from '../../gatos/_components/mark-adopted-sheet/pdf-upload
 import { useAuth } from '@/components/auth-provider'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -108,7 +103,9 @@ export function AdoptionDetailsSheet({
   const queryClient = useQueryClient()
   const { user } = useAuth()
   const [isEditing, setIsEditing] = useState(false)
+  const [isEditingTerm, setIsEditingTerm] = useState(false)
   const [isTermUploading, setIsTermUploading] = useState(false)
+  const [termDraftUrl, setTermDraftUrl] = useState<string | null>(null)
   const [returnDialogOpen, setReturnDialogOpen] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [deleteConfirmation, setDeleteConfirmation] = useState('')
@@ -117,7 +114,6 @@ export function AdoptionDetailsSheet({
     adopterPhone: '',
     adopterEmail: '',
     adoptionDate: '',
-    adoptionTermUrl: null as string | null,
     notes: '',
   })
 
@@ -143,15 +139,31 @@ export function AdoptionDetailsSheet({
     trpc.adoptions.discardTermUpload.mutationOptions()
   )
 
+  const updateTermMutation = useMutation(
+    trpc.adoptions.update.mutationOptions({
+      onSuccess: async () => {
+        await queryClient.invalidateQueries({ queryKey: [['adoptions']] })
+        setIsEditingTerm(false)
+        setTermDraftUrl(null)
+        toast.success('Termo de adoção atualizado com sucesso')
+      },
+      onError: (error) => {
+        toast.error(error.message || 'Não foi possível atualizar o termo')
+      },
+    })
+  )
+
   const returnMutation = useMutation(
     trpc.adoptions.returnToAvailable.mutationOptions({
       onSuccess: () => {
-        toast.success('Adoção removida e gato devolvido para disponíveis')
-        queryClient.invalidateQueries({ queryKey: [['adoptions']] })
-        queryClient.invalidateQueries({ queryKey: [['cats']] })
-        queryClient.invalidateQueries({ queryKey: [['dashboard']] })
         setReturnDialogOpen(false)
         onOpenChange(false)
+        toast.success('Adoção removida e gato devolvido para disponíveis')
+        queryClient.invalidateQueries({
+          queryKey: [['adoptions', 'list']],
+        })
+        queryClient.invalidateQueries({ queryKey: [['cats']] })
+        queryClient.invalidateQueries({ queryKey: [['dashboard']] })
       },
       onError: (error) => {
         toast.error(error.message || 'Não foi possível devolver o gato')
@@ -162,14 +174,16 @@ export function AdoptionDetailsSheet({
   const hardDeleteMutation = useMutation(
     trpc.cats.hardDelete.mutationOptions({
       onSuccess: () => {
-        toast.success('Gato e todo o histórico foram excluídos')
-        queryClient.invalidateQueries({ queryKey: [['adoptions']] })
-        queryClient.invalidateQueries({ queryKey: [['cats']] })
-        queryClient.invalidateQueries({ queryKey: [['applications']] })
-        queryClient.invalidateQueries({ queryKey: [['dashboard']] })
         setDeleteDialogOpen(false)
         setDeleteConfirmation('')
         onOpenChange(false)
+        toast.success('Gato e todo o histórico foram excluídos')
+        queryClient.invalidateQueries({
+          queryKey: [['adoptions', 'list']],
+        })
+        queryClient.invalidateQueries({ queryKey: [['cats']] })
+        queryClient.invalidateQueries({ queryKey: [['applications']] })
+        queryClient.invalidateQueries({ queryKey: [['dashboard']] })
       },
       onError: (error) => {
         toast.error(error.message || 'Não foi possível excluir o gato')
@@ -187,7 +201,6 @@ export function AdoptionDetailsSheet({
         adopterPhone: formatPhone(data.adopterPhone),
         adopterEmail: data.adopterEmail || '',
         adoptionDate: data.adoptionDate,
-        adoptionTermUrl: data.adoptionTermUrl,
         notes: data.notes || '',
       })
     }
@@ -197,6 +210,8 @@ export function AdoptionDetailsSheet({
   useEffect(() => {
     if (!open) {
       setIsEditing(false)
+      setIsEditingTerm(false)
+      setTermDraftUrl(null)
     }
   }, [open])
 
@@ -209,7 +224,6 @@ export function AdoptionDetailsSheet({
       adopterPhone: editData.adopterPhone.replace(/\D/g, ''),
       adopterEmail: editData.adopterEmail || undefined,
       adoptionDate: editData.adoptionDate,
-      adoptionTermUrl: editData.adoptionTermUrl,
       notes: editData.notes || undefined,
     })
   }
@@ -221,7 +235,6 @@ export function AdoptionDetailsSheet({
         adopterPhone: formatPhone(data.adopterPhone),
         adopterEmail: data.adopterEmail || '',
         adoptionDate: data.adoptionDate,
-        adoptionTermUrl: data.adoptionTermUrl,
         notes: data.notes || '',
       })
     }
@@ -229,17 +242,32 @@ export function AdoptionDetailsSheet({
   }
 
   const discardUncommittedTerm = async () => {
-    if (
-      editData.adoptionTermUrl &&
-      editData.adoptionTermUrl !== data?.adoptionTermUrl
-    ) {
+    if (termDraftUrl && termDraftUrl !== data?.adoptionTermUrl) {
       await discardDraftMutation.mutateAsync({
-        url: editData.adoptionTermUrl,
+        url: termDraftUrl,
       })
     }
   }
 
-  const handleCancel = async () => {
+  const handleCancel = () => {
+    if (data) {
+      setEditData({
+        adopterName: data.adopterName,
+        adopterPhone: formatPhone(data.adopterPhone),
+        adopterEmail: data.adopterEmail || '',
+        adoptionDate: data.adoptionDate,
+        notes: data.notes || '',
+      })
+    }
+    setIsEditing(false)
+  }
+
+  const startEditingTerm = () => {
+    setTermDraftUrl(data?.adoptionTermUrl ?? null)
+    setIsEditingTerm(true)
+  }
+
+  const handleCancelTerm = async () => {
     try {
       await discardUncommittedTerm()
     } catch (error) {
@@ -251,17 +279,16 @@ export function AdoptionDetailsSheet({
       return
     }
 
-    if (data) {
-      setEditData({
-        adopterName: data.adopterName,
-        adopterPhone: formatPhone(data.adopterPhone),
-        adopterEmail: data.adopterEmail || '',
-        adoptionDate: data.adoptionDate,
-        adoptionTermUrl: data.adoptionTermUrl,
-        notes: data.notes || '',
-      })
-    }
-    setIsEditing(false)
+    setTermDraftUrl(null)
+    setIsEditingTerm(false)
+  }
+
+  const handleSaveTerm = () => {
+    if (!adoptionId) return
+    updateTermMutation.mutate({
+      id: adoptionId,
+      adoptionTermUrl: termDraftUrl,
+    })
   }
 
   const handleSheetOpenChange = async (nextOpen: boolean) => {
@@ -270,7 +297,11 @@ export function AdoptionDetailsSheet({
       return
     }
 
-    if (isEditing) {
+    if (isTermUploading || updateTermMutation.isPending) {
+      return
+    }
+
+    if (isEditingTerm) {
       try {
         await discardUncommittedTerm()
       } catch (error) {
@@ -287,7 +318,11 @@ export function AdoptionDetailsSheet({
   }
 
   const isAdmin = user?.role === 'admin'
-  const isManaging = returnMutation.isPending || hardDeleteMutation.isPending
+  const isManaging =
+    returnMutation.isPending ||
+    hardDeleteMutation.isPending ||
+    updateTermMutation.isPending ||
+    isTermUploading
 
   return (
     <>
@@ -316,14 +351,14 @@ export function AdoptionDetailsSheet({
               </div>
 
               <div className="flex items-center gap-1">
-                {data && !isEditing && (
+                {data && !isEditing && !isEditingTerm && (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button
                         type="button"
                         variant="outline"
                         size="sm"
-                        className="h-9 gap-1.5 rounded-lg"
+                        className="border-border/60 bg-card hover:bg-muted hover:text-foreground data-[state=open]:bg-muted data-[state=open]:text-foreground h-9 gap-1.5 rounded-lg"
                         disabled={isManaging}
                       >
                         <MoreVertical className="h-4 w-4" />
@@ -335,10 +370,10 @@ export function AdoptionDetailsSheet({
                       className="w-64 rounded-xl"
                     >
                       <DropdownMenuItem
-                        className="cursor-pointer gap-2 rounded-lg"
+                        className="text-warning-foreground focus:bg-warning/10 focus:text-warning-foreground cursor-pointer gap-2 rounded-lg"
                         onSelect={() => setReturnDialogOpen(true)}
                       >
-                        <RotateCcw className="text-primary h-4 w-4" />
+                        <RotateCcw className="text-warning h-4 w-4" />
                         <div>
                           <p className="text-sm font-medium">
                             Devolver para disponíveis
@@ -442,8 +477,9 @@ export function AdoptionDetailsSheet({
                       type="button"
                       variant="ghost"
                       size="sm"
-                      className="h-8 gap-1.5 rounded-lg"
+                      className="hover:bg-muted hover:text-foreground h-8 gap-1.5 rounded-lg"
                       onClick={startEditing}
+                      disabled={isEditingTerm}
                     >
                       <Pencil className="h-3.5 w-3.5" />
                       Editar
@@ -524,25 +560,6 @@ export function AdoptionDetailsSheet({
                     </div>
 
                     <div className="space-y-2">
-                      <Label className="text-sm">Termo de adoção</Label>
-                      <PdfUpload
-                        value={editData.adoptionTermUrl}
-                        committedValue={data.adoptionTermUrl}
-                        onUploadingChange={setIsTermUploading}
-                        onChange={(url) =>
-                          setEditData((current) => ({
-                            ...current,
-                            adoptionTermUrl: url,
-                          }))
-                        }
-                        disabled={
-                          updateMutation.isPending ||
-                          discardDraftMutation.isPending
-                        }
-                      />
-                    </div>
-
-                    <div className="space-y-2">
                       <Label htmlFor="edit-notes" className="text-sm">
                         Observações
                       </Label>
@@ -564,12 +581,8 @@ export function AdoptionDetailsSheet({
                         type="button"
                         variant="outline"
                         className="flex-1 rounded-xl"
-                        onClick={() => void handleCancel()}
-                        disabled={
-                          updateMutation.isPending ||
-                          discardDraftMutation.isPending ||
-                          isTermUploading
-                        }
+                        onClick={handleCancel}
+                        disabled={updateMutation.isPending}
                       >
                         Cancelar
                       </Button>
@@ -577,7 +590,7 @@ export function AdoptionDetailsSheet({
                         type="button"
                         className="flex-1 rounded-xl"
                         onClick={handleSave}
-                        disabled={updateMutation.isPending || isTermUploading}
+                        disabled={updateMutation.isPending}
                       >
                         {updateMutation.isPending ? (
                           <>
@@ -659,73 +672,166 @@ export function AdoptionDetailsSheet({
               )}
 
               {/* Adoption Term */}
-              {!isEditing && data.adoptionTermUrl && (
-                <div className="border-border/60 bg-card/95 shadow-warm-sm rounded-xl border p-4">
-                  <div className="mb-3 flex items-center gap-2">
+              <div className="border-border/60 bg-card/95 shadow-warm-sm rounded-xl border p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
                     <FileText className="text-primary h-4 w-4" />
                     <h3 className="text-sm font-semibold">Termo de adoção</h3>
                   </div>
-
-                  <a
-                    href={data.adoptionTermUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="bg-primary/10 text-primary hover:bg-primary/20 inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors"
+                  <span
+                    className={
+                      data.adoptionTermUrl
+                        ? 'border-success/20 bg-success/10 text-success rounded-md border px-2 py-0.5 text-[11px] font-medium'
+                        : 'border-warning/20 bg-warning/10 text-warning-foreground rounded-md border px-2 py-0.5 text-[11px] font-medium'
+                    }
                   >
-                    <Download className="h-4 w-4" />
-                    Baixar PDF
-                  </a>
+                    {data.adoptionTermUrl ? 'PDF anexado' : 'Pendente'}
+                  </span>
                 </div>
-              )}
+
+                {isEditingTerm ? (
+                  <div className="mt-4 space-y-3">
+                    <p className="text-muted-foreground text-sm leading-relaxed">
+                      Adicione, substitua ou remova o PDF. A alteração só será
+                      confirmada depois de salvar.
+                    </p>
+                    <PdfUpload
+                      value={termDraftUrl}
+                      committedValue={data.adoptionTermUrl}
+                      onUploadingChange={setIsTermUploading}
+                      onChange={setTermDraftUrl}
+                      disabled={
+                        updateTermMutation.isPending ||
+                        discardDraftMutation.isPending
+                      }
+                    />
+                    <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="rounded-lg"
+                        onClick={() => void handleCancelTerm()}
+                        disabled={
+                          isTermUploading ||
+                          updateTermMutation.isPending ||
+                          discardDraftMutation.isPending
+                        }
+                      >
+                        Cancelar
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        className="rounded-lg"
+                        onClick={handleSaveTerm}
+                        disabled={
+                          isTermUploading ||
+                          updateTermMutation.isPending ||
+                          termDraftUrl === data.adoptionTermUrl
+                        }
+                      >
+                        {updateTermMutation.isPending ? (
+                          <>
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            Salvando termo...
+                          </>
+                        ) : (
+                          <>
+                            <Save className="h-4 w-4" />
+                            Salvar termo
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                ) : data.adoptionTermUrl ? (
+                  <div className="mt-3 space-y-3">
+                    <p className="text-muted-foreground text-sm">
+                      O documento assinado está anexado a esta adoção.
+                    </p>
+                    <div className="flex flex-col gap-2 sm:flex-row">
+                      <Button
+                        asChild
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        className="rounded-lg"
+                      >
+                        <a
+                          href={data.adoptionTermUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          <Download className="h-4 w-4" />
+                          Baixar PDF
+                        </a>
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="border-border/60 bg-card hover:bg-muted hover:text-foreground rounded-lg"
+                        onClick={startEditingTerm}
+                        disabled={isEditing}
+                      >
+                        Substituir ou remover
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="border-warning/20 bg-warning/10 mt-3 rounded-xl border p-3">
+                    <div className="flex items-start gap-3">
+                      <div className="bg-warning/15 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg">
+                        <FileWarning className="text-warning h-4 w-4" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-semibold">
+                          Termo ainda não adicionado
+                        </p>
+                        <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
+                          Anexe o PDF assim que o documento estiver assinado.
+                        </p>
+                        <Button
+                          type="button"
+                          size="sm"
+                          className="mt-3 rounded-lg"
+                          onClick={startEditingTerm}
+                          disabled={isEditing}
+                        >
+                          <Upload className="h-4 w-4" />
+                          Adicionar termo
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </SheetContent>
       </Sheet>
 
-      <Dialog
+      <ConfirmDialog
         open={returnDialogOpen}
         onOpenChange={(nextOpen) => {
           if (!returnMutation.isPending) setReturnDialogOpen(nextOpen)
         }}
-      >
-        <DialogContent className="rounded-2xl sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <RotateCcw className="text-primary h-5 w-5" />
-              Devolver {data?.catName} para disponíveis?
-            </DialogTitle>
-            <DialogDescription className="leading-relaxed">
-              O registro desta adoção e o termo assinado serão apagados. O
-              perfil do gato e todas as candidaturas permanecerão no sistema, e
-              ele voltará a aparecer na página pública.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setReturnDialogOpen(false)}
-              disabled={returnMutation.isPending}
-            >
-              Cancelar
-            </Button>
-            <Button
-              type="button"
-              disabled={!adoptionId || returnMutation.isPending}
-              onClick={() => {
-                if (adoptionId) returnMutation.mutate({ id: adoptionId })
-              }}
-            >
-              {returnMutation.isPending && (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              )}
-              Confirmar devolução
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        variant="warning"
+        icon={RotateCcw}
+        title={`Devolver ${data?.catName ?? 'gato'} para disponíveis?`}
+        description="O registro desta adoção e o termo assinado serão apagados. O perfil do gato e todas as candidaturas permanecerão no sistema."
+        note="O gato voltará a aparecer como disponível na página pública."
+        actionLabel="Devolver para disponíveis"
+        actionLoadingLabel="Devolvendo..."
+        isLoading={returnMutation.isPending}
+        isActionDisabled={!adoptionId}
+        onAction={() => {
+          if (adoptionId) returnMutation.mutate({ id: adoptionId })
+        }}
+      />
 
-      <Dialog
+      <ConfirmDialog
         open={deleteDialogOpen}
         onOpenChange={(nextOpen) => {
           if (!hardDeleteMutation.isPending) {
@@ -733,68 +839,40 @@ export function AdoptionDetailsSheet({
             if (!nextOpen) setDeleteConfirmation('')
           }
         }}
+        variant="destructive"
+        icon={Trash2}
+        title={`Excluir ${data?.catName ?? 'gato'} definitivamente`}
+        description="Esta ação remove o gato, a adoção, todas as candidaturas, fotos, mídias e o termo."
+        note="A exclusão é permanente e não pode ser desfeita."
+        actionLabel="Excluir tudo definitivamente"
+        actionLoadingLabel="Excluindo..."
+        isLoading={hardDeleteMutation.isPending}
+        isActionDisabled={
+          !data ||
+          deleteConfirmation.trim().toLocaleLowerCase('pt-BR') !==
+            data.catName.trim().toLocaleLowerCase('pt-BR')
+        }
+        onAction={() => {
+          if (!data) return
+          hardDeleteMutation.mutate({
+            id: data.catId,
+            confirmationName: deleteConfirmation,
+          })
+        }}
       >
-        <DialogContent className="overflow-hidden rounded-2xl p-0 sm:max-w-lg">
-          <div className="from-destructive/12 via-card to-card border-destructive/15 border-b bg-gradient-to-br p-6">
-            <div className="bg-destructive/10 mb-4 flex h-11 w-11 items-center justify-center rounded-xl">
-              <Trash2 className="text-destructive h-5 w-5" />
-            </div>
-            <DialogHeader>
-              <DialogTitle className="font-display text-xl">
-                Excluir {data?.catName} definitivamente
-              </DialogTitle>
-              <DialogDescription className="leading-relaxed">
-                Esta ação remove o gato, a adoção, todas as candidaturas, fotos,
-                mídias e o termo. Ela não pode ser desfeita.
-              </DialogDescription>
-            </DialogHeader>
-          </div>
-          <div className="space-y-2 px-6">
-            <Label htmlFor="delete-cat-confirmation">
-              Digite <strong>{data?.catName}</strong> para confirmar
-            </Label>
-            <Input
-              id="delete-cat-confirmation"
-              value={deleteConfirmation}
-              onChange={(event) => setDeleteConfirmation(event.target.value)}
-              autoComplete="off"
-              className="rounded-xl"
-            />
-          </div>
-          <DialogFooter className="px-6 pb-6">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setDeleteDialogOpen(false)}
-              disabled={hardDeleteMutation.isPending}
-            >
-              Cancelar
-            </Button>
-            <Button
-              type="button"
-              variant="destructive"
-              disabled={
-                !data ||
-                deleteConfirmation.trim().toLocaleLowerCase('pt-BR') !==
-                  data.catName.trim().toLocaleLowerCase('pt-BR') ||
-                hardDeleteMutation.isPending
-              }
-              onClick={() => {
-                if (!data) return
-                hardDeleteMutation.mutate({
-                  id: data.catId,
-                  confirmationName: deleteConfirmation,
-                })
-              }}
-            >
-              {hardDeleteMutation.isPending && (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              )}
-              Excluir tudo definitivamente
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        <div className="space-y-2">
+          <Label htmlFor="delete-cat-confirmation">
+            Digite <strong>{data?.catName}</strong> para confirmar
+          </Label>
+          <Input
+            id="delete-cat-confirmation"
+            value={deleteConfirmation}
+            onChange={(event) => setDeleteConfirmation(event.target.value)}
+            autoComplete="off"
+            className="rounded-lg"
+          />
+        </div>
+      </ConfirmDialog>
     </>
   )
 }

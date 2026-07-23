@@ -59,7 +59,7 @@ function getStatusConfig(status: ApplicationStatus) {
     permanently_rejected: {
       label: getStatusLabel(status),
       variant: 'destructive' as const,
-      dotClass: 'bg-red-950',
+      dotClass: 'bg-destructive',
     },
   }
 
@@ -150,7 +150,7 @@ function getColumns(
         const isThisUpdating =
           isUpdatingStatus && updatingApplicationId === applicant.id
 
-        if (!onUpdateStatus || applicant.status === 'permanently_rejected') {
+        if (!onUpdateStatus || applicant.isPermanentRejectionActive) {
           return (
             <Badge
               variant={config.variant}
@@ -166,7 +166,7 @@ function getColumns(
 
         if (isThisUpdating) {
           return (
-            <div className="border-border/60 bg-card flex h-8 w-[118px] items-center gap-1.5 rounded-lg border px-3 text-xs sm:w-[130px]">
+            <div className="border-border/60 bg-card flex h-8 w-[172px] items-center gap-1.5 rounded-lg border px-3 text-xs">
               <Loader2 className="h-3 w-3 shrink-0 animate-spin" />
               <span>Salvando...</span>
             </div>
@@ -181,10 +181,13 @@ function getColumns(
                 onUpdateStatus(applicant.id, status)
               }
             >
-              <SelectTrigger className="border-border/60 h-8 w-[118px] rounded-lg text-xs sm:w-[130px]">
-                <span className="flex items-center gap-1.5">
+              <SelectTrigger className="border-border/60 h-8 w-[172px] rounded-lg text-xs whitespace-nowrap">
+                <span className="flex min-w-0 items-center gap-1.5 whitespace-nowrap">
                   <span
-                    className={cn('h-1.5 w-1.5 rounded-full', config.dotClass)}
+                    className={cn(
+                      'h-1.5 w-1.5 shrink-0 rounded-full',
+                      config.dotClass
+                    )}
                   />
                   <SelectValue />
                 </span>
@@ -214,12 +217,18 @@ function getColumns(
                     Recusado
                   </span>
                 </SelectItem>
+                <SelectItem value="permanently_rejected" disabled>
+                  <span className="flex items-center gap-1.5 whitespace-nowrap">
+                    <span className="bg-destructive h-1.5 w-1.5 rounded-full" />
+                    Rejeição permanente
+                  </span>
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
         )
       },
-      meta: { className: 'w-[122px] sm:w-36' },
+      meta: { className: 'w-[176px] sm:w-44' },
     },
     {
       id: 'createdAt',

@@ -32,6 +32,7 @@ export interface ApplicantRow {
   applicantName: string
   applicantWhatsapp: string
   status: ApplicationStatus
+  isPermanentRejectionActive: boolean
   createdAt: string | Date
 }
 
