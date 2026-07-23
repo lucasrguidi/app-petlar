@@ -619,7 +619,7 @@ Todos os componentes interativos devem ter estes estados:
 ### ConfirmDialog
 
 Componente unificado para todas as modais de confirmação e ação.
-Localização: `@/components/ui/confirm-dialog`.
+Localização:: `@/components/ui/confirm-dialog`.
 
 ```
 ┌──────────────────────────────────────┐
