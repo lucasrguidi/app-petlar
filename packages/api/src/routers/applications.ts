@@ -1,5 +1,6 @@
 import { createHash, randomInt, timingSafeEqual } from 'node:crypto'
 
+import { formatEmailFrom } from '@app-petlar/auth/email-from'
 import { db } from '@app-petlar/db'
 import {
   applicationFiles,
@@ -13,9 +14,9 @@ import {
   type FormFieldType,
   forms,
   orgs,
+  permanentRejections,
   type FormFieldCondition,
 } from '@app-petlar/db/schema'
-import { formatEmailFrom } from '@app-petlar/auth/email-from'
 import { env } from '@app-petlar/env/server'
 import { TRPCError } from '@trpc/server'
 import {
@@ -32,7 +33,12 @@ import {
 import { nanoid } from 'nanoid'
 import { z } from 'zod'
 
-import { protectedProcedure, publicProcedure, router } from '../index'
+import {
+  adminProcedure,
+  protectedProcedure,
+  publicProcedure,
+  router,
+} from '../index'
 import {
   deleteFile,
   generateApplicationFileKey,
@@ -73,7 +79,7 @@ const createApplicationSchema = z.object({
   slug: z.string().min(1),
   catId: z.string().min(1),
   applicantName: z.string().min(1, 'Nome é obrigatório').max(200),
-  applicantEmail: z.string().email('Email inválido'),
+  applicantEmail: z.string().trim().email('Email inválido'),
   applicantWhatsapp: z.string().min(10, 'WhatsApp inválido').max(20),
   responses: z.record(z.string(), z.union([z.string(), z.boolean(), z.null()])),
   files: z
@@ -137,6 +143,15 @@ const getByIdSchema = z.object({
 const updateStatusSchema = z.object({
   id: z.string().min(1),
   status: z.enum(applicationStatuses),
+})
+
+const permanentlyRejectSchema = z.object({
+  id: z.string().min(1),
+  reason: z.string().trim().min(1, 'Informe o motivo da rejeição').max(1000),
+})
+
+const revokePermanentRejectionSchema = z.object({
+  email: z.string().trim().email('E-mail inválido'),
 })
 
 function hasResponseValue(value: string | boolean | null | undefined): boolean {
@@ -731,7 +746,7 @@ async function getPendingApplicationByEmail(params: {
       and(
         eq(applications.orgId, params.orgId),
         eq(applications.catId, params.catId),
-        sql`lower(${applications.applicantEmail}) = ${params.applicantEmail}`,
+        sql`lower(trim(${applications.applicantEmail})) = ${params.applicantEmail}`,
         isNull(applications.confirmedAt)
       )
     )
@@ -755,7 +770,7 @@ async function getConfirmedApplicationByEmail(params: {
       and(
         eq(applications.orgId, params.orgId),
         eq(applications.catId, params.catId),
-        sql`lower(${applications.applicantEmail}) = ${params.applicantEmail}`,
+        sql`lower(trim(${applications.applicantEmail})) = ${params.applicantEmail}`,
         sql`${applications.confirmedAt} is not null`
       )
     )
@@ -1160,6 +1175,9 @@ export const applicationsRouter = router({
           applicantName: applications.applicantName,
           applicantEmail: applications.applicantEmail,
           applicantWhatsapp: applications.applicantWhatsapp,
+          permanentRejectionReason: applications.permanentRejectionReason,
+          permanentlyRejectedAt: applications.permanentlyRejectedAt,
+          permanentlyRejectedBy: applications.permanentlyRejectedBy,
           responses: applications.responses,
           createdAt: applications.createdAt,
           confirmedAt: applications.confirmedAt,
@@ -1238,6 +1256,21 @@ export const applicationsRouter = router({
         .where(eq(applicationFiles.applicationId, application.id))
         .orderBy(asc(applicationFiles.createdAt))
 
+      const [activePermanentRejection] = await db
+        .select({ id: permanentRejections.id })
+        .from(permanentRejections)
+        .where(
+          and(
+            eq(permanentRejections.orgId, orgId),
+            eq(
+              permanentRejections.applicantEmail,
+              normalizeEmail(application.applicantEmail)
+            ),
+            eq(permanentRejections.active, true)
+          )
+        )
+        .limit(1)
+
       return {
         application: {
           id: application.id,
@@ -1245,6 +1278,10 @@ export const applicationsRouter = router({
           applicantName: application.applicantName,
           applicantEmail: application.applicantEmail,
           applicantWhatsapp: application.applicantWhatsapp,
+          permanentRejectionReason: application.permanentRejectionReason,
+          permanentlyRejectedAt: application.permanentlyRejectedAt,
+          permanentlyRejectedBy: application.permanentlyRejectedBy,
+          isPermanentRejectionActive: Boolean(activePermanentRejection),
           createdAt: application.createdAt,
           confirmedAt: application.confirmedAt,
         },
@@ -1266,9 +1303,76 @@ export const applicationsRouter = router({
     .mutation(async ({ ctx, input }) => {
       const orgId = requireOrgId(ctx.session.user)
 
+      if (input.status === 'permanently_rejected') {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Use a ação de rejeição permanente e informe um motivo',
+        })
+      }
+
       const [application] = await db
         .select({
           id: applications.id,
+          confirmedAt: applications.confirmedAt,
+          applicantEmail: applications.applicantEmail,
+        })
+        .from(applications)
+        .where(
+          and(eq(applications.id, input.id), eq(applications.orgId, orgId))
+        )
+        .limit(1)
+
+      if (!application || !application.confirmedAt) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Candidatura não encontrada',
+        })
+      }
+
+      const [activePermanentRejection] = await db
+        .select({ id: permanentRejections.id })
+        .from(permanentRejections)
+        .where(
+          and(
+            eq(permanentRejections.orgId, orgId),
+            eq(
+              permanentRejections.applicantEmail,
+              normalizeEmail(application.applicantEmail)
+            ),
+            eq(permanentRejections.active, true)
+          )
+        )
+        .limit(1)
+
+      if (activePermanentRejection) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message:
+            'Remova primeiro o bloqueio permanente para alterar este status',
+        })
+      }
+
+      await db
+        .update(applications)
+        .set({
+          status: input.status,
+        })
+        .where(eq(applications.id, input.id))
+
+      return {
+        success: true,
+      }
+    }),
+
+  permanentlyReject: protectedProcedure
+    .input(permanentlyRejectSchema)
+    .mutation(async ({ ctx, input }) => {
+      const orgId = requireOrgId(ctx.session.user)
+
+      const [application] = await db
+        .select({
+          id: applications.id,
+          applicantEmail: applications.applicantEmail,
           confirmedAt: applications.confirmedAt,
         })
         .from(applications)
@@ -1284,16 +1388,89 @@ export const applicationsRouter = router({
         })
       }
 
-      await db
-        .update(applications)
-        .set({
-          status: input.status,
-        })
-        .where(eq(applications.id, input.id))
+      const applicantEmail = normalizeEmail(application.applicantEmail)
+      const now = new Date()
+
+      const affectedApplications = await db.transaction(async (tx) => {
+        await tx
+          .insert(permanentRejections)
+          .values({
+            id: nanoid(),
+            orgId,
+            applicantEmail,
+            reason: input.reason,
+            active: true,
+            createdBy: ctx.session.user.id,
+            revokedBy: null,
+            revokedAt: null,
+          })
+          .onConflictDoUpdate({
+            target: [
+              permanentRejections.orgId,
+              permanentRejections.applicantEmail,
+            ],
+            set: {
+              reason: input.reason,
+              active: true,
+              createdBy: ctx.session.user.id,
+              revokedBy: null,
+              revokedAt: null,
+            },
+          })
+
+        return tx
+          .update(applications)
+          .set({
+            status: 'permanently_rejected',
+            permanentRejectionReason: input.reason,
+            permanentlyRejectedAt: now,
+            permanentlyRejectedBy: ctx.session.user.id,
+          })
+          .where(
+            and(
+              eq(applications.orgId, orgId),
+              sql`lower(trim(${applications.applicantEmail})) = ${applicantEmail}`
+            )
+          )
+          .returning({ id: applications.id })
+      })
 
       return {
         success: true,
+        affectedCount: affectedApplications.length,
       }
+    }),
+
+  revokePermanentRejection: adminProcedure
+    .input(revokePermanentRejectionSchema)
+    .mutation(async ({ ctx, input }) => {
+      const orgId = requireOrgId(ctx.session.user)
+      const applicantEmail = normalizeEmail(input.email)
+
+      const revoked = await db
+        .update(permanentRejections)
+        .set({
+          active: false,
+          revokedBy: ctx.session.user.id,
+          revokedAt: new Date(),
+        })
+        .where(
+          and(
+            eq(permanentRejections.orgId, orgId),
+            eq(permanentRejections.applicantEmail, applicantEmail),
+            eq(permanentRejections.active, true)
+          )
+        )
+        .returning({ id: permanentRejections.id })
+
+      if (revoked.length === 0) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Bloqueio permanente ativo não encontrado',
+        })
+      }
+
+      return { success: true }
     }),
 
   create: publicProcedure
@@ -1348,6 +1525,21 @@ export const applicationsRouter = router({
 
       const normalizedApplicantEmail = normalizeEmail(applicantEmail)
       const normalizedApplicantName = normalizeSearchText(applicantName)
+
+      const [activePermanentRejection] = await db
+        .select({
+          reason: permanentRejections.reason,
+          createdBy: permanentRejections.createdBy,
+        })
+        .from(permanentRejections)
+        .where(
+          and(
+            eq(permanentRejections.orgId, org.id),
+            eq(permanentRejections.applicantEmail, normalizedApplicantEmail),
+            eq(permanentRejections.active, true)
+          )
+        )
+        .limit(1)
 
       const confirmedApplication = await getConfirmedApplicationByEmail({
         orgId: org.id,
@@ -1452,7 +1644,10 @@ export const applicationsRouter = router({
           orgId: org.id,
           catId,
           formId: cat.formId,
-          status: 'pending',
+          status: activePermanentRejection ? 'permanently_rejected' : 'pending',
+          permanentRejectionReason: activePermanentRejection?.reason ?? null,
+          permanentlyRejectedAt: activePermanentRejection ? new Date() : null,
+          permanentlyRejectedBy: activePermanentRejection?.createdBy ?? null,
           applicantName,
           applicantNameNormalized: normalizedApplicantName,
           applicantEmail: normalizedApplicantEmail,
@@ -1634,7 +1829,10 @@ export const applicationsRouter = router({
         }
       } catch (error) {
         // Log error but don't fail the confirmation - the application is already confirmed
-        console.error('Erro ao enviar email de confirmação de candidatura', error)
+        console.error(
+          'Erro ao enviar email de confirmação de candidatura',
+          error
+        )
       }
 
       return {

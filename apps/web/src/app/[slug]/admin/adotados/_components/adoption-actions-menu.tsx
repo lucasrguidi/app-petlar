@@ -33,10 +33,10 @@ export function AdoptionActionsMenu({
   const queryClient = useQueryClient()
   const [isOpen, setIsOpen] = useState(false)
 
-  const deleteMutation = useMutation(
-    trpc.adoptions.delete.mutationOptions({
+  const returnMutation = useMutation(
+    trpc.adoptions.returnToAvailable.mutationOptions({
       onSuccess: () => {
-        toast.success('Adoção removida. Status do gato revertido.')
+        toast.success('Adoção removida. Gato disponível novamente.')
         queryClient.invalidateQueries({ queryKey: [['adoptions']] })
         queryClient.invalidateQueries({ queryKey: [['cats']] })
       },
@@ -50,12 +50,12 @@ export function AdoptionActionsMenu({
     setIsOpen(false)
     if (
       !confirm(
-        `Tem certeza que deseja remover o registro de adoção de ${adoption.catName}?\n\nO status do gato será revertido para "Em processo".`
+        `Tem certeza que deseja devolver ${adoption.catName} para disponíveis?\n\nA adoção será apagada e as candidaturas serão preservadas.`
       )
     ) {
       return
     }
-    deleteMutation.mutate({ id: adoption.id })
+    returnMutation.mutate({ id: adoption.id })
   }
 
   const handleView = () => {
@@ -63,7 +63,7 @@ export function AdoptionActionsMenu({
     onView?.()
   }
 
-  const isPending = deleteMutation.isPending
+  const isPending = returnMutation.isPending
 
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
@@ -101,7 +101,7 @@ export function AdoptionActionsMenu({
           className="text-destructive hover:!bg-destructive/10 focus:!bg-destructive/10 hover:!text-destructive focus:!text-destructive cursor-pointer gap-2 rounded-lg px-2.5 py-1.5 text-[13px] transition-colors"
         >
           <Trash2 className="h-3.5 w-3.5" />
-          <span>Remover adoção</span>
+          <span>Devolver para disponíveis</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

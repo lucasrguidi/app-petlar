@@ -19,6 +19,7 @@ interface PublicHeaderProps {
 const navItems = [
   { id: 'inicio', label: 'Início' },
   { id: 'como-funciona', label: 'Como funciona' },
+  { id: 'termo-de-adocao', label: 'Termo de adoção' },
   { id: 'gatos-disponiveis', label: 'Gatos disponíveis' },
 ] as const
 
@@ -58,22 +59,19 @@ export function PublicHeader({ orgName, orgLogo }: PublicHeaderProps) {
         className={cn(
           'sticky top-0 z-50 w-full transition-all duration-300',
           scrolled
-            ? 'border-b border-foreground/10 bg-white/90 shadow-md shadow-foreground/5 backdrop-blur-xl'
+            ? 'border-foreground/10 shadow-foreground/5 border-b bg-white/90 shadow-md backdrop-blur-xl'
             : 'bg-transparent'
         )}
       >
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
           {/* Logo */}
-          <Link
-            href={orgHref('')}
-            className="group flex items-center gap-3"
-          >
+          <Link href={orgHref('')} className="group flex items-center gap-3">
             <div
               className={cn(
                 'relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl transition-all duration-300',
-                'bg-gradient-to-br from-primary via-accent to-primary',
-                'shadow-lg shadow-primary/25',
-                'group-hover:scale-105 group-hover:shadow-xl group-hover:shadow-primary/35'
+                'from-primary via-accent to-primary bg-gradient-to-br',
+                'shadow-primary/25 shadow-lg',
+                'group-hover:shadow-primary/35 group-hover:scale-105 group-hover:shadow-xl'
               )}
             >
               {/* Shine effect */}
@@ -91,12 +89,12 @@ export function PublicHeader({ orgName, orgLogo }: PublicHeaderProps) {
 
             <div className="hidden min-w-0 sm:block">
               <p
-                className="truncate text-lg font-bold text-foreground"
+                className="text-foreground truncate text-lg font-bold"
                 style={{ fontFamily: 'var(--font-display)' }}
               >
                 {orgName}
               </p>
-              <p className="text-xs font-medium text-muted-foreground/70">
+              <p className="text-muted-foreground/70 text-xs font-medium">
                 Adoção responsável
               </p>
             </div>
@@ -104,7 +102,7 @@ export function PublicHeader({ orgName, orgLogo }: PublicHeaderProps) {
 
           {/* Desktop Navigation */}
           <nav className="hidden items-center md:flex">
-            <div className="flex items-center gap-1 rounded-full border border-foreground/10 bg-white/70 p-1.5 shadow-sm backdrop-blur-sm">
+            <div className="border-foreground/10 flex items-center gap-1 rounded-full border bg-white/70 p-1.5 shadow-sm backdrop-blur-sm">
               {navItems.map((item) => (
                 <Link
                   key={item.id}
@@ -126,7 +124,7 @@ export function PublicHeader({ orgName, orgLogo }: PublicHeaderProps) {
             <Button
               asChild
               variant="ghost"
-              className="rounded-xl text-foreground/80 hover:bg-background/50 hover:text-foreground"
+              className="text-foreground/80 hover:bg-background/50 hover:text-foreground rounded-xl"
             >
               <Link href={orgHref('/login')}>Sou da ONG</Link>
             </Button>
@@ -134,10 +132,10 @@ export function PublicHeader({ orgName, orgLogo }: PublicHeaderProps) {
               asChild
               className={cn(
                 'rounded-xl px-5',
-                'bg-gradient-to-r from-primary to-accent',
-                'shadow-lg shadow-primary/25',
+                'from-primary to-accent bg-gradient-to-r',
+                'shadow-primary/25 shadow-lg',
                 'transition-all duration-200',
-                'hover:shadow-xl hover:shadow-primary/35',
+                'hover:shadow-primary/35 hover:shadow-xl',
                 'hover:scale-[1.02] active:scale-[0.98]'
               )}
             >
@@ -152,7 +150,7 @@ export function PublicHeader({ orgName, orgLogo }: PublicHeaderProps) {
           <Button
             variant="ghost"
             size="icon"
-            className="relative z-[60] h-11 w-11 rounded-xl text-foreground hover:bg-background/50 md:hidden"
+            className="text-foreground hover:bg-background/50 relative z-[60] h-11 w-11 rounded-xl md:hidden"
             onClick={() => setMenuOpen(!menuOpen)}
             aria-label={menuOpen ? 'Fechar menu' : 'Abrir menu'}
           >
@@ -177,7 +175,7 @@ export function PublicHeader({ orgName, orgLogo }: PublicHeaderProps) {
       {/* Mobile Menu Overlay */}
       <div
         className={cn(
-          'fixed inset-0 z-40 bg-foreground/20 backdrop-blur-sm transition-opacity duration-300 md:hidden',
+          'bg-foreground/20 fixed inset-0 z-40 backdrop-blur-sm transition-opacity duration-300 md:hidden',
           menuOpen ? 'opacity-100' : 'pointer-events-none opacity-0'
         )}
         onClick={() => setMenuOpen(false)}
@@ -187,7 +185,7 @@ export function PublicHeader({ orgName, orgLogo }: PublicHeaderProps) {
       <div
         className={cn(
           'fixed top-0 right-0 z-50 h-full w-[85%] max-w-sm transform transition-transform duration-300 ease-out md:hidden',
-          'bg-gradient-to-b from-white to-muted shadow-2xl',
+          'to-muted bg-gradient-to-b from-white shadow-2xl',
           menuOpen ? 'translate-x-0' : 'translate-x-full'
         )}
       >
@@ -211,8 +209,8 @@ export function PublicHeader({ orgName, orgLogo }: PublicHeaderProps) {
                   transitionDelay: menuOpen ? `${index * 50 + 100}ms` : '0ms',
                 }}
               >
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-background/50">
-                  <PawPrint className="h-4 w-4 text-primary" />
+                <div className="bg-background/50 flex h-8 w-8 items-center justify-center rounded-lg">
+                  <PawPrint className="text-primary h-4 w-4" />
                 </div>
                 {item.label}
               </Link>
@@ -222,7 +220,7 @@ export function PublicHeader({ orgName, orgLogo }: PublicHeaderProps) {
           {/* Mobile CTAs */}
           <div
             className={cn(
-              'space-y-3 border-t border-background/50 p-6',
+              'border-background/50 space-y-3 border-t p-6',
               'transform transition-all duration-300',
               menuOpen ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
             )}
@@ -231,12 +229,9 @@ export function PublicHeader({ orgName, orgLogo }: PublicHeaderProps) {
             <Button
               asChild
               variant="outline"
-              className="w-full rounded-xl border-foreground/20 py-6 text-foreground"
+              className="border-foreground/20 text-foreground w-full rounded-xl py-6"
             >
-              <Link
-                href={orgHref('/login')}
-                onClick={() => setMenuOpen(false)}
-              >
+              <Link href={orgHref('/login')} onClick={() => setMenuOpen(false)}>
                 Sou da ONG
               </Link>
             </Button>
@@ -244,8 +239,8 @@ export function PublicHeader({ orgName, orgLogo }: PublicHeaderProps) {
               asChild
               className={cn(
                 'w-full rounded-xl py-6',
-                'bg-gradient-to-r from-primary to-accent',
-                'shadow-lg shadow-primary/25'
+                'from-primary to-accent bg-gradient-to-r',
+                'shadow-primary/25 shadow-lg'
               )}
             >
               <Link

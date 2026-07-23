@@ -85,6 +85,7 @@ export function MarkAdoptedSheet({
   const [selectedApplicationId, setSelectedApplicationId] = useState<
     string | null
   >(null)
+  const [isTermUploading, setIsTermUploading] = useState(false)
   const [formData, setFormData] = useState<FormData>({
     adopterName: '',
     adopterPhone: '',
@@ -128,6 +129,7 @@ export function MarkAdoptedSheet({
         queryClient.invalidateQueries({ queryKey: [['cats', 'list']] })
         queryClient.invalidateQueries({ queryKey: [['adoptions']] })
         queryClient.invalidateQueries({ queryKey: [['applications']] })
+        setFormData((current) => ({ ...current, adoptionTermUrl: null }))
         onOpenChange(false)
         onSuccess?.()
       },
@@ -136,6 +138,38 @@ export function MarkAdoptedSheet({
       },
     })
   )
+
+  const discardDraftMutation = useMutation(
+    trpc.adoptions.discardTermUpload.mutationOptions()
+  )
+
+  const handleOpenChange = async (nextOpen: boolean) => {
+    if (nextOpen) {
+      onOpenChange(true)
+      return
+    }
+
+    if (formData.adoptionTermUrl) {
+      try {
+        await discardDraftMutation.mutateAsync({
+          url: formData.adoptionTermUrl,
+        })
+        setFormData((current) => ({
+          ...current,
+          adoptionTermUrl: null,
+        }))
+      } catch (error) {
+        toast.error(
+          error instanceof Error
+            ? error.message
+            : 'Não foi possível descartar o termo enviado'
+        )
+        return
+      }
+    }
+
+    onOpenChange(false)
+  }
 
   const handleApplicantChange = (applicant: Applicant | null) => {
     if (applicant) {
@@ -201,10 +235,14 @@ export function MarkAdoptedSheet({
     })
   }
 
-  const isPending = createAdoptionMutation.isPending
+  const isPending =
+    createAdoptionMutation.isPending || discardDraftMutation.isPending
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
+    <Sheet
+      open={open}
+      onOpenChange={(nextOpen) => void handleOpenChange(nextOpen)}
+    >
       <SheetContent
         side="right"
         className="border-border/60 w-full overflow-y-auto p-0 sm:max-w-lg"
@@ -230,7 +268,7 @@ export function MarkAdoptedSheet({
               variant="ghost"
               size="icon"
               className="h-9 w-9 shrink-0 rounded-lg"
-              onClick={() => onOpenChange(false)}
+              onClick={() => void handleOpenChange(false)}
               aria-label="Fechar"
             >
               <X className="h-4 w-4" />
@@ -366,6 +404,7 @@ export function MarkAdoptedSheet({
             <PdfUpload
               value={formData.adoptionTermUrl}
               onChange={(url) => handleInputChange('adoptionTermUrl', url)}
+              onUploadingChange={setIsTermUploading}
               disabled={isPending}
             />
           </div>
@@ -382,7 +421,7 @@ export function MarkAdoptedSheet({
               onChange={(e) => handleInputChange('notes', e.target.value)}
               placeholder="Anotações sobre a adoção..."
               className="min-h-[80px] resize-none rounded-xl"
-              disabled={isPending}
+              disabled={isPending || isTermUploading}
             />
           </div>
 

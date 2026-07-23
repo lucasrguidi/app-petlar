@@ -1,4 +1,6 @@
+import { getOrgBySlug } from '../_lib/get-org-by-slug'
 
+import { AdoptionTermSection } from './_components/adoption-term-section'
 import { HomeHero } from './_components/home-hero'
 import { HomeHowItWorks } from './_components/home-how-it-works'
 import { PublicCatsSection } from './_components/public-cats-section'
@@ -12,12 +14,16 @@ interface PublicHomePageProps {
 
 export default async function PublicHomePage({ params }: PublicHomePageProps) {
   const { slug } = await params
-  const isCustomDomain = await getIsCustomDomain()
+  const [isCustomDomain, org] = await Promise.all([
+    getIsCustomDomain(),
+    getOrgBySlug(slug),
+  ])
 
   return (
     <>
       <HomeHero slug={slug} isCustomDomain={isCustomDomain} />
       <HomeHowItWorks />
+      {org && <AdoptionTermSection orgName={org.name} />}
       <PublicCatsSection />
       <SponsorsSection />
     </>

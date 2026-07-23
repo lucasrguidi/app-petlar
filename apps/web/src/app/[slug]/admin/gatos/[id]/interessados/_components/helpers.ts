@@ -11,6 +11,7 @@ const VALID_STATUSES: ApplicationStatus[] = [
   'reviewing',
   'approved',
   'rejected',
+  'permanently_rejected',
 ]
 
 const VALID_OPERATORS: DynamicFilterOperator[] = [
@@ -99,7 +100,8 @@ export function getStatusLabel(status: ApplicationStatus): string {
   if (status === 'pending') return 'Pendente'
   if (status === 'reviewing') return 'Em análise'
   if (status === 'approved') return 'Aprovado'
-  return 'Recusado'
+  if (status === 'rejected') return 'Recusado'
+  return 'Rejeição permanente'
 }
 
 export function getDynamicFilterSummary(

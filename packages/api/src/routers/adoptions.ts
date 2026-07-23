@@ -1,7 +1,7 @@
 import { db } from '@app-petlar/db'
 import { adoptions, applications, catPhotos, cats } from '@app-petlar/db/schema'
 import { TRPCError } from '@trpc/server'
-import { and, desc, eq, gte, lte, ne, or, sql } from 'drizzle-orm'
+import { and, desc, eq, gte, lte, notInArray, or, sql } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
 import { z } from 'zod'
 
@@ -286,7 +286,10 @@ export const adoptionsRouter = router({
             eq(applications.orgId, orgId),
             eq(applications.catId, input.catId),
             sql`${applications.confirmedAt} is not null`,
-            ne(applications.status, 'rejected')
+            notInArray(applications.status, [
+              'rejected',
+              'permanently_rejected',
+            ])
           )
         )
         .orderBy(desc(applications.createdAt))
@@ -360,7 +363,10 @@ export const adoptionsRouter = router({
           })
         }
 
-        if (application.status === 'rejected') {
+        if (
+          application.status === 'rejected' ||
+          application.status === 'permanently_rejected'
+        ) {
           throw new TRPCError({
             code: 'BAD_REQUEST',
             message: 'Candidatura rejeitada não pode ser selecionada',
@@ -472,9 +478,9 @@ export const adoptionsRouter = router({
     }),
 
   /**
-   * Exclui uma adoção e reverte o status do gato
+   * Exclui uma adoção e devolve o gato para a lista pública
    */
-  delete: protectedProcedure
+  returnToAvailable: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const orgId = requireOrgId(ctx.session.user)
@@ -495,18 +501,7 @@ export const adoptionsRouter = router({
         })
       }
 
-      await db.transaction(async (tx) => {
-        // Delete adoption record
-        await tx.delete(adoptions).where(eq(adoptions.id, input.id))
-
-        // Revert cat status to in_progress
-        await tx
-          .update(cats)
-          .set({ status: 'in_progress' })
-          .where(eq(cats.id, existingAdoption.catId))
-      })
-
-      // Delete PDF from R2 if exists
+      // Storage first: DeleteObject is idempotent, so a retry is safe.
       if (existingAdoption.adoptionTermUrl) {
         const key = getKeyFromUrl(existingAdoption.adoptionTermUrl)
         if (key) {
@@ -514,9 +509,25 @@ export const adoptionsRouter = router({
             await deleteFile(key)
           } catch (error) {
             console.error('Erro ao deletar PDF da adoção:', error)
+            throw new TRPCError({
+              code: 'INTERNAL_SERVER_ERROR',
+              message:
+                'Não foi possível remover o termo. Nenhum registro foi alterado; tente novamente.',
+            })
           }
         }
       }
+
+      await db.transaction(async (tx) => {
+        // Delete adoption record
+        await tx.delete(adoptions).where(eq(adoptions.id, input.id))
+
+        // Return the cat to the public list
+        await tx
+          .update(cats)
+          .set({ status: 'available' })
+          .where(eq(cats.id, existingAdoption.catId))
+      })
 
       return { success: true }
     }),
@@ -568,5 +579,40 @@ export const adoptionsRouter = router({
         publicUrl,
         key: input.key,
       }
+    }),
+
+  discardTermUpload: protectedProcedure
+    .input(z.object({ url: z.string().url() }))
+    .mutation(async ({ ctx, input }) => {
+      const orgId = requireOrgId(ctx.session.user)
+
+      const key = getKeyFromUrl(input.url)
+      if (!key || !key.startsWith('adoption-terms/')) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'URL de termo inválida',
+        })
+      }
+
+      const [committedTerm] = await db
+        .select({ id: adoptions.id })
+        .from(adoptions)
+        .where(
+          and(
+            eq(adoptions.orgId, orgId),
+            eq(adoptions.adoptionTermUrl, input.url)
+          )
+        )
+        .limit(1)
+
+      if (committedTerm) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Um termo já vinculado a uma adoção não pode ser descartado',
+        })
+      }
+
+      await deleteFile(key)
+      return { success: true }
     }),
 })

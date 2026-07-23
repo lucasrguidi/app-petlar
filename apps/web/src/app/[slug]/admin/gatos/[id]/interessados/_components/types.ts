@@ -3,6 +3,7 @@ export type ApplicationStatus =
   | 'reviewing'
   | 'approved'
   | 'rejected'
+  | 'permanently_rejected'
 export type DynamicFilterOperator = 'contains' | 'equals' | 'before' | 'after'
 export type FilterableFieldType = 'text' | 'select' | 'boolean' | 'date'
 

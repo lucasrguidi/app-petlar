@@ -1,6 +1,13 @@
 import { relations, sql } from 'drizzle-orm'
-import { index, integer, sqliteTable, text } from 'drizzle-orm/sqlite-core'
+import {
+  index,
+  integer,
+  sqliteTable,
+  text,
+  uniqueIndex,
+} from 'drizzle-orm/sqlite-core'
 
+import { user } from './auth'
 import { cats } from './cats'
 import { forms } from './forms'
 import { orgs } from './orgs'
@@ -10,6 +17,7 @@ export const applicationStatuses = [
   'reviewing',
   'approved',
   'rejected',
+  'permanently_rejected',
 ] as const
 
 export type ApplicationStatus = (typeof applicationStatuses)[number]
@@ -41,6 +49,14 @@ export const applications = sqliteTable(
     status: text('status', { enum: applicationStatuses })
       .notNull()
       .default('pending'),
+    permanentRejectionReason: text('permanent_rejection_reason'),
+    permanentlyRejectedAt: integer('permanently_rejected_at', {
+      mode: 'timestamp_ms',
+    }),
+    permanentlyRejectedBy: text('permanently_rejected_by').references(
+      () => user.id,
+      { onDelete: 'set null' }
+    ),
 
     // Applicant fixed data
     applicantName: text('applicant_name').notNull(),
@@ -84,6 +100,7 @@ export const applications = sqliteTable(
   },
   (table) => [
     index('applications_orgId_idx').on(table.orgId),
+    index('applications_orgId_email_idx').on(table.orgId, table.applicantEmail),
     index('applications_catId_idx').on(table.catId),
     index('applications_status_idx').on(table.status),
     index('applications_confirmationToken_idx').on(table.confirmationToken),
@@ -108,6 +125,40 @@ export const applications = sqliteTable(
       table.confirmedAt,
       table.applicantNameNormalized
     ),
+  ]
+)
+
+export const permanentRejections = sqliteTable(
+  'permanent_rejections',
+  {
+    id: text('id').primaryKey(),
+    orgId: text('org_id')
+      .notNull()
+      .references(() => orgs.id, { onDelete: 'cascade' }),
+    applicantEmail: text('applicant_email').notNull(),
+    reason: text('reason').notNull(),
+    active: integer('active', { mode: 'boolean' }).notNull().default(true),
+    createdBy: text('created_by')
+      .notNull()
+      .references(() => user.id),
+    revokedBy: text('revoked_by').references(() => user.id, {
+      onDelete: 'set null',
+    }),
+    revokedAt: integer('revoked_at', { mode: 'timestamp_ms' }),
+    createdAt: integer('created_at', { mode: 'timestamp_ms' })
+      .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+      .notNull(),
+    updatedAt: integer('updated_at', { mode: 'timestamp_ms' })
+      .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex('permanentRejections_orgId_email_unique').on(
+      table.orgId,
+      table.applicantEmail
+    ),
+    index('permanentRejections_orgId_active_idx').on(table.orgId, table.active),
   ]
 )
 

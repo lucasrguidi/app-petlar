@@ -1,5 +1,7 @@
 import { db } from '@app-petlar/db'
 import {
+  adoptions,
+  applicationFiles,
   applications,
   catPhotos,
   cats,
@@ -13,7 +15,13 @@ import { and, asc, desc, eq, inArray, like, sql } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
 import { z } from 'zod'
 
-import { protectedProcedure, publicProcedure, router } from '../index'
+import {
+  adminProcedure,
+  protectedProcedure,
+  publicProcedure,
+  router,
+} from '../index'
+import { deleteFile, getKeyFromUrl } from '../lib/r2'
 
 // Schema base para criar gato
 const catInputSchema = z.object({
@@ -256,16 +264,7 @@ export const catsRouter = router({
   list: protectedProcedure
     .input(listFiltersSchema)
     .query(async ({ ctx, input }) => {
-      const {
-        status,
-        sex,
-        fiv,
-        felv,
-        castrated,
-        search,
-        page,
-        limit,
-      } = input
+      const { status, sex, fiv, felv, castrated, search, page, limit } = input
       const orgId = requireOrgId(ctx.session.user)
       const offset = (page - 1) * limit
 
@@ -605,6 +604,101 @@ export const catsRouter = router({
       await db.delete(cats).where(eq(cats.id, input.id))
 
       return { success: true }
+    }),
+
+  /**
+   * Exclui definitivamente um gato e todos os registros/arquivos vinculados.
+   */
+  hardDelete: adminProcedure
+    .input(
+      z.object({
+        id: z.string().min(1),
+        confirmationName: z.string().trim().min(1),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const orgId = requireOrgId(ctx.session.user)
+
+      const [existingCat] = await db
+        .select({ id: cats.id, name: cats.name })
+        .from(cats)
+        .where(and(eq(cats.id, input.id), eq(cats.orgId, orgId)))
+        .limit(1)
+
+      if (!existingCat) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Gato não encontrado',
+        })
+      }
+
+      if (
+        existingCat.name.trim().toLocaleLowerCase('pt-BR') !==
+        input.confirmationName.trim().toLocaleLowerCase('pt-BR')
+      ) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'O nome digitado não corresponde ao nome do gato',
+        })
+      }
+
+      const [photos, adoptionRows, applicationRows] = await Promise.all([
+        db
+          .select({ url: catPhotos.url })
+          .from(catPhotos)
+          .where(eq(catPhotos.catId, input.id)),
+        db
+          .select({ adoptionTermUrl: adoptions.adoptionTermUrl })
+          .from(adoptions)
+          .where(eq(adoptions.catId, input.id)),
+        db
+          .select({ id: applications.id })
+          .from(applications)
+          .where(eq(applications.catId, input.id)),
+      ])
+
+      const applicationIds = applicationRows.map(
+        (application) => application.id
+      )
+      const files =
+        applicationIds.length > 0
+          ? await db
+              .select({ url: applicationFiles.url })
+              .from(applicationFiles)
+              .where(inArray(applicationFiles.applicationId, applicationIds))
+          : []
+
+      const linkedUrls = [
+        ...photos.map((photo) => photo.url),
+        ...files.map((file) => file.url),
+        ...adoptionRows.flatMap((adoption) =>
+          adoption.adoptionTermUrl ? [adoption.adoptionTermUrl] : []
+        ),
+      ]
+      const storageKeys = [
+        ...new Set(
+          linkedUrls
+            .map((url) => getKeyFromUrl(url))
+            .filter((key): key is string => Boolean(key))
+        ),
+      ]
+
+      try {
+        await Promise.all(storageKeys.map((key) => deleteFile(key)))
+      } catch (error) {
+        console.error('Erro ao limpar arquivos do gato:', error)
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message:
+            'Não foi possível remover todos os arquivos. Nenhum registro foi apagado; tente novamente.',
+        })
+      }
+
+      await db.transaction(async (tx) => {
+        await tx.delete(cats).where(eq(cats.id, input.id))
+      })
+
+      return { success: true, deletedFileCount: storageKeys.length }
     }),
 
   /**
