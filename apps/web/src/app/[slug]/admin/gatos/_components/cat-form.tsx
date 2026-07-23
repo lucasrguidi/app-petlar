@@ -28,7 +28,7 @@ function formatPhoneInput(value: string): string {
 
 import {
   catFormSchema,
-  defaultCatFormValues,
+  getCatFormDefaultValues,
   type CatFormData,
 } from './cat-form-schema'
 import { HealthToggle, SexToggle, TestResultToggle } from './form-fields'
@@ -85,7 +85,6 @@ export function CatForm({ mode, initialData, catId }: CatFormProps) {
   const normalizedInitialData: Partial<CatFormData> | undefined = initialData
     ? {
         ...initialData,
-        formId: initialData.formId ?? defaultCatFormValues.formId,
         donorWhatsapp: initialData.donorWhatsapp
           ? formatPhoneInput(initialData.donorWhatsapp)
           : initialData.donorWhatsapp,
@@ -94,10 +93,7 @@ export function CatForm({ mode, initialData, catId }: CatFormProps) {
 
   const form = useForm<CatFormData>({
     resolver: zodResolver(catFormSchema),
-    defaultValues: {
-      ...defaultCatFormValues,
-      ...normalizedInitialData,
-    },
+    defaultValues: getCatFormDefaultValues(normalizedInitialData),
   })
 
   const {

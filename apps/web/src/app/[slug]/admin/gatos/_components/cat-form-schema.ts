@@ -37,3 +37,28 @@ export const defaultCatFormValues: CatFormData = {
   donorName: null,
   donorWhatsapp: null,
 }
+
+export function getCatFormDefaultValues(
+  initialData?: Partial<CatFormData>
+): CatFormData {
+  return {
+    name: initialData?.name ?? defaultCatFormValues.name,
+    ageYears: initialData?.ageYears ?? defaultCatFormValues.ageYears,
+    ageMonths: initialData?.ageMonths ?? defaultCatFormValues.ageMonths,
+    sex: initialData?.sex ?? defaultCatFormValues.sex,
+    fiv: initialData?.fiv ?? defaultCatFormValues.fiv,
+    felv: initialData?.felv ?? defaultCatFormValues.felv,
+    castrated: initialData?.castrated ?? defaultCatFormValues.castrated,
+    vaccinated: initialData?.vaccinated ?? defaultCatFormValues.vaccinated,
+    vaccinationNotes:
+      initialData?.vaccinationNotes ?? defaultCatFormValues.vaccinationNotes,
+    dewormed: initialData?.dewormed ?? defaultCatFormValues.dewormed,
+    dewormingNotes:
+      initialData?.dewormingNotes ?? defaultCatFormValues.dewormingNotes,
+    description: initialData?.description ?? defaultCatFormValues.description,
+    formId: initialData?.formId ?? defaultCatFormValues.formId,
+    donorName: initialData?.donorName ?? defaultCatFormValues.donorName,
+    donorWhatsapp:
+      initialData?.donorWhatsapp ?? defaultCatFormValues.donorWhatsapp,
+  }
+}

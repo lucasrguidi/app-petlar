@@ -136,6 +136,8 @@ export function CatActionsMenu({ cat }: CatActionsMenuProps) {
           dewormingNotes: data.dewormingNotes,
           description: data.description,
           formId: data.formId ?? '',
+          donorName: data.donorName,
+          donorWhatsapp: data.donorWhatsapp,
         }
         const encoded = btoa(JSON.stringify(prefillData))
         router.push(orgHref(`/admin/gatos/novo?prefill=${encoded}`))

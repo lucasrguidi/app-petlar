@@ -71,6 +71,8 @@ export function CatFormLoader({ catId }: CatFormLoaderProps) {
         dewormingNotes: data.dewormingNotes,
         description: data.description,
         formId: data.formId ?? '',
+        donorName: data.donorName,
+        donorWhatsapp: data.donorWhatsapp,
         photos: data.photos,
       }}
     />
