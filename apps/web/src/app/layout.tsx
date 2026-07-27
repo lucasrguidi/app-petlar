@@ -2,6 +2,8 @@ import { DM_Sans, Outfit } from 'next/font/google'
 
 import type { Metadata } from 'next'
 
+import { Analytics } from '@vercel/analytics/next'
+
 import Providers from '@/components/providers'
 import '../index.css'
 
@@ -32,6 +34,7 @@ export default function RootLayout({
     <html lang="pt-BR" suppressHydrationWarning>
       <body className={`${dmSans.variable} ${outfit.variable} antialiased`}>
         <Providers>{children}</Providers>
+        <Analytics />
       </body>
     </html>
   )
