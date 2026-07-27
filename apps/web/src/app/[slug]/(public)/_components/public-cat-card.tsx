@@ -231,11 +231,7 @@ export function PublicCatCard({ cat }: PublicCatCardProps) {
             <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-20 bg-gradient-to-t from-black/30 to-transparent" />
 
             <div
-              className={cn(
-                'absolute inset-x-0 bottom-3 z-20 flex items-center justify-between px-3',
-                'opacity-0 transition-opacity duration-200',
-                isHovered && 'opacity-100'
-              )}
+              className="absolute inset-x-0 bottom-3 z-20 flex items-center justify-between px-3"
             >
               <button
                 type="button"
