@@ -9,6 +9,8 @@ import {
   PenLine,
   RefreshCw,
   Trash2,
+  Unlink,
+  Users,
 } from 'lucide-react'
 import { type Route } from 'next'
 import Link from 'next/link'
@@ -36,13 +38,15 @@ interface Cat {
   id: string
   name: string
   status: 'available' | 'in_progress'
+  groupId?: string | null
 }
 
 interface CatActionsMenuProps {
   cat: Cat
+  groupCats?: Array<{ id: string; name: string }>
 }
 
-export function CatActionsMenu({ cat }: CatActionsMenuProps) {
+export function CatActionsMenu({ cat, groupCats }: CatActionsMenuProps) {
   const slug = useOrgSlug()
   const isCustomDomain = useIsCustomDomain()
   const orgHref = (path: string) =>
@@ -52,7 +56,9 @@ export function CatActionsMenu({ cat }: CatActionsMenuProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [isDuplicatingToEdit, setIsDuplicatingToEdit] = useState(false)
   const [isMarkAdoptedSheetOpen, setIsMarkAdoptedSheetOpen] = useState(false)
+  const [isGroupAdoptedSheetOpen, setIsGroupAdoptedSheetOpen] = useState(false)
   const [deletingCat, setDeletingCat] = useState<Cat | null>(null)
+  const [disbandingGroup, setDisbandingGroup] = useState(false)
 
   // Query for fetching full cat data when duplicating to edit
   const { refetch: fetchCatData } = useQuery({
@@ -103,10 +109,43 @@ export function CatActionsMenu({ cat }: CatActionsMenuProps) {
     })
   )
 
+  const deleteGroupMutation = useMutation(
+    trpc.catGroups.deleteGroup.mutationOptions({
+      onSuccess: () => {
+        toast.success('Grupo excluído com sucesso!')
+        invalidateQueries()
+        setDeletingCat(null)
+      },
+      onError: (error) => {
+        toast.error(error.message || 'Erro ao excluir grupo')
+      },
+    })
+  )
+
+  const disbandMutation = useMutation(
+    trpc.catGroups.disband.mutationOptions({
+      onSuccess: (result) => {
+        toast.success('Grupo desmembrado com sucesso!')
+        if (result.hadPendingApplications) {
+          toast.info(
+            'Havia candidaturas pendentes para este grupo. Elas permanecem no histórico.'
+          )
+        }
+        invalidateQueries()
+        setDisbandingGroup(false)
+      },
+      onError: (error) => {
+        toast.error(error.message || 'Erro ao desmembrar grupo')
+      },
+    })
+  )
+
   const isPending =
     duplicateMutation.isPending ||
     deleteMutation.isPending ||
+    deleteGroupMutation.isPending ||
     updateStatusMutation.isPending ||
+    disbandMutation.isPending ||
     isDuplicatingToEdit
 
   const handleDuplicate = () => {
@@ -164,7 +203,16 @@ export function CatActionsMenu({ cat }: CatActionsMenuProps) {
 
   const handleMarkAsAdopted = () => {
     setIsOpen(false)
-    setIsMarkAdoptedSheetOpen(true)
+    if (cat.groupId) {
+      setIsGroupAdoptedSheetOpen(true)
+    } else {
+      setIsMarkAdoptedSheetOpen(true)
+    }
+  }
+
+  const handleDisbandGroup = () => {
+    setIsOpen(false)
+    setDisbandingGroup(true)
   }
 
   return (
@@ -186,69 +234,151 @@ export function CatActionsMenu({ cat }: CatActionsMenuProps) {
           sideOffset={4}
           className="border-border/50 min-w-[160px] rounded-xl border p-1 shadow-lg"
         >
-          {/* Primary actions */}
-          <DropdownMenuItem
-            asChild
-            className="hover:!bg-muted/80 focus:!bg-muted/80 hover:!text-foreground focus:!text-foreground cursor-pointer gap-2 rounded-lg px-2.5 py-1.5 text-[13px] transition-colors"
-          >
-            <Link href={orgHref(`/admin/gatos/${cat.id}/editar`)}>
-              <Pencil className="text-primary h-3.5 w-3.5" />
-              <span className="font-medium">Editar</span>
-            </Link>
-          </DropdownMenuItem>
+          {groupCats ? (
+            <>
+              <DropdownMenuItem
+                asChild
+                className="hover:!bg-muted/80 focus:!bg-muted/80 hover:!text-foreground focus:!text-foreground cursor-pointer gap-2 rounded-lg px-2.5 py-1.5 text-[13px] transition-colors"
+              >
+                <Link
+                  href={orgHref(
+                    `/admin/gatos/grupo/${cat.groupId}/editar`
+                  )}
+                >
+                  <Pencil className="text-primary h-3.5 w-3.5" />
+                  <span className="font-medium">Editar grupo</span>
+                </Link>
+              </DropdownMenuItem>
 
-          <DropdownMenuItem
-            onClick={handleDuplicate}
-            disabled={isPending}
-            className="hover:!bg-muted/80 focus:!bg-muted/80 hover:!text-foreground focus:!text-foreground cursor-pointer gap-2 rounded-lg px-2.5 py-1.5 text-[13px] transition-colors"
-          >
-            <Copy className="text-muted-foreground h-3.5 w-3.5" />
-            <span>Duplicar</span>
-          </DropdownMenuItem>
+              <DropdownMenuSeparator className="bg-border/40 my-1" />
 
-          <DropdownMenuItem
-            onClick={handleDuplicateAndEdit}
-            disabled={isPending}
-            className="hover:!bg-muted/80 focus:!bg-muted/80 hover:!text-foreground focus:!text-foreground cursor-pointer gap-2 rounded-lg px-2.5 py-1.5 text-[13px] transition-colors"
-          >
-            <PenLine className="text-muted-foreground h-3.5 w-3.5" />
-            <span>Duplicar e editar</span>
-          </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={handleMarkAsAdopted}
+                disabled={isPending}
+                className="hover:!bg-muted/80 focus:!bg-muted/80 hover:!text-foreground focus:!text-foreground cursor-pointer gap-2 rounded-lg px-2.5 py-1.5 text-[13px] transition-colors"
+              >
+                <Heart className="text-success h-3.5 w-3.5" />
+                <span>Registrar adoção do grupo</span>
+              </DropdownMenuItem>
 
-          <DropdownMenuSeparator className="bg-border/40 my-1" />
+              <DropdownMenuSeparator className="bg-border/40 my-1" />
 
-          {/* Status actions */}
-          <DropdownMenuItem
-            onClick={handleToggleStatus}
-            disabled={isPending}
-            className="hover:!bg-muted/80 focus:!bg-muted/80 hover:!text-foreground focus:!text-foreground cursor-pointer gap-2 rounded-lg px-2.5 py-1.5 text-[13px] transition-colors"
-          >
-            <RefreshCw className="text-warning h-3.5 w-3.5" />
-            <span>
-              {cat.status === 'available' ? 'Em processo' : 'Disponível'}
-            </span>
-          </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={handleDisbandGroup}
+                disabled={isPending}
+                className="text-destructive hover:!bg-destructive/10 focus:!bg-destructive/10 hover:!text-destructive focus:!text-destructive cursor-pointer gap-2 rounded-lg px-2.5 py-1.5 text-[13px] transition-colors"
+              >
+                <Unlink className="h-3.5 w-3.5" />
+                <span>Desmembrar grupo</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={handleDelete}
+                disabled={isPending}
+                className="text-destructive hover:!bg-destructive/10 focus:!bg-destructive/10 hover:!text-destructive focus:!text-destructive cursor-pointer gap-2 rounded-lg px-2.5 py-1.5 text-[13px] transition-colors"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+                <span>Excluir grupo</span>
+              </DropdownMenuItem>
+            </>
+          ) : (
+            <>
+              <DropdownMenuItem
+                asChild
+                className="hover:!bg-muted/80 focus:!bg-muted/80 hover:!text-foreground focus:!text-foreground cursor-pointer gap-2 rounded-lg px-2.5 py-1.5 text-[13px] transition-colors"
+              >
+                <Link href={orgHref(`/admin/gatos/${cat.id}/editar`)}>
+                  <Pencil className="text-primary h-3.5 w-3.5" />
+                  <span className="font-medium">Editar</span>
+                </Link>
+              </DropdownMenuItem>
 
-          <DropdownMenuItem
-            onClick={handleMarkAsAdopted}
-            disabled={isPending}
-            className="hover:!bg-muted/80 focus:!bg-muted/80 hover:!text-foreground focus:!text-foreground cursor-pointer gap-2 rounded-lg px-2.5 py-1.5 text-[13px] transition-colors"
-          >
-            <Heart className="text-success h-3.5 w-3.5" />
-            <span>Registrar adoção</span>
-          </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={handleDuplicate}
+                disabled={isPending}
+                className="hover:!bg-muted/80 focus:!bg-muted/80 hover:!text-foreground focus:!text-foreground cursor-pointer gap-2 rounded-lg px-2.5 py-1.5 text-[13px] transition-colors"
+              >
+                <Copy className="text-muted-foreground h-3.5 w-3.5" />
+                <span>Duplicar</span>
+              </DropdownMenuItem>
 
-          <DropdownMenuSeparator className="bg-border/40 my-1" />
+              <DropdownMenuItem
+                onClick={handleDuplicateAndEdit}
+                disabled={isPending}
+                className="hover:!bg-muted/80 focus:!bg-muted/80 hover:!text-foreground focus:!text-foreground cursor-pointer gap-2 rounded-lg px-2.5 py-1.5 text-[13px] transition-colors"
+              >
+                <PenLine className="text-muted-foreground h-3.5 w-3.5" />
+                <span>Duplicar e editar</span>
+              </DropdownMenuItem>
 
-          {/* Danger */}
-          <DropdownMenuItem
-            onClick={handleDelete}
-            disabled={isPending}
-            className="text-destructive hover:!bg-destructive/10 focus:!bg-destructive/10 hover:!text-destructive focus:!text-destructive cursor-pointer gap-2 rounded-lg px-2.5 py-1.5 text-[13px] transition-colors"
-          >
-            <Trash2 className="h-3.5 w-3.5" />
-            <span>Excluir</span>
-          </DropdownMenuItem>
+              {cat.groupId && (
+                <>
+                  <DropdownMenuSeparator className="bg-border/40 my-1" />
+                  <DropdownMenuItem
+                    asChild
+                    className="hover:!bg-muted/80 focus:!bg-muted/80 hover:!text-foreground focus:!text-foreground cursor-pointer gap-2 rounded-lg px-2.5 py-1.5 text-[13px] transition-colors"
+                  >
+                    <Link
+                      href={orgHref(
+                        `/admin/gatos/grupo/${cat.groupId}/editar`
+                      )}
+                    >
+                      <Users className="text-primary h-3.5 w-3.5" />
+                      <span>Editar grupo</span>
+                    </Link>
+                  </DropdownMenuItem>
+                </>
+              )}
+
+              <DropdownMenuSeparator className="bg-border/40 my-1" />
+
+              {!cat.groupId && (
+                <DropdownMenuItem
+                  onClick={handleToggleStatus}
+                  disabled={isPending}
+                  className="hover:!bg-muted/80 focus:!bg-muted/80 hover:!text-foreground focus:!text-foreground cursor-pointer gap-2 rounded-lg px-2.5 py-1.5 text-[13px] transition-colors"
+                >
+                  <RefreshCw className="text-warning h-3.5 w-3.5" />
+                  <span>
+                    {cat.status === 'available' ? 'Em processo' : 'Disponível'}
+                  </span>
+                </DropdownMenuItem>
+              )}
+
+              <DropdownMenuItem
+                onClick={handleMarkAsAdopted}
+                disabled={isPending}
+                className="hover:!bg-muted/80 focus:!bg-muted/80 hover:!text-foreground focus:!text-foreground cursor-pointer gap-2 rounded-lg px-2.5 py-1.5 text-[13px] transition-colors"
+              >
+                <Heart className="text-success h-3.5 w-3.5" />
+                <span>
+                  {cat.groupId
+                    ? 'Registrar adoção do grupo'
+                    : 'Registrar adoção'}
+                </span>
+              </DropdownMenuItem>
+
+              <DropdownMenuSeparator className="bg-border/40 my-1" />
+
+              {cat.groupId && (
+                <DropdownMenuItem
+                  onClick={handleDisbandGroup}
+                  disabled={isPending}
+                  className="text-destructive hover:!bg-destructive/10 focus:!bg-destructive/10 hover:!text-destructive focus:!text-destructive cursor-pointer gap-2 rounded-lg px-2.5 py-1.5 text-[13px] transition-colors"
+                >
+                  <Unlink className="h-3.5 w-3.5" />
+                  <span>Desmembrar grupo</span>
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuItem
+                onClick={handleDelete}
+                disabled={isPending}
+                className="text-destructive hover:!bg-destructive/10 focus:!bg-destructive/10 hover:!text-destructive focus:!text-destructive cursor-pointer gap-2 rounded-lg px-2.5 py-1.5 text-[13px] transition-colors"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+                <span>Excluir</span>
+              </DropdownMenuItem>
+            </>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
 
@@ -258,6 +388,15 @@ export function CatActionsMenu({ cat }: CatActionsMenuProps) {
         cat={cat}
       />
 
+      {cat.groupId && (
+        <MarkAdoptedSheet
+          open={isGroupAdoptedSheetOpen}
+          onOpenChange={setIsGroupAdoptedSheetOpen}
+          cat={cat}
+          groupId={cat.groupId}
+        />
+      )}
+
       <ConfirmDialog
         open={!!deletingCat}
         onOpenChange={(open) => {
@@ -265,17 +404,44 @@ export function CatActionsMenu({ cat }: CatActionsMenuProps) {
         }}
         variant="destructive"
         icon={Trash2}
-        title="Excluir gato"
-        description={`Tem certeza que deseja excluir "${deletingCat?.name}"? Esta ação não pode ser desfeita.`}
+        title={groupCats ? 'Excluir grupo' : 'Excluir gato'}
+        description={
+          groupCats
+            ? `Tem certeza que deseja excluir o grupo "${groupCats.map((c) => c.name).join(' & ')}"? Todos os ${groupCats.length} gatos serão excluídos. Esta ação não pode ser desfeita.`
+            : `Tem certeza que deseja excluir "${deletingCat?.name}"? Esta ação não pode ser desfeita.`
+        }
         actionLabel="Excluir"
         actionLoadingLabel="Excluindo..."
-        isLoading={deleteMutation.isPending}
+        isLoading={
+          groupCats ? deleteGroupMutation.isPending : deleteMutation.isPending
+        }
         onAction={() => {
-          if (deletingCat) {
+          if (groupCats && cat.groupId) {
+            deleteGroupMutation.mutate({ id: cat.groupId })
+          } else if (deletingCat) {
             deleteMutation.mutate({ id: deletingCat.id })
           }
         }}
       />
+
+      {cat.groupId && (
+        <ConfirmDialog
+          open={disbandingGroup}
+          onOpenChange={setDisbandingGroup}
+          variant="destructive"
+          icon={Unlink}
+          title="Desmembrar grupo"
+          description="Os gatos do grupo voltarão a ser individuais. Candidaturas pendentes permanecerão no histórico. Esta ação não pode ser desfeita."
+          actionLabel="Desmembrar"
+          actionLoadingLabel="Desmembrando..."
+          isLoading={disbandMutation.isPending}
+          onAction={() => {
+            if (cat.groupId) {
+              disbandMutation.mutate({ id: cat.groupId })
+            }
+          }}
+        />
+      )}
     </>
   )
 }

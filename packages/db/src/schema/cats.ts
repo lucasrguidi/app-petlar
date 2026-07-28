@@ -2,6 +2,7 @@ import { relations, sql } from 'drizzle-orm'
 import { index, integer, sqliteTable, text } from 'drizzle-orm/sqlite-core'
 
 import { user } from './auth'
+import { catGroups } from './cat-groups'
 import { forms } from './forms'
 import { orgs } from './orgs'
 
@@ -30,6 +31,9 @@ export const cats = sqliteTable(
     orgId: text('org_id')
       .notNull()
       .references(() => orgs.id, { onDelete: 'cascade' }),
+    groupId: text('group_id').references(() => catGroups.id, {
+      onDelete: 'set null',
+    }),
     formId: text('form_id')
       .notNull()
       .references(() => forms.id),
@@ -89,6 +93,7 @@ export const cats = sqliteTable(
   (table) => [
     index('cats_orgId_idx').on(table.orgId),
     index('cats_status_idx').on(table.status),
+    index('cats_groupId_idx').on(table.groupId),
   ]
 )
 
@@ -110,9 +115,20 @@ export const catPhotos = sqliteTable(
 
 export const catsRelations = relations(cats, ({ one, many }) => ({
   org: one(orgs, { fields: [cats.orgId], references: [orgs.id] }),
+  group: one(catGroups, { fields: [cats.groupId], references: [catGroups.id] }),
   form: one(forms, { fields: [cats.formId], references: [forms.id] }),
   createdByUser: one(user, { fields: [cats.createdBy], references: [user.id] }),
   photos: many(catPhotos),
+}))
+
+export const catGroupsRelations = relations(catGroups, ({ one, many }) => ({
+  org: one(orgs, { fields: [catGroups.orgId], references: [orgs.id] }),
+  form: one(forms, { fields: [catGroups.formId], references: [forms.id] }),
+  createdByUser: one(user, {
+    fields: [catGroups.createdBy],
+    references: [user.id],
+  }),
+  cats: many(cats),
 }))
 
 export const catPhotosRelations = relations(catPhotos, ({ one }) => ({

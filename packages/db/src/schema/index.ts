@@ -1,6 +1,7 @@
 export * from './adoptions'
 export * from './applications'
 export * from './auth'
+export * from './cat-groups'
 export * from './cats'
 export * from './forms'
 export * from './invites'

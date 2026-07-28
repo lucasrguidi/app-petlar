@@ -3,6 +3,7 @@ import {
   adoptions,
   applicationFiles,
   applications,
+  catGroups,
   catPhotos,
   cats,
   formFields,
@@ -11,7 +12,7 @@ import {
   type CatFormFieldSnapshot,
 } from '@app-petlar/db/schema'
 import { TRPCError } from '@trpc/server'
-import { and, asc, desc, eq, inArray, like, sql } from 'drizzle-orm'
+import { and, asc, desc, eq, inArray, isNull, like, sql } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
 import { z } from 'zod'
 
@@ -65,7 +66,7 @@ const publicListFiltersSchema = z.object({
   sex: z.enum(['male', 'female']).optional(),
   ageRange: z.enum(['kitten', 'young', 'adult', 'senior']).optional(),
   page: z.number().int().min(1).default(1),
-  limit: z.number().int().min(1).max(30).default(9),
+  limit: z.number().int().min(1).max(200).default(9),
 })
 
 /**
@@ -157,7 +158,11 @@ export const catsRouter = router({
         })
       }
 
-      const conditions = [eq(cats.orgId, org.id), eq(cats.status, 'available')]
+      const conditions = [
+        eq(cats.orgId, org.id),
+        eq(cats.status, 'available'),
+        isNull(cats.groupId),
+      ]
 
       if (sex) {
         conditions.push(eq(cats.sex, sex))
@@ -299,6 +304,7 @@ export const catsRouter = router({
           id: cats.id,
           formId: cats.formId,
           formName: forms.name,
+          groupId: cats.groupId,
           name: cats.name,
           ageYears: cats.ageYears,
           ageMonths: cats.ageMonths,
@@ -377,6 +383,40 @@ export const catsRouter = router({
         ])
       )
 
+      const groupIds = [
+        ...new Set(
+          catsList
+            .map((c) => c.groupId)
+            .filter((g): g is string => g !== null)
+        ),
+      ]
+
+      const groupInterestedCounts =
+        groupIds.length > 0
+          ? await db
+              .select({
+                groupId: applications.groupId,
+                count: sql<number>`count(*)`,
+                pendingCount: sql<number>`sum(case when ${applications.status} = 'pending' then 1 else 0 end)`,
+              })
+              .from(applications)
+              .where(
+                and(
+                  eq(applications.orgId, orgId),
+                  inArray(applications.groupId, groupIds),
+                  sql`${applications.confirmedAt} is not null`
+                )
+              )
+              .groupBy(applications.groupId)
+          : []
+
+      const interestedCountByGroupId = new Map(
+        groupInterestedCounts.map((item) => [
+          item.groupId,
+          { count: item.count, pendingCount: item.pendingCount },
+        ])
+      )
+
       // Contar total para paginação
       const [countResult] = await db
         .select({ count: sql<number>`count(*)` })
@@ -388,13 +428,19 @@ export const catsRouter = router({
       return {
         cats: catsList.map((cat) => {
           const catPhotosList = photosByCatId[cat.id] ?? []
+          const individualCounts = interestedCountByCatId.get(cat.id)
+          const groupCounts = cat.groupId
+            ? interestedCountByGroupId.get(cat.groupId)
+            : undefined
           return {
             ...cat,
             photoUrl: catPhotosList[0]?.url ?? null,
             photos: catPhotosList,
-            interestedCount: interestedCountByCatId.get(cat.id)?.count ?? 0,
+            interestedCount:
+              (individualCounts?.count ?? 0) + (groupCounts?.count ?? 0),
             pendingApplicationsCount:
-              interestedCountByCatId.get(cat.id)?.pendingCount ?? 0,
+              (individualCounts?.pendingCount ?? 0) +
+              (groupCounts?.pendingCount ?? 0),
           }
         }),
         pagination: {
@@ -581,9 +627,8 @@ export const catsRouter = router({
     .mutation(async ({ ctx, input }) => {
       const orgId = requireOrgId(ctx.session.user)
 
-      // Verificar se gato existe e pertence à org
       const [existingCat] = await db
-        .select({ id: cats.id, status: cats.status })
+        .select({ id: cats.id, status: cats.status, groupId: cats.groupId })
         .from(cats)
         .where(and(eq(cats.id, input.id), eq(cats.orgId, orgId)))
 
@@ -602,6 +647,25 @@ export const catsRouter = router({
       }
 
       await db.delete(cats).where(eq(cats.id, input.id))
+
+      if (existingCat.groupId) {
+        const remaining = await db
+          .select({ id: cats.id })
+          .from(cats)
+          .where(eq(cats.groupId, existingCat.groupId))
+
+        if (remaining.length < 2) {
+          if (remaining.length === 1) {
+            await db
+              .update(cats)
+              .set({ groupId: null })
+              .where(eq(cats.id, remaining[0]!.id))
+          }
+          await db
+            .delete(catGroups)
+            .where(eq(catGroups.id, existingCat.groupId))
+        }
+      }
 
       return { success: true }
     }),

@@ -45,6 +45,7 @@ interface MarkAdoptedSheetProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   cat: Cat
+  groupId?: string
   initialApplicant?: InitialApplicant
   onSuccess?: () => void
 }
@@ -78,6 +79,7 @@ export function MarkAdoptedSheet({
   open,
   onOpenChange,
   cat,
+  groupId,
   initialApplicant,
   onSuccess,
 }: MarkAdoptedSheetProps) {
@@ -125,10 +127,14 @@ export function MarkAdoptedSheet({
   const createAdoptionMutation = useMutation(
     trpc.adoptions.create.mutationOptions({
       onSuccess: () => {
-        toast.success(`${cat.name} foi marcado como adotado!`)
+        const msg = groupId
+          ? 'Grupo marcado como adotado!'
+          : `${cat.name} foi marcado como adotado!`
+        toast.success(msg)
         queryClient.invalidateQueries({ queryKey: [['cats', 'list']] })
         queryClient.invalidateQueries({ queryKey: [['adoptions']] })
         queryClient.invalidateQueries({ queryKey: [['applications']] })
+        queryClient.invalidateQueries({ queryKey: [['catGroups']] })
         setFormData((current) => ({ ...current, adoptionTermUrl: null }))
         onOpenChange(false)
         onSuccess?.()
@@ -224,7 +230,8 @@ export function MarkAdoptedSheet({
     }
 
     createAdoptionMutation.mutate({
-      catId: cat.id,
+      catId: groupId ? undefined : cat.id,
+      groupId: groupId ?? undefined,
       applicationId: selectedApplicationId ?? undefined,
       adopterName: formData.adopterName.trim(),
       adopterPhone: formData.adopterPhone.replace(/\D/g, ''),
@@ -258,7 +265,9 @@ export function MarkAdoptedSheet({
                   Marcar como adotado
                 </SheetTitle>
                 <SheetDescription className="text-xs">
-                  Registre a adoção de <strong>{cat.name}</strong>
+                  {groupId
+                    ? 'Registre a adoção conjunta do grupo'
+                    : <>Registre a adoção de <strong>{cat.name}</strong></>}
                 </SheetDescription>
               </div>
             </div>
@@ -292,7 +301,8 @@ export function MarkAdoptedSheet({
             </div>
           ) : (
             <AdopterSelect
-              catId={cat.id}
+              catId={groupId ? undefined : cat.id}
+              groupId={groupId}
               value={selectedApplicationId}
               onChange={handleApplicantChange}
               disabled={isPending}

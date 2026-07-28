@@ -6,6 +6,7 @@ import {
   applicationFiles,
   applications,
   applicationStatuses,
+  catGroups,
   catPhotos,
   cats,
   type CatFormFieldSnapshot,
@@ -76,29 +77,37 @@ interface ApplicationFormField {
   order: number
 }
 
-const createApplicationSchema = z.object({
-  slug: z.string().min(1),
-  catId: z.string().min(1),
-  applicantName: z.string().min(1, 'Nome é obrigatório').max(200),
-  applicantEmail: z.string().trim().email('Email inválido'),
-  applicantWhatsapp: z.string().min(10, 'WhatsApp inválido').max(20),
-  responses: z.record(z.string(), z.union([z.string(), z.boolean(), z.null()])),
-  files: z
-    .array(
-      z.object({
-        fieldId: z.string(),
-        url: z.string().url(),
-        fileType: z.enum(['image', 'video']),
-      })
-    )
-    .optional(),
-  lgpdConsent: z.literal(true, {
-    message: 'Você precisa aceitar o compartilhamento de dados',
-  }),
-  whatsappConsent: z.literal(true, {
-    message: 'Você precisa aceitar o contato via WhatsApp',
-  }),
-})
+const createApplicationSchema = z
+  .object({
+    slug: z.string().min(1),
+    catId: z.string().min(1).optional(),
+    groupId: z.string().min(1).optional(),
+    applicantName: z.string().min(1, 'Nome é obrigatório').max(200),
+    applicantEmail: z.string().trim().email('Email inválido'),
+    applicantWhatsapp: z.string().min(10, 'WhatsApp inválido').max(20),
+    responses: z.record(
+      z.string(),
+      z.union([z.string(), z.boolean(), z.null()])
+    ),
+    files: z
+      .array(
+        z.object({
+          fieldId: z.string(),
+          url: z.string().url(),
+          fileType: z.enum(['image', 'video']),
+        })
+      )
+      .optional(),
+    lgpdConsent: z.literal(true, {
+      message: 'Você precisa aceitar o compartilhamento de dados',
+    }),
+    whatsappConsent: z.literal(true, {
+      message: 'Você precisa aceitar o contato via WhatsApp',
+    }),
+  })
+  .refine((data) => data.catId || data.groupId, {
+    message: 'catId ou groupId é obrigatório',
+  })
 
 const confirmCodeSchema = z.object({
   confirmationToken: z.string().min(1),
@@ -727,60 +736,6 @@ async function getOrgBySlug(slug: string) {
   return org
 }
 
-async function getPendingApplicationByEmail(params: {
-  orgId: string
-  catId: string
-  applicantEmail: string
-}) {
-  const [pending] = await db
-    .select({
-      id: applications.id,
-      confirmationToken: applications.confirmationToken,
-      confirmationCodeHash: applications.confirmationCodeHash,
-      confirmationCodeExpiresAt: applications.confirmationCodeExpiresAt,
-      confirmationResendCount: applications.confirmationResendCount,
-      confirmationLastSentAt: applications.confirmationLastSentAt,
-      applicantEmail: applications.applicantEmail,
-    })
-    .from(applications)
-    .where(
-      and(
-        eq(applications.orgId, params.orgId),
-        eq(applications.catId, params.catId),
-        sql`lower(trim(${applications.applicantEmail})) = ${params.applicantEmail}`,
-        isNull(applications.confirmedAt)
-      )
-    )
-    .orderBy(desc(applications.createdAt))
-    .limit(1)
-
-  return pending
-}
-
-async function getConfirmedApplicationByEmail(params: {
-  orgId: string
-  catId: string
-  applicantEmail: string
-}) {
-  const [confirmed] = await db
-    .select({
-      id: applications.id,
-    })
-    .from(applications)
-    .where(
-      and(
-        eq(applications.orgId, params.orgId),
-        eq(applications.catId, params.catId),
-        sql`lower(trim(${applications.applicantEmail})) = ${params.applicantEmail}`,
-        sql`${applications.confirmedAt} is not null`
-      )
-    )
-    .orderBy(desc(applications.createdAt))
-    .limit(1)
-
-  return confirmed
-}
-
 type FilterableFieldType = 'text' | 'select' | 'boolean' | 'date'
 type DynamicFilterOperator = z.infer<typeof dynamicFilterOperatorSchema>
 
@@ -1197,13 +1152,11 @@ export const applicationsRouter = router({
           responses: applications.responses,
           createdAt: applications.createdAt,
           confirmedAt: applications.confirmedAt,
-          catId: cats.id,
-          catName: cats.name,
-          catFormId: cats.formId,
-          catFormSnapshot: cats.formSnapshot,
+          catId: applications.catId,
+          groupId: applications.groupId,
+          formId: applications.formId,
         })
         .from(applications)
-        .innerJoin(cats, eq(cats.id, applications.catId))
         .leftJoin(user, eq(user.id, applications.permanentlyRejectedBy))
         .where(
           and(
@@ -1221,17 +1174,96 @@ export const applicationsRouter = router({
         })
       }
 
-      const [photo] = await db
-        .select({ url: catPhotos.url })
-        .from(catPhotos)
-        .where(eq(catPhotos.catId, application.catId))
-        .orderBy(asc(catPhotos.order))
-        .limit(1)
+      let catInfo: { id: string; name: string; photoUrl: string | null } | null =
+        null
+      let groupInfo: {
+        id: string
+        cats: Array<{ id: string; name: string; photoUrl: string | null }>
+      } | null = null
+      let resolvedFormId: string | null = application.formId
+      let resolvedFormSnapshot: CatFormFieldSnapshot[] | null = null
+
+      if (application.groupId) {
+        const [group] = await db
+          .select({
+            id: catGroups.id,
+            formId: catGroups.formId,
+            formSnapshot: catGroups.formSnapshot,
+          })
+          .from(catGroups)
+          .where(eq(catGroups.id, application.groupId))
+          .limit(1)
+
+        if (group) {
+          resolvedFormId = group.formId
+          resolvedFormSnapshot = group.formSnapshot
+
+          const groupCats = await db
+            .select({ id: cats.id, name: cats.name })
+            .from(cats)
+            .where(eq(cats.groupId, application.groupId))
+
+          const catIds = groupCats.map((c) => c.id)
+          const photos =
+            catIds.length > 0
+              ? await db
+                  .select({ catId: catPhotos.catId, url: catPhotos.url })
+                  .from(catPhotos)
+                  .where(sql`${catPhotos.catId} IN ${catIds}`)
+                  .orderBy(catPhotos.catId, catPhotos.order)
+              : []
+
+          const firstPhotoByCatId = new Map<string, string>()
+          for (const photo of photos) {
+            if (!firstPhotoByCatId.has(photo.catId)) {
+              firstPhotoByCatId.set(photo.catId, photo.url)
+            }
+          }
+
+          groupInfo = {
+            id: group.id,
+            cats: groupCats.map((c) => ({
+              id: c.id,
+              name: c.name,
+              photoUrl: firstPhotoByCatId.get(c.id) ?? null,
+            })),
+          }
+        }
+      } else if (application.catId) {
+        const [cat] = await db
+          .select({
+            id: cats.id,
+            name: cats.name,
+            formId: cats.formId,
+            formSnapshot: cats.formSnapshot,
+          })
+          .from(cats)
+          .where(eq(cats.id, application.catId))
+          .limit(1)
+
+        if (cat) {
+          resolvedFormId = cat.formId
+          resolvedFormSnapshot = cat.formSnapshot
+
+          const [photo] = await db
+            .select({ url: catPhotos.url })
+            .from(catPhotos)
+            .where(eq(catPhotos.catId, cat.id))
+            .orderBy(asc(catPhotos.order))
+            .limit(1)
+
+          catInfo = {
+            id: cat.id,
+            name: cat.name,
+            photoUrl: photo?.url ?? null,
+          }
+        }
+      }
 
       const fields = await getCatApplicationFields({
         orgId,
-        formId: application.catFormId,
-        formSnapshot: application.catFormSnapshot,
+        formId: resolvedFormId,
+        formSnapshot: resolvedFormSnapshot,
       })
 
       const responses = (application.responses ??
@@ -1303,11 +1335,8 @@ export const applicationsRouter = router({
           createdAt: application.createdAt,
           confirmedAt: application.confirmedAt,
         },
-        cat: {
-          id: application.catId,
-          name: application.catName,
-          photoUrl: photo?.url ?? null,
-        },
+        cat: catInfo,
+        group: groupInfo,
         responses: [...normalizedResponses, ...orphanResponses],
         files: files.map((file) => ({
           ...file,
@@ -1497,6 +1526,7 @@ export const applicationsRouter = router({
       const {
         slug,
         catId,
+        groupId,
         applicantName,
         applicantEmail,
         applicantWhatsapp,
@@ -1509,35 +1539,94 @@ export const applicationsRouter = router({
       const org = await getOrgBySlug(slug)
       await cleanupExpiredPendingApplications(org.id)
 
-      const [cat] = await db
-        .select({
-          id: cats.id,
-          name: cats.name,
-          status: cats.status,
-          formId: cats.formId,
-          formSnapshot: cats.formSnapshot,
-        })
-        .from(cats)
-        .where(and(eq(cats.id, catId), eq(cats.orgId, org.id)))
+      let resolvedCatId: string | null = catId ?? null
+      const resolvedGroupId: string | null = groupId ?? null
+      let subjectName: string
+      let formId: string
+      let formSnapshot: CatFormFieldSnapshot[] | null = null
 
-      if (!cat) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'Gato não encontrado',
-        })
-      }
+      if (resolvedGroupId) {
+        const [group] = await db
+          .select({
+            id: catGroups.id,
+            formId: catGroups.formId,
+            formSnapshot: catGroups.formSnapshot,
+          })
+          .from(catGroups)
+          .where(
+            and(eq(catGroups.id, resolvedGroupId), eq(catGroups.orgId, org.id))
+          )
 
-      if (cat.status !== 'available') {
+        if (!group) {
+          throw new TRPCError({
+            code: 'NOT_FOUND',
+            message: 'Grupo não encontrado',
+          })
+        }
+
+        const groupCats = await db
+          .select({
+            id: cats.id,
+            name: cats.name,
+            sex: cats.sex,
+            status: cats.status,
+          })
+          .from(cats)
+          .where(eq(cats.groupId, resolvedGroupId))
+
+        if (groupCats.some((c) => c.status !== 'available')) {
+          throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message: 'Este grupo não está disponível para adoção',
+          })
+        }
+
+        subjectName = groupCats.map((c) => c.name).join(' e ')
+        formId = group.formId
+        formSnapshot = group.formSnapshot
+        resolvedCatId = null
+      } else if (resolvedCatId) {
+        const [cat] = await db
+          .select({
+            id: cats.id,
+            name: cats.name,
+            sex: cats.sex,
+            status: cats.status,
+            formId: cats.formId,
+            formSnapshot: cats.formSnapshot,
+          })
+          .from(cats)
+          .where(and(eq(cats.id, resolvedCatId), eq(cats.orgId, org.id)))
+
+        if (!cat) {
+          throw new TRPCError({
+            code: 'NOT_FOUND',
+            message: 'Gato não encontrado',
+          })
+        }
+
+        if (cat.status !== 'available') {
+          throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message: 'Este gato não está disponível para adoção',
+          })
+        }
+
+        if (!cat.formId) {
+          throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message:
+              'Este gato não possui formulário de candidatura configurado',
+          })
+        }
+
+        subjectName = cat.name
+        formId = cat.formId
+        formSnapshot = cat.formSnapshot
+      } else {
         throw new TRPCError({
           code: 'BAD_REQUEST',
-          message: 'Este gato não está disponível para adoção',
-        })
-      }
-
-      if (!cat.formId) {
-        throw new TRPCError({
-          code: 'BAD_REQUEST',
-          message: 'Este gato não possui formulário de candidatura configurado',
+          message: 'catId ou groupId é obrigatório',
         })
       }
 
@@ -1559,25 +1648,60 @@ export const applicationsRouter = router({
         )
         .limit(1)
 
-      const confirmedApplication = await getConfirmedApplicationByEmail({
-        orgId: org.id,
-        catId,
-        applicantEmail: normalizedApplicantEmail,
-      })
+      // Check for duplicate confirmed application
+      const duplicateConditions = [
+        eq(applications.orgId, org.id),
+        sql`lower(trim(${applications.applicantEmail})) = ${normalizedApplicantEmail}`,
+        sql`${applications.confirmedAt} is not null`,
+      ]
+      if (resolvedGroupId) {
+        duplicateConditions.push(eq(applications.groupId, resolvedGroupId))
+      } else if (resolvedCatId) {
+        duplicateConditions.push(eq(applications.catId, resolvedCatId))
+      }
+
+      const [confirmedApplication] = await db
+        .select({ id: applications.id })
+        .from(applications)
+        .where(and(...duplicateConditions))
+        .orderBy(desc(applications.createdAt))
+        .limit(1)
 
       if (confirmedApplication) {
         throw new TRPCError({
           code: 'CONFLICT',
-          message:
-            'Já existe uma candidatura confirmada para este gato com este e-mail',
+          message: resolvedGroupId
+            ? 'Já existe uma candidatura confirmada para este grupo com este e-mail'
+            : 'Já existe uma candidatura confirmada para este gato com este e-mail',
         })
       }
 
-      const pendingApplication = await getPendingApplicationByEmail({
-        orgId: org.id,
-        catId,
-        applicantEmail: normalizedApplicantEmail,
-      })
+      // Check for existing pending application
+      const pendingConditions = [
+        eq(applications.orgId, org.id),
+        sql`lower(trim(${applications.applicantEmail})) = ${normalizedApplicantEmail}`,
+        isNull(applications.confirmedAt),
+      ]
+      if (resolvedGroupId) {
+        pendingConditions.push(eq(applications.groupId, resolvedGroupId))
+      } else if (resolvedCatId) {
+        pendingConditions.push(eq(applications.catId, resolvedCatId))
+      }
+
+      const [pendingApplication] = await db
+        .select({
+          id: applications.id,
+          confirmationToken: applications.confirmationToken,
+          confirmationCodeHash: applications.confirmationCodeHash,
+          confirmationCodeExpiresAt: applications.confirmationCodeExpiresAt,
+          confirmationResendCount: applications.confirmationResendCount,
+          confirmationLastSentAt: applications.confirmationLastSentAt,
+          applicantEmail: applications.applicantEmail,
+        })
+        .from(applications)
+        .where(and(...pendingConditions))
+        .orderBy(desc(applications.createdAt))
+        .limit(1)
 
       if (pendingApplication) {
         let pendingRecord: PendingApplicationRecord = pendingApplication
@@ -1596,7 +1720,7 @@ export const applicationsRouter = router({
           await sendApplicationConfirmationEmail({
             to: pendingRecord.applicantEmail,
             applicantName,
-            catName: cat.name,
+            catName: subjectName,
             orgName: org.name,
             code: nextCode,
           })
@@ -1630,8 +1754,8 @@ export const applicationsRouter = router({
 
       const fields = await getCatApplicationFields({
         orgId: org.id,
-        formId: cat.formId,
-        formSnapshot: cat.formSnapshot,
+        formId,
+        formSnapshot,
       })
 
       for (const field of fields) {
@@ -1660,8 +1784,9 @@ export const applicationsRouter = router({
         await tx.insert(applications).values({
           id: applicationId,
           orgId: org.id,
-          catId,
-          formId: cat.formId,
+          catId: resolvedCatId,
+          groupId: resolvedGroupId,
+          formId,
           status: activePermanentRejection ? 'permanently_rejected' : 'pending',
           permanentRejectionReason: activePermanentRejection?.reason ?? null,
           permanentlyRejectedAt: activePermanentRejection ? new Date() : null,
@@ -1717,7 +1842,7 @@ export const applicationsRouter = router({
         await sendApplicationConfirmationEmail({
           to: normalizedApplicantEmail,
           applicantName,
-          catName: cat.name,
+          catName: subjectName,
           orgName: org.name,
           code: confirmationCode,
         })
@@ -1760,6 +1885,7 @@ export const applicationsRouter = router({
           id: applications.id,
           orgId: applications.orgId,
           catId: applications.catId,
+          groupId: applications.groupId,
           applicantName: applications.applicantName,
           applicantEmail: applications.applicantEmail,
           confirmedAt: applications.confirmedAt,
@@ -1822,7 +1948,6 @@ export const applicationsRouter = router({
         })
         .where(eq(applications.id, application.id))
 
-      // Send confirmation success email
       try {
         const [org] = await db
           .select({ name: orgs.name })
@@ -1830,23 +1955,41 @@ export const applicationsRouter = router({
           .where(eq(orgs.id, application.orgId))
           .limit(1)
 
-        const [cat] = await db
-          .select({ name: cats.name, sex: cats.sex })
-          .from(cats)
-          .where(eq(cats.id, application.catId))
-          .limit(1)
+        let emailCatName: string | null = null
+        let emailCatSex: 'male' | 'female' = 'male'
 
-        if (org && cat) {
+        if (application.groupId) {
+          const groupCats = await db
+            .select({ name: cats.name })
+            .from(cats)
+            .where(eq(cats.groupId, application.groupId))
+
+          if (groupCats.length > 0) {
+            emailCatName = groupCats.map((c) => c.name).join(' e ')
+          }
+        } else if (application.catId) {
+          const [cat] = await db
+            .select({ name: cats.name, sex: cats.sex })
+            .from(cats)
+            .where(eq(cats.id, application.catId))
+            .limit(1)
+
+          if (cat) {
+            emailCatName = cat.name
+            emailCatSex = cat.sex
+          }
+        }
+
+        if (org && emailCatName) {
           await sendApplicationConfirmedEmail({
             to: application.applicantEmail,
             applicantName: application.applicantName,
-            catName: cat.name,
-            catSex: cat.sex,
+            catName: emailCatName,
+            catSex: emailCatSex,
             orgName: org.name,
           })
         }
       } catch (error) {
-        // Log error but don't fail the confirmation - the application is already confirmed
         console.error(
           'Erro ao enviar email de confirmação de candidatura',
           error
@@ -1867,6 +2010,7 @@ export const applicationsRouter = router({
           id: applications.id,
           orgId: applications.orgId,
           catId: applications.catId,
+          groupId: applications.groupId,
           applicantName: applications.applicantName,
           applicantEmail: applications.applicantEmail,
           confirmedAt: applications.confirmedAt,
@@ -1927,15 +2071,28 @@ export const applicationsRouter = router({
         .where(eq(orgs.id, application.orgId))
         .limit(1)
 
-      const [cat] = await db
-        .select({
-          name: cats.name,
-        })
-        .from(cats)
-        .where(eq(cats.id, application.catId))
-        .limit(1)
+      let resendCatName: string | null = null
 
-      if (!org || !cat) {
+      if (application.groupId) {
+        const groupCats = await db
+          .select({ name: cats.name })
+          .from(cats)
+          .where(eq(cats.groupId, application.groupId))
+
+        if (groupCats.length > 0) {
+          resendCatName = groupCats.map((c) => c.name).join(' e ')
+        }
+      } else if (application.catId) {
+        const [cat] = await db
+          .select({ name: cats.name })
+          .from(cats)
+          .where(eq(cats.id, application.catId))
+          .limit(1)
+
+        resendCatName = cat?.name ?? null
+      }
+
+      if (!org || !resendCatName) {
         throw new TRPCError({
           code: 'BAD_REQUEST',
           message: 'Não foi possível reenviar código para esta candidatura',
@@ -1954,7 +2111,7 @@ export const applicationsRouter = router({
         await sendApplicationConfirmationEmail({
           to: application.applicantEmail,
           applicantName: application.applicantName,
-          catName: cat.name,
+          catName: resendCatName,
           orgName: org.name,
           code: nextCode,
         })
@@ -1997,6 +2154,144 @@ export const applicationsRouter = router({
       return {
         status: 'resent' as const,
         ...payload,
+      }
+    }),
+
+  listByGroup: protectedProcedure
+    .input(
+      z.object({
+        groupId: z.string().min(1),
+        status: z.enum(applicationStatuses).optional(),
+        search: z.string().trim().max(200).optional(),
+        page: z.number().int().min(1).default(1),
+        limit: z.number().int().min(1).max(50).default(15),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const orgId = requireOrgId(ctx.session.user)
+      const offset = (input.page - 1) * input.limit
+
+      const [group] = await db
+        .select({
+          id: catGroups.id,
+          formId: catGroups.formId,
+          formSnapshot: catGroups.formSnapshot,
+        })
+        .from(catGroups)
+        .where(
+          and(eq(catGroups.id, input.groupId), eq(catGroups.orgId, orgId))
+        )
+        .limit(1)
+
+      if (!group) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Grupo não encontrado',
+        })
+      }
+
+      const groupCats = await db
+        .select({ id: cats.id, name: cats.name })
+        .from(cats)
+        .where(eq(cats.groupId, input.groupId))
+
+      const catIds = groupCats.map((c) => c.id)
+      const photos =
+        catIds.length > 0
+          ? await db
+              .select({ catId: catPhotos.catId, url: catPhotos.url })
+              .from(catPhotos)
+              .where(sql`${catPhotos.catId} IN ${catIds}`)
+              .orderBy(catPhotos.catId, catPhotos.order)
+          : []
+
+      const firstPhotoByCatId = new Map<string, string>()
+      for (const photo of photos) {
+        if (!firstPhotoByCatId.has(photo.catId)) {
+          firstPhotoByCatId.set(photo.catId, photo.url)
+        }
+      }
+
+      const fields = await getCatApplicationFields({
+        orgId,
+        formId: group.formId,
+        formSnapshot: group.formSnapshot,
+      })
+      const filterableFields = getFilterableFields(fields)
+
+      const baseWhereConditions: SQL[] = [
+        eq(applications.orgId, orgId),
+        eq(applications.groupId, input.groupId),
+        sql`${applications.confirmedAt} is not null`,
+      ]
+
+      if (input.search) {
+        const normalizedSearch = normalizeSearchText(input.search)
+        if (normalizedSearch.length > 0) {
+          baseWhereConditions.push(
+            sql`coalesce(${applications.applicantNameNormalized}, '') like ${`%${normalizedSearch}%`}`
+          )
+        }
+      }
+
+      const whereConditions = [...baseWhereConditions]
+
+      if (input.status) {
+        whereConditions.push(eq(applications.status, input.status))
+      }
+
+      const [countResult] = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(applications)
+        .where(and(...whereConditions))
+
+      const rows = await db
+        .select({
+          id: applications.id,
+          applicantName: applications.applicantName,
+          applicantWhatsapp: applications.applicantWhatsapp,
+          status: applications.status,
+          activePermanentRejectionId: permanentRejections.id,
+          createdAt: applications.createdAt,
+        })
+        .from(applications)
+        .leftJoin(
+          permanentRejections,
+          and(
+            eq(permanentRejections.orgId, applications.orgId),
+            sql`lower(trim(${applications.applicantEmail})) = ${permanentRejections.applicantEmail}`,
+            eq(permanentRejections.active, true)
+          )
+        )
+        .where(and(...whereConditions))
+        .orderBy(asc(applications.createdAt))
+        .limit(input.limit)
+        .offset(offset)
+
+      const total = countResult?.count ?? 0
+
+      return {
+        group: {
+          id: group.id,
+          cats: groupCats.map((c) => ({
+            id: c.id,
+            name: c.name,
+            photoUrl: firstPhotoByCatId.get(c.id) ?? null,
+          })),
+        },
+        filterableFields,
+        applications: rows.map(
+          ({ activePermanentRejectionId, ...application }) => ({
+            ...application,
+            isPermanentRejectionActive: Boolean(activePermanentRejectionId),
+          })
+        ),
+        pagination: {
+          page: input.page,
+          limit: input.limit,
+          total,
+          totalPages: Math.ceil(total / input.limit),
+        },
       }
     }),
 })

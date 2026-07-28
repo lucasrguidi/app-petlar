@@ -2,6 +2,7 @@ import { protectedProcedure, publicProcedure, router } from '../index'
 
 import { adoptionsRouter } from './adoptions'
 import { applicationsRouter } from './applications'
+import { catGroupsRouter } from './cat-groups'
 import { catsRouter } from './cats'
 import { dashboardRouter } from './dashboard'
 import { formsRouter } from './forms'
@@ -22,6 +23,7 @@ export const appRouter = router({
   }),
   adoptions: adoptionsRouter,
   applications: applicationsRouter,
+  catGroups: catGroupsRouter,
   dashboard: dashboardRouter,
   upload: uploadRouter,
   cats: catsRouter,

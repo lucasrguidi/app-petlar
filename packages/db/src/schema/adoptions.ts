@@ -9,6 +9,7 @@ import {
 
 import { applications } from './applications'
 import { user } from './auth'
+import { catGroups } from './cat-groups'
 import { cats } from './cats'
 import { orgs } from './orgs'
 
@@ -22,6 +23,9 @@ export const adoptions = sqliteTable(
     catId: text('cat_id')
       .notNull()
       .references(() => cats.id, { onDelete: 'cascade' }),
+    groupId: text('group_id').references(() => catGroups.id, {
+      onDelete: 'set null',
+    }),
     applicationId: text('application_id').references(() => applications.id, {
       onDelete: 'set null',
     }),
@@ -63,12 +67,17 @@ export const adoptions = sqliteTable(
       table.orgId,
       table.adopterNameNormalized
     ),
+    index('adoptions_groupId_idx').on(table.groupId),
   ]
 )
 
 export const adoptionsRelations = relations(adoptions, ({ one }) => ({
   org: one(orgs, { fields: [adoptions.orgId], references: [orgs.id] }),
   cat: one(cats, { fields: [adoptions.catId], references: [cats.id] }),
+  group: one(catGroups, {
+    fields: [adoptions.groupId],
+    references: [catGroups.id],
+  }),
   application: one(applications, {
     fields: [adoptions.applicationId],
     references: [applications.id],

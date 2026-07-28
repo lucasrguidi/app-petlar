@@ -230,6 +230,7 @@ export function ApplicantDetailsSheet({
       phone: string
       email: string | null
     }
+    groupId?: string
   } | null>(null)
 
   const detailsQuery = useQuery({
@@ -568,17 +569,28 @@ export function ApplicantDetailsSheet({
                 <Button
                   type="button"
                   onClick={() => {
-                    // Salvar dados antes de fechar o Sheet
+                    const catInfo = data.cat
+                      ? { id: data.cat.id, name: data.cat.name }
+                      : data.group
+                        ? {
+                            id: data.group.id,
+                            name: data.group.cats
+                              .map((c: { name: string }) => c.name)
+                              .join(' & '),
+                          }
+                        : null
+                    if (!catInfo) return
+
                     setAdoptionModalData({
-                      cat: { id: data.cat.id, name: data.cat.name },
+                      cat: catInfo,
                       applicant: {
                         applicationId: data.application.id,
                         name: data.application.applicantName,
                         phone: data.application.applicantWhatsapp,
                         email: data.application.applicantEmail,
                       },
+                      groupId: data.group?.id ?? undefined,
                     })
-                    // Fechar o Sheet
                     onOpenChange(false)
                   }}
                   className="bg-success hover:bg-success/90 text-success-foreground shadow-success/25 hover:shadow-success/35 w-full rounded-xl shadow-lg transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
@@ -717,6 +729,7 @@ export function ApplicantDetailsSheet({
             if (!open) setAdoptionModalData(null)
           }}
           cat={adoptionModalData.cat}
+          groupId={adoptionModalData.groupId}
           initialApplicant={adoptionModalData.applicant}
         />
       )}

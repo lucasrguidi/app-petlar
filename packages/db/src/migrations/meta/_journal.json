@@ -113,6 +113,13 @@
       "when": 1784824387232,
       "tag": "0015_add-permanent-rejections",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "6",
+      "when": 1785208236686,
+      "tag": "0016_add-cat-groups",
+      "breakpoints": true
     }
   ]
 }

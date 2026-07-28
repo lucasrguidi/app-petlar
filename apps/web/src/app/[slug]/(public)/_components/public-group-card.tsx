@@ -8,8 +8,8 @@ import {
   Heart,
   Mars,
   Scissors,
-  Sparkles,
   Syringe,
+  Users,
   Venus,
 } from 'lucide-react'
 import Link from 'next/link'
@@ -19,9 +19,8 @@ import { Button } from '@/components/ui/button'
 import { useOrgHref } from '@/hooks/use-org-href'
 import { cn } from '@/lib/utils'
 
-export interface PublicCatCardData {
+interface GroupCatData {
   id: string
-  formId: string | null
   name: string
   ageYears: number | null
   ageMonths: number | null
@@ -34,8 +33,6 @@ export interface PublicCatCardData {
   dewormed: boolean
   dewormingNotes: string | null
   description: string | null
-  photoUrl: string | null
-  createdAt: Date | string
   photos: Array<{
     id: string
     url: string
@@ -43,8 +40,14 @@ export interface PublicCatCardData {
   }>
 }
 
-interface PublicCatCardProps {
-  cat: PublicCatCardData
+export interface PublicGroupCardData {
+  id: string
+  createdAt: Date | string
+  cats: GroupCatData[]
+}
+
+interface PublicGroupCardProps {
+  group: PublicGroupCardData
 }
 
 function formatAge(years: number | null, months: number | null): string {
@@ -85,16 +88,16 @@ function HealthBadge({
   return (
     <div
       className={cn(
-        'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1',
+        'inline-flex items-center gap-1 rounded-full px-2 py-0.5',
         value
           ? 'bg-emerald-100 text-emerald-700'
           : 'bg-background/40 text-muted-foreground/60'
       )}
     >
-      <Icon className="h-3 w-3" />
+      <Icon className="h-2.5 w-2.5" />
       <span
         className={cn(
-          'text-[11px] font-medium',
+          'text-[10px] font-medium',
           !value && 'line-through decoration-muted-foreground/40'
         )}
       >
@@ -104,47 +107,104 @@ function HealthBadge({
   )
 }
 
-export function PublicCatCard({ cat }: PublicCatCardProps) {
-  const adoptionHref = useOrgHref(`/candidatura/${cat.id}`)
-  const [expandedDescription, setExpandedDescription] = useState(false)
+function CatHealthBlock({ cat }: { cat: GroupCatData }) {
+  const fivResult = formatTestResult(cat.fiv)
+  const felvResult = formatTestResult(cat.felv)
+
+  return (
+    <div className="space-y-2 rounded-xl border border-background/30 bg-gradient-to-br from-background/10 to-white p-3">
+      <div className="flex items-center gap-2">
+        <span
+          className="text-sm font-semibold text-foreground"
+          style={{ fontFamily: 'var(--font-display)' }}
+        >
+          {cat.name}
+        </span>
+        <span
+          className={cn(
+            'inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5',
+            'text-[10px] font-medium',
+            cat.sex === 'male'
+              ? 'bg-blue-500/15 text-blue-700'
+              : 'bg-pink-500/15 text-pink-700'
+          )}
+        >
+          {cat.sex === 'male' ? (
+            <Mars className="h-2.5 w-2.5" />
+          ) : (
+            <Venus className="h-2.5 w-2.5" />
+          )}
+        </span>
+        <span className="text-xs text-muted-foreground/60">
+          {formatAge(cat.ageYears, cat.ageMonths)}
+        </span>
+      </div>
+
+      <div className="flex items-center gap-3 text-[10px]">
+        <div className="flex items-center gap-1">
+          <span className="font-medium text-muted-foreground/60">FIV:</span>
+          <span className={cn('font-semibold', fivResult.color)}>
+            {fivResult.text}
+          </span>
+        </div>
+        <div className="h-2.5 w-px bg-background/50" />
+        <div className="flex items-center gap-1">
+          <span className="font-medium text-muted-foreground/60">FeLV:</span>
+          <span className={cn('font-semibold', felvResult.color)}>
+            {felvResult.text}
+          </span>
+        </div>
+      </div>
+
+      <div className="flex flex-wrap gap-1">
+        <HealthBadge icon={Scissors} label="Castrado" value={cat.castrated} />
+        <HealthBadge icon={Syringe} label="Vacinado" value={cat.vaccinated} />
+        <HealthBadge icon={Bug} label="Vermifugado" value={cat.dewormed} />
+      </div>
+    </div>
+  )
+}
+
+export function PublicGroupCard({ group }: PublicGroupCardProps) {
+  const adoptionHref = useOrgHref(`/candidatura/grupo/${group.id}`)
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0)
   const [isHovered, setIsHovered] = useState(false)
+  const [expandedDescriptions, setExpandedDescriptions] = useState(false)
 
-  const description =
-    cat.description?.trim() ||
-    'Ainda não temos uma descrição detalhada deste gatinho.'
-  const canExpandDescription = description.length > 150
-
-  const sortedPhotos = useMemo(
-    () => [...cat.photos].sort((a, b) => a.order - b.order),
-    [cat.photos]
-  )
-  const photoUrls = useMemo(() => {
-    if (sortedPhotos.length > 0) {
-      return sortedPhotos.map((photo) => photo.url)
+  const allPhotos = useMemo(() => {
+    const photos: Array<{ url: string; catName: string }> = []
+    for (const cat of group.cats) {
+      const sorted = [...cat.photos].sort((a, b) => a.order - b.order)
+      for (const photo of sorted) {
+        photos.push({ url: photo.url, catName: cat.name })
+      }
     }
-    return cat.photoUrl ? [cat.photoUrl] : []
-  }, [sortedPhotos, cat.photoUrl])
-  const currentPhoto = photoUrls[currentPhotoIndex] ?? null
+    return photos
+  }, [group.cats])
 
-  const hasPhotoCarousel = photoUrls.length > 1
+  const currentPhoto = allPhotos[currentPhotoIndex] ?? null
+  const hasPhotoCarousel = allPhotos.length > 1
 
   const goToPreviousPhoto = () => {
     if (!hasPhotoCarousel) return
     setCurrentPhotoIndex((current) =>
-      current === 0 ? photoUrls.length - 1 : current - 1
+      current === 0 ? allPhotos.length - 1 : current - 1
     )
   }
 
   const goToNextPhoto = () => {
     if (!hasPhotoCarousel) return
     setCurrentPhotoIndex((current) =>
-      current === photoUrls.length - 1 ? 0 : current + 1
+      current === allPhotos.length - 1 ? 0 : current + 1
     )
   }
 
-  const fivResult = formatTestResult(cat.fiv)
-  const felvResult = formatTestResult(cat.felv)
+  const names = group.cats.map((c) => c.name).join(' & ')
+
+  const descriptions = group.cats
+    .map((c) => c.description?.trim())
+    .filter(Boolean)
+  const hasDescriptions = descriptions.length > 0
 
   return (
     <div
@@ -162,19 +222,16 @@ export function PublicCatCard({ cat }: PublicCatCardProps) {
       <div className="relative h-56 overflow-hidden bg-gradient-to-br from-background/30 to-white sm:h-60">
         {currentPhoto ? (
           <>
-            {/* Blurred background */}
             <img
-              src={currentPhoto}
+              src={currentPhoto.url}
               alt=""
               aria-hidden
               className="pointer-events-none absolute inset-0 h-full w-full scale-110 object-cover opacity-30 blur-xl"
               loading="lazy"
             />
-
-            {/* Main photo */}
             <img
-              src={currentPhoto}
-              alt={`Foto de ${cat.name}`}
+              src={currentPhoto.url}
+              alt={`Foto de ${currentPhoto.catName}`}
               className={cn(
                 'relative z-0 h-full w-full object-contain object-center',
                 'transition-transform duration-500',
@@ -192,48 +249,43 @@ export function PublicCatCard({ cat }: PublicCatCardProps) {
           </div>
         )}
 
-        {/* Availability badge */}
+        {/* Joint adoption badge */}
         <div
           className={cn(
             'absolute top-3 left-3 z-20',
             'inline-flex items-center gap-1.5 rounded-full px-3 py-1.5',
-            'bg-emerald-500/90 backdrop-blur-sm',
-            'shadow-lg shadow-emerald-500/25'
+            'bg-primary/90 backdrop-blur-sm',
+            'shadow-lg shadow-primary/25'
           )}
         >
-          <Sparkles className="h-3 w-3 text-white" />
-          <span className="text-xs font-semibold text-white">Disponível</span>
-        </div>
-
-        {/* Sex badge */}
-        <div
-          className={cn(
-            'absolute top-3 right-3 z-20',
-            'inline-flex items-center gap-1 rounded-full px-2.5 py-1',
-            'shadow-sm backdrop-blur-sm',
-            cat.sex === 'male'
-              ? 'bg-blue-500/90 text-white'
-              : 'bg-pink-500/90 text-white'
-          )}
-        >
-          {cat.sex === 'male' ? (
-            <Mars className="h-3.5 w-3.5" />
-          ) : (
-            <Venus className="h-3.5 w-3.5" />
-          )}
-          <span className="text-xs font-medium">
-            {cat.sex === 'male' ? 'Macho' : 'Fêmea'}
+          <Users className="h-3 w-3 text-white" />
+          <span className="text-xs font-semibold text-white">
+            Adoção conjunta
           </span>
         </div>
+
+        {/* Cat name indicator on photo */}
+        {currentPhoto && (
+          <div
+            className={cn(
+              'absolute top-3 right-3 z-20',
+              'inline-flex items-center gap-1 rounded-full px-2.5 py-1',
+              'bg-black/50 backdrop-blur-sm',
+              'shadow-sm'
+            )}
+          >
+            <span className="text-xs font-medium text-white">
+              {currentPhoto.catName}
+            </span>
+          </div>
+        )}
 
         {/* Photo navigation */}
         {hasPhotoCarousel && (
           <>
             <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-20 bg-gradient-to-t from-black/30 to-transparent" />
 
-            <div
-              className="absolute inset-x-0 bottom-3 z-20 flex items-center justify-between px-3"
-            >
+            <div className="absolute inset-x-0 bottom-3 z-20 flex items-center justify-between px-3">
               <button
                 type="button"
                 onClick={(e) => {
@@ -247,7 +299,7 @@ export function PublicCatCard({ cat }: PublicCatCardProps) {
               </button>
 
               <div className="flex items-center gap-1.5">
-                {photoUrls.map((_, index) => (
+                {allPhotos.map((_, index) => (
                   <button
                     key={`dot-${index}`}
                     onClick={(e) => {
@@ -289,86 +341,53 @@ export function PublicCatCard({ cat }: PublicCatCardProps) {
             className="text-xl font-bold text-foreground"
             style={{ fontFamily: 'var(--font-display)' }}
           >
-            {cat.name}
+            {names}
           </h3>
           <p className="text-sm text-muted-foreground/70">
-            {formatAge(cat.ageYears, cat.ageMonths)}
+            {group.cats.length} gatinhos para adoção conjunta
           </p>
         </div>
 
-        {/* Description */}
-        <div className="space-y-1.5">
-          <p
-            className={cn(
-              'text-sm leading-relaxed text-foreground/80',
-              !expandedDescription && canExpandDescription && 'line-clamp-2'
-            )}
-          >
-            {description}
-          </p>
-          {canExpandDescription && (
+        {/* Descriptions (collapsible) */}
+        {hasDescriptions && (
+          <div className="space-y-1.5">
+            <div
+              className={cn(
+                'space-y-1 text-sm leading-relaxed text-foreground/80',
+                !expandedDescriptions && 'line-clamp-3'
+              )}
+            >
+              {group.cats.map(
+                (cat) =>
+                  cat.description?.trim() && (
+                    <p key={cat.id}>
+                      <span className="font-medium">{cat.name}:</span>{' '}
+                      {cat.description.trim()}
+                    </p>
+                  )
+              )}
+            </div>
             <button
               type="button"
-              onClick={() => setExpandedDescription(!expandedDescription)}
+              onClick={() => setExpandedDescriptions(!expandedDescriptions)}
               className="text-xs font-semibold text-primary hover:underline"
             >
-              {expandedDescription ? 'Ver menos' : 'Ver mais'}
+              {expandedDescriptions ? 'Ver menos' : 'Ver mais'}
             </button>
-          )}
-        </div>
+          </div>
+        )}
 
-        {/* Health info */}
+        {/* Health info per cat */}
         <div
           className={cn(
-            'space-y-3 rounded-2xl p-4',
+            'space-y-2 rounded-2xl p-3',
             'bg-gradient-to-br from-background/20 to-white',
             'border border-background/30'
           )}
         >
-          {/* Test results */}
-          <div className="flex items-center gap-4 text-xs">
-            <div className="flex items-center gap-1.5">
-              <span className="font-medium text-muted-foreground/60">FIV:</span>
-              <span className={cn('font-semibold', fivResult.color)}>
-                {fivResult.text}
-              </span>
-            </div>
-            <div className="h-3 w-px bg-background/50" />
-            <div className="flex items-center gap-1.5">
-              <span className="font-medium text-muted-foreground/60">FeLV:</span>
-              <span className={cn('font-semibold', felvResult.color)}>
-                {felvResult.text}
-              </span>
-            </div>
-          </div>
-
-          {/* Health indicators */}
-          <div className="flex flex-wrap gap-1.5">
-            <HealthBadge
-              icon={Scissors}
-              label="Castrado"
-              value={cat.castrated}
-            />
-            <HealthBadge
-              icon={Syringe}
-              label="Vacinado"
-              value={cat.vaccinated}
-            />
-            <HealthBadge icon={Bug} label="Vermifugado" value={cat.dewormed} />
-          </div>
-
-          {/* Health notes */}
-          {(cat.vaccinationNotes || cat.dewormingNotes) && (
-            <p className="border-t border-background/30 pt-2 text-xs leading-relaxed text-muted-foreground/60">
-              {cat.vaccinationNotes && (
-                <span>Vacinação: {cat.vaccinationNotes}</span>
-              )}
-              {cat.vaccinationNotes && cat.dewormingNotes && ' · '}
-              {cat.dewormingNotes && (
-                <span>Vermífugo: {cat.dewormingNotes}</span>
-              )}
-            </p>
-          )}
+          {group.cats.map((cat) => (
+            <CatHealthBlock key={cat.id} cat={cat} />
+          ))}
         </div>
 
         {/* CTA */}
@@ -390,7 +409,7 @@ export function PublicCatCard({ cat }: PublicCatCardProps) {
                 isHovered && 'scale-110'
               )}
             />
-            Quero adotar {cat.sex === 'female' ? 'a' : 'o'} {cat.name}
+            Quero adotar {names}
           </Link>
         </Button>
       </div>

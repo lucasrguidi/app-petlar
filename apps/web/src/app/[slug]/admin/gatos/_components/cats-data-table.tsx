@@ -49,7 +49,6 @@ interface CatPhoto {
   order: number
 }
 
-// Types
 interface Cat {
   id: string
   formId: string | null
@@ -71,13 +70,18 @@ interface Cat {
   photos?: CatPhoto[]
   interestedCount?: number
   pendingApplicationsCount?: number
+  groupId?: string | null
+}
+
+interface DisplayRow extends Cat {
+  isGroupRow?: boolean
+  groupCats?: Cat[]
 }
 
 interface CatsDataTableProps {
   cats: Cat[]
 }
 
-// Helper: Format age compact
 function formatAge(years: number | null, months: number | null): string {
   if (years && years > 0) {
     if (months && months > 0) {
@@ -91,7 +95,6 @@ function formatAge(years: number | null, months: number | null): string {
   return '-'
 }
 
-// Helper: Status badge config
 function getStatusConfig(status: Cat['status']) {
   const config = {
     available: {
@@ -112,15 +115,57 @@ function resolveCatPhotos(cat: Cat): CatPhoto[] {
   if (cat.photos && cat.photos.length > 0) {
     return cat.photos
   }
-
   if (cat.photoUrl) {
     return [{ id: `${cat.id}-main`, url: cat.photoUrl, order: 1 }]
   }
-
   return []
 }
 
-// Helper: Health badge
+function formatGroupNames(cats: Cat[]): string {
+  if (cats.length <= 2) return cats.map((c) => c.name).join(' & ')
+  const names = cats.map((c) => c.name)
+  return `${names.slice(0, -1).join(', ')} & ${names[names.length - 1]}`
+}
+
+function buildDisplayRows(cats: Cat[]): DisplayRow[] {
+  const groups = new Map<string, Cat[]>()
+  const result: DisplayRow[] = []
+  const processedGroups = new Set<string>()
+
+  for (const cat of cats) {
+    if (cat.groupId) {
+      const existing = groups.get(cat.groupId)
+      if (existing) {
+        existing.push(cat)
+      } else {
+        groups.set(cat.groupId, [cat])
+      }
+    }
+  }
+
+  for (const cat of cats) {
+    if (cat.groupId) {
+      if (!processedGroups.has(cat.groupId)) {
+        processedGroups.add(cat.groupId)
+        const groupCats = groups.get(cat.groupId)!
+        if (groupCats.length >= 2) {
+          result.push({
+            ...groupCats[0]!,
+            isGroupRow: true,
+            groupCats,
+          })
+        } else {
+          result.push(cat)
+        }
+      }
+    } else {
+      result.push(cat)
+    }
+  }
+
+  return result
+}
+
 function HealthBadge({
   label,
   value,
@@ -150,7 +195,6 @@ function HealthBadge({
   )
 }
 
-// Column header component for consistent styling
 function ColumnHeader({
   icon: Icon,
   label,
@@ -173,7 +217,6 @@ function ColumnHeader({
   )
 }
 
-// Care indicator component
 function CareIndicator({ label, active }: { label: string; active: boolean }) {
   return (
     <span
@@ -194,12 +237,10 @@ function CareIndicator({ label, active }: { label: string; active: boolean }) {
   )
 }
 
-// Expanded row content
 function ExpandedContent({ cat }: { cat: Cat }) {
   return (
     <div className="border-border/40 from-muted/30 to-muted/10 animate-in fade-in-0 slide-in-from-top-1 border-t bg-gradient-to-b px-4 py-3 duration-200">
       <div className="grid gap-4 text-xs sm:grid-cols-2 lg:grid-cols-4">
-        {/* Health Info */}
         <div className="space-y-2">
           <p className="text-muted-foreground/80 text-[10px] font-semibold tracking-wider uppercase">
             Saúde
@@ -210,7 +251,6 @@ function ExpandedContent({ cat }: { cat: Cat }) {
           </div>
         </div>
 
-        {/* Cuidados */}
         <div className="space-y-2">
           <p className="text-muted-foreground/80 text-[10px] font-semibold tracking-wider uppercase">
             Cuidados
@@ -222,7 +262,6 @@ function ExpandedContent({ cat }: { cat: Cat }) {
           </div>
         </div>
 
-        {/* Doador */}
         {(cat.donorName ?? cat.donorWhatsapp) && (
           <div className="space-y-2">
             <p className="text-muted-foreground/80 text-[10px] font-semibold tracking-wider uppercase">
@@ -247,7 +286,6 @@ function ExpandedContent({ cat }: { cat: Cat }) {
           </div>
         )}
 
-        {/* Description */}
         {cat.description && (
           <div className="space-y-2">
             <p className="text-muted-foreground/80 text-[10px] font-semibold tracking-wider uppercase">
@@ -263,12 +301,122 @@ function ExpandedContent({ cat }: { cat: Cat }) {
   )
 }
 
+function GroupExpandedContent({
+  cats,
+  onOpenPhotoPreview,
+}: {
+  cats: Cat[]
+  onOpenPhotoPreview: (cat: Cat) => void
+}) {
+  const donor = cats[0]
+
+  return (
+    <div className="border-border/40 from-muted/30 to-muted/10 animate-in fade-in-0 slide-in-from-top-1 border-t bg-gradient-to-b px-4 py-3 duration-200">
+      {(donor?.donorName ?? donor?.donorWhatsapp) && (
+        <div className="border-border/30 mb-3 flex items-center gap-3 border-b pb-3">
+          <p className="text-muted-foreground/80 text-[10px] font-semibold tracking-wider uppercase">
+            Doador
+          </p>
+          {donor.donorName && (
+            <span className="text-foreground/80 text-xs">
+              {donor.donorName}
+            </span>
+          )}
+          {donor.donorWhatsapp && (
+            <>
+              {donor.donorName && (
+                <span className="text-border text-xs">•</span>
+              )}
+              <a
+                href={`https://wa.me/${donor.donorWhatsapp.replace(/\D/g, '')}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-success inline-flex items-center gap-1 text-xs hover:underline"
+              >
+                {formatPhone(donor.donorWhatsapp)}
+                <ExternalLink className="h-3 w-3" />
+              </a>
+            </>
+          )}
+        </div>
+      )}
+      <div className="divide-border/30 space-y-0 divide-y">
+        {cats.map((cat) => {
+          const photos = resolveCatPhotos(cat)
+          const photoCount = photos.length
+
+          return (
+            <div
+              key={cat.id}
+              className="flex items-start gap-3 py-3 first:pt-0 last:pb-0"
+            >
+              <div className="bg-muted border-border/40 relative h-14 w-14 shrink-0 overflow-hidden rounded-xl border shadow-sm">
+                {cat.photoUrl ? (
+                  <button
+                    type="button"
+                    onClick={() => onOpenPhotoPreview(cat)}
+                    className="group/photo focus-visible:ring-primary relative h-full w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1"
+                    aria-label={`Ver fotos de ${cat.name}`}
+                  >
+                    <img
+                      src={cat.photoUrl}
+                      alt={cat.name}
+                      className="h-full w-full object-cover transition-transform duration-300 group-hover/photo:scale-110"
+                      loading="lazy"
+                    />
+                    {photoCount > 1 && (
+                      <span className="bg-foreground/70 absolute right-0.5 bottom-0.5 flex h-4 min-w-4 items-center justify-center rounded-md px-1 text-[9px] font-semibold text-white backdrop-blur-sm">
+                        {photoCount}
+                      </span>
+                    )}
+                  </button>
+                ) : (
+                  <div className="from-muted to-muted/60 flex h-full w-full items-center justify-center bg-gradient-to-br">
+                    <CatIcon className="text-muted-foreground/60 h-5 w-5" />
+                  </div>
+                )}
+              </div>
+
+              <div className="min-w-0 flex-1 space-y-1.5">
+                <div className="flex items-center gap-2">
+                  <span className="text-foreground text-sm font-semibold">
+                    {cat.name}
+                  </span>
+                  {cat.sex === 'male' ? (
+                    <Mars className="h-3.5 w-3.5 text-blue-500" />
+                  ) : (
+                    <Venus className="h-3.5 w-3.5 text-pink-500" />
+                  )}
+                  <span className="text-muted-foreground text-xs tabular-nums">
+                    {formatAge(cat.ageYears, cat.ageMonths)}
+                  </span>
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  <HealthBadge label="FIV" value={cat.fiv} />
+                  <HealthBadge label="FeLV" value={cat.felv} />
+                  <CareIndicator label="Castrado" active={cat.castrated} />
+                  <CareIndicator label="Vacinado" active={cat.vaccinated} />
+                  <CareIndicator label="Vermifugado" active={cat.dewormed} />
+                </div>
+                {cat.description && (
+                  <p className="text-foreground/60 line-clamp-1 text-xs leading-relaxed">
+                    {cat.description}
+                  </p>
+                )}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 function getColumns(
   onOpenPhotoPreview: (cat: Cat) => void,
   orgHref: (path: string) => Route
-): ColumnDef<Cat>[] {
+): ColumnDef<DisplayRow>[] {
   return [
-    // Expand column - compact toggle
     {
       id: 'expand',
       header: () => null,
@@ -295,20 +443,104 @@ function getColumns(
       ),
       meta: { className: 'w-10 px-1.5' },
     },
-    // Photo + Name - primary column
     {
       id: 'cat',
       accessorKey: 'name',
       header: () => <ColumnHeader icon={CatIcon} label="Gato" />,
       cell: ({ row }) => {
-        const cat = row.original
+        const data = row.original
+
+        if (data.isGroupRow && data.groupCats) {
+          const groupCats = data.groupCats
+          const interestedCount = data.interestedCount ?? 0
+          const hasPending = (data.pendingApplicationsCount ?? 0) > 0
+
+          return (
+            <div className="flex items-center gap-3">
+              <div className="flex -space-x-2.5">
+                {groupCats.slice(0, 3).map((cat, i) => (
+                  <div
+                    key={cat.id}
+                    className="border-card bg-muted relative h-10 w-10 shrink-0 overflow-hidden rounded-full border-2 shadow-sm"
+                    style={{ zIndex: groupCats.length - i }}
+                  >
+                    {cat.photoUrl ? (
+                      <img
+                        src={cat.photoUrl}
+                        alt={cat.name}
+                        className="h-full w-full object-cover"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div className="from-muted to-muted/60 flex h-full w-full items-center justify-center bg-gradient-to-br">
+                        <CatIcon className="text-muted-foreground/60 h-4 w-4" />
+                      </div>
+                    )}
+                  </div>
+                ))}
+                {groupCats.length > 3 && (
+                  <div
+                    className="border-card bg-muted text-muted-foreground relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 text-xs font-medium shadow-sm"
+                    style={{ zIndex: 0 }}
+                  >
+                    +{groupCats.length - 3}
+                  </div>
+                )}
+              </div>
+
+              <div className="min-w-0 space-y-0.5">
+                <div className="flex items-center gap-1.5">
+                  <p className="text-foreground truncate text-sm font-semibold leading-tight">
+                    {formatGroupNames(groupCats)}
+                  </p>
+                  <Badge
+                    variant="secondary"
+                    className="shrink-0 gap-1 px-1.5 py-0 text-[10px] font-medium"
+                  >
+                    <Users className="h-2.5 w-2.5" />
+                    Grupo
+                  </Badge>
+                </div>
+                <p className="text-muted-foreground flex items-center gap-1 text-xs sm:hidden">
+                  {groupCats.map((cat) => (
+                    <span key={cat.id}>
+                      {cat.sex === 'male' ? (
+                        <Mars className="h-3 w-3 text-blue-500" />
+                      ) : (
+                        <Venus className="h-3 w-3 text-pink-500" />
+                      )}
+                    </span>
+                  ))}
+                </p>
+                <Link
+                  href={orgHref(
+                    `/admin/gatos/grupo/${data.groupId}/interessados`
+                  )}
+                  className={cn(
+                    'mt-1 inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-[11px] font-medium sm:hidden',
+                    hasPending
+                      ? 'bg-primary/10 text-primary'
+                      : 'bg-muted/60 text-muted-foreground'
+                  )}
+                >
+                  <Users className="h-3 w-3" />
+                  <span>Interessados</span>
+                  <span className="rounded-md bg-black/10 px-1 tabular-nums">
+                    {interestedCount}
+                  </span>
+                </Link>
+              </div>
+            </div>
+          )
+        }
+
+        const cat = data
         const photoCount = resolveCatPhotos(cat).length
         const interestedCount = cat.interestedCount ?? 0
         const hasPending = (cat.pendingApplicationsCount ?? 0) > 0
 
         return (
           <div className="flex items-center gap-3">
-            {/* Photo thumbnail */}
             <div className="bg-muted border-border/40 relative h-11 w-11 shrink-0 overflow-hidden rounded-xl border shadow-sm">
               {cat.photoUrl ? (
                 <button
@@ -323,7 +555,6 @@ function getColumns(
                     className="h-full w-full object-cover transition-transform duration-300 group-hover/photo:scale-110"
                     loading="lazy"
                   />
-                  {/* Photo count overlay */}
                   {photoCount > 1 && (
                     <span className="bg-foreground/70 absolute right-0.5 bottom-0.5 flex h-4 min-w-4 items-center justify-center rounded-md px-1 text-[9px] font-semibold text-white backdrop-blur-sm">
                       {photoCount}
@@ -337,12 +568,28 @@ function getColumns(
               )}
             </div>
 
-            {/* Name and mobile info */}
             <div className="min-w-0 space-y-0.5">
-              <p className="text-foreground truncate text-sm leading-tight font-semibold">
-                {cat.name}
-              </p>
-              {/* Mobile-only: age + sex indicator */}
+              <div className="flex items-center gap-1.5">
+                <p className="text-foreground truncate text-sm font-semibold leading-tight">
+                  {cat.name}
+                </p>
+                {cat.groupId && (
+                  <Link
+                    href={orgHref(
+                      `/admin/gatos/grupo/${cat.groupId}/editar`
+                    )}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <Badge
+                      variant="secondary"
+                      className="hover:bg-primary/10 hover:text-primary gap-1 px-1.5 py-0 text-[10px] font-medium transition-colors"
+                    >
+                      <Users className="h-2.5 w-2.5" />
+                      Grupo
+                    </Badge>
+                  </Link>
+                )}
+              </div>
               <p className="text-muted-foreground flex items-center gap-1.5 text-xs sm:hidden">
                 {formatAge(cat.ageYears, cat.ageMonths)}
                 <span className="text-border">•</span>
@@ -354,7 +601,11 @@ function getColumns(
               </p>
 
               <Link
-                href={orgHref(`/admin/gatos/${cat.id}/interessados`)}
+                href={orgHref(
+                  cat.groupId
+                    ? `/admin/gatos/grupo/${cat.groupId}/interessados`
+                    : `/admin/gatos/${cat.id}/interessados`
+                )}
                 className={cn(
                   'mt-1 inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-[11px] font-medium sm:hidden',
                   hasPending
@@ -374,7 +625,6 @@ function getColumns(
       },
       meta: { className: 'min-w-[140px]' },
     },
-    // Age - centered text
     {
       id: 'age',
       accessorFn: (row) => (row.ageYears ?? 0) * 12 + (row.ageMonths ?? 0),
@@ -383,14 +633,18 @@ function getColumns(
           Idade
         </span>
       ),
-      cell: ({ row }) => (
-        <span className="text-foreground/80 hidden text-sm tabular-nums sm:inline">
-          {formatAge(row.original.ageYears, row.original.ageMonths)}
-        </span>
-      ),
+      cell: ({ row }) => {
+        if (row.original.isGroupRow) {
+          return <span className="hidden sm:inline" />
+        }
+        return (
+          <span className="text-foreground/80 hidden text-sm tabular-nums sm:inline">
+            {formatAge(row.original.ageYears, row.original.ageMonths)}
+          </span>
+        )
+      },
       meta: { className: 'hidden sm:table-cell w-20 text-center' },
     },
-    // Sex - icon based for compact display
     {
       id: 'sex',
       accessorKey: 'sex',
@@ -400,6 +654,22 @@ function getColumns(
         </span>
       ),
       cell: ({ row }) => {
+        if (row.original.isGroupRow && row.original.groupCats) {
+          return (
+            <div className="hidden items-center gap-1 md:flex">
+              {row.original.groupCats.map((cat) => (
+                <span key={cat.id}>
+                  {cat.sex === 'male' ? (
+                    <Mars className="h-3.5 w-3.5 text-blue-600" />
+                  ) : (
+                    <Venus className="h-3.5 w-3.5 text-pink-500" />
+                  )}
+                </span>
+              ))}
+            </div>
+          )
+        }
+
         const isMale = row.original.sex === 'male'
         return (
           <span
@@ -424,7 +694,6 @@ function getColumns(
       },
       meta: { className: 'hidden md:table-cell w-24' },
     },
-    // Interested - KEY FEATURE: clickable column
     {
       id: 'interested',
       accessorKey: 'interestedCount',
@@ -435,16 +704,24 @@ function getColumns(
         </span>
       ),
       cell: ({ row }) => {
-        const count = row.original.interestedCount ?? 0
+        const data = row.original
+        const count = data.interestedCount ?? 0
         const hasInterested = count > 0
-        const hasPending = (row.original.pendingApplicationsCount ?? 0) > 0
+        const hasPending = (data.pendingApplicationsCount ?? 0) > 0
+
+        const href =
+          data.isGroupRow && data.groupId
+            ? orgHref(`/admin/gatos/grupo/${data.groupId}/interessados`)
+            : orgHref(
+                data.groupId
+                  ? `/admin/gatos/grupo/${data.groupId}/interessados`
+                  : `/admin/gatos/${data.id}/interessados`
+              )
 
         return (
           <div className="hidden sm:block">
             <Link
-              href={
-                orgHref(`/admin/gatos/${row.original.id}/interessados`)
-              }
+              href={href}
               className={cn(
                 'group/int relative inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-medium transition-all duration-200',
                 hasInterested
@@ -470,7 +747,6 @@ function getColumns(
       },
       meta: { className: 'hidden sm:table-cell w-28' },
     },
-    // Status - with subtle dot indicator
     {
       id: 'status',
       accessorKey: 'status',
@@ -498,13 +774,17 @@ function getColumns(
       },
       meta: { className: 'hidden sm:table-cell w-28' },
     },
-    // Actions - always visible, sticky on mobile
     {
       id: 'actions',
       header: () => null,
       cell: ({ row }) => (
         <div className="flex justify-center">
-          <CatActionsMenu cat={row.original} />
+          <CatActionsMenu
+            cat={row.original}
+            groupCats={
+              row.original.isGroupRow ? row.original.groupCats : undefined
+            }
+          />
         </div>
       ),
       meta: {
@@ -522,6 +802,9 @@ export function CatsDataTable({ cats }: CatsDataTableProps) {
     (path: string) => buildOrgHref(path, slug, isCustomDomain) as Route,
     [slug, isCustomDomain]
   )
+
+  const displayRows = useMemo(() => buildDisplayRows(cats), [cats])
+
   const [previewState, setPreviewState] = useState<{
     cat: Cat
     index: number
@@ -602,14 +885,21 @@ export function CatsDataTable({ cats }: CatsDataTableProps) {
     <>
       <DataTable
         columns={columns}
-        data={cats}
+        data={displayRows}
         className="border-border/50 bg-card shadow-warm-sm overflow-hidden rounded-xl border"
-        renderExpandedRow={(row: Row<Cat>) => (
-          <ExpandedContent cat={row.original} />
-        )}
+        renderExpandedRow={(row: Row<DisplayRow>) => {
+          if (row.original.isGroupRow && row.original.groupCats) {
+            return (
+              <GroupExpandedContent
+                cats={row.original.groupCats}
+                onOpenPhotoPreview={openPhotoPreview}
+              />
+            )
+          }
+          return <ExpandedContent cat={row.original} />
+        }}
       />
 
-      {/* Photo Preview Sheet */}
       <Sheet open={Boolean(previewState)} onOpenChange={closePhotoPreview}>
         <SheetContent
           side="right"
@@ -617,7 +907,6 @@ export function CatsDataTable({ cats }: CatsDataTableProps) {
         >
           {previewState ? (
             <>
-              {/* Header */}
               <SheetHeader className="border-border/40 shrink-0 border-b px-5 py-4 pr-12">
                 <div className="flex items-center gap-3">
                   <div className="from-primary/20 to-primary/10 flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br">
@@ -636,7 +925,6 @@ export function CatsDataTable({ cats }: CatsDataTableProps) {
                 </div>
               </SheetHeader>
 
-              {/* Photo viewer */}
               <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-4">
                 <div className="bg-muted/30 border-border/40 relative overflow-hidden rounded-2xl border">
                   <div className="aspect-[4/3] w-full">
@@ -654,7 +942,6 @@ export function CatsDataTable({ cats }: CatsDataTableProps) {
                     )}
                   </div>
 
-                  {/* Navigation arrows */}
                   {hasCarousel && (
                     <>
                       <Button
@@ -681,7 +968,6 @@ export function CatsDataTable({ cats }: CatsDataTableProps) {
                   )}
                 </div>
 
-                {/* Thumbnail strip */}
                 {hasCarousel && (
                   <div className="flex gap-2 overflow-x-auto pb-1">
                     {previewPhotos.map((photo, index) => {

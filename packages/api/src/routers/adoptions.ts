@@ -1,7 +1,23 @@
 import { db } from '@app-petlar/db'
-import { adoptions, applications, catPhotos, cats } from '@app-petlar/db/schema'
+import {
+  adoptions,
+  applications,
+  catGroups,
+  catPhotos,
+  cats,
+} from '@app-petlar/db/schema'
 import { TRPCError } from '@trpc/server'
-import { and, desc, eq, gte, lte, notInArray, or, sql } from 'drizzle-orm'
+import {
+  and,
+  desc,
+  eq,
+  gte,
+  inArray,
+  lte,
+  notInArray,
+  or,
+  sql,
+} from 'drizzle-orm'
 import { nanoid } from 'nanoid'
 import { z } from 'zod'
 
@@ -31,20 +47,25 @@ const listFiltersSchema = z.object({
   limit: z.number().int().min(1).max(50).default(15),
 })
 
-const createAdoptionSchema = z.object({
-  catId: z.string().min(1),
-  applicationId: z.string().min(1).optional(),
-  adopterName: z.string().min(1, 'Nome é obrigatório').max(200),
-  adopterPhone: z.string().min(10, 'Telefone inválido').max(20),
-  adopterEmail: z
-    .string()
-    .email('E-mail inválido')
-    .optional()
-    .or(z.literal('')),
-  adoptionDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Data inválida'),
-  adoptionTermUrl: z.string().url().optional(),
-  notes: z.string().max(2000).optional(),
-})
+const createAdoptionSchema = z
+  .object({
+    catId: z.string().min(1).optional(),
+    groupId: z.string().min(1).optional(),
+    applicationId: z.string().min(1).optional(),
+    adopterName: z.string().min(1, 'Nome é obrigatório').max(200),
+    adopterPhone: z.string().min(10, 'Telefone inválido').max(20),
+    adopterEmail: z
+      .string()
+      .email('E-mail inválido')
+      .optional()
+      .or(z.literal('')),
+    adoptionDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Data inválida'),
+    adoptionTermUrl: z.string().url().optional(),
+    notes: z.string().max(2000).optional(),
+  })
+  .refine((data) => data.catId || data.groupId, {
+    message: 'catId ou groupId é obrigatório',
+  })
 
 const updateAdoptionSchema = z.object({
   id: z.string().min(1),
@@ -254,11 +275,75 @@ export const adoptionsRouter = router({
    * Lista candidatos confirmados e não rejeitados de um gato para seleção no modal de adoção
    */
   getEligibleApplicants: protectedProcedure
-    .input(z.object({ catId: z.string() }))
+    .input(
+      z.object({
+        catId: z.string().optional(),
+        groupId: z.string().optional(),
+      })
+    )
     .query(async ({ ctx, input }) => {
       const orgId = requireOrgId(ctx.session.user)
 
-      // Verify cat belongs to org
+      if (input.groupId) {
+        const [group] = await db
+          .select({ id: catGroups.id })
+          .from(catGroups)
+          .where(
+            and(eq(catGroups.id, input.groupId), eq(catGroups.orgId, orgId))
+          )
+
+        if (!group) {
+          throw new TRPCError({
+            code: 'NOT_FOUND',
+            message: 'Grupo não encontrado',
+          })
+        }
+
+        const groupCats = await db
+          .select({ id: cats.id, name: cats.name })
+          .from(cats)
+          .where(eq(cats.groupId, input.groupId))
+
+        const applicants = await db
+          .select({
+            id: applications.id,
+            applicantName: applications.applicantName,
+            applicantWhatsapp: applications.applicantWhatsapp,
+            applicantEmail: applications.applicantEmail,
+            status: applications.status,
+            createdAt: applications.createdAt,
+          })
+          .from(applications)
+          .where(
+            and(
+              eq(applications.orgId, orgId),
+              eq(applications.groupId, input.groupId),
+              sql`${applications.confirmedAt} is not null`,
+              notInArray(applications.status, [
+                'rejected',
+                'permanently_rejected',
+              ])
+            )
+          )
+          .orderBy(desc(applications.createdAt))
+
+        return {
+          cat: null,
+          group: {
+            id: group.id,
+            cats: groupCats,
+          },
+          applicants,
+        }
+      }
+
+      if (!input.catId) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'catId ou groupId é obrigatório',
+        })
+      }
+
       const [cat] = await db
         .select({ id: cats.id, name: cats.name })
         .from(cats)
@@ -296,6 +381,7 @@ export const adoptionsRouter = router({
 
       return {
         cat: { id: cat.id, name: cat.name },
+        group: null,
         applicants,
       }
     }),
@@ -308,12 +394,127 @@ export const adoptionsRouter = router({
     .mutation(async ({ ctx, input }) => {
       const orgId = requireOrgId(ctx.session.user)
       const userId = ctx.session.user.id
+      const normalizedAdopterName = normalizeSearchText(input.adopterName)
 
-      // Verify cat exists and is not already adopted
+      if (input.groupId) {
+        const [group] = await db
+          .select({ id: catGroups.id })
+          .from(catGroups)
+          .where(
+            and(eq(catGroups.id, input.groupId), eq(catGroups.orgId, orgId))
+          )
+
+        if (!group) {
+          throw new TRPCError({
+            code: 'NOT_FOUND',
+            message: 'Grupo não encontrado',
+          })
+        }
+
+        const groupCats = await db
+          .select({ id: cats.id, status: cats.status })
+          .from(cats)
+          .where(eq(cats.groupId, input.groupId))
+
+        if (groupCats.some((c) => c.status === 'adopted')) {
+          throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message: 'Um ou mais gatos do grupo já foram adotados',
+          })
+        }
+
+        const catIds = groupCats.map((c) => c.id)
+
+        const existingAdoptions = await db
+          .select({ id: adoptions.id })
+          .from(adoptions)
+          .where(inArray(adoptions.catId, catIds))
+
+        if (existingAdoptions.length > 0) {
+          throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message:
+              'Já existe registro de adoção para um ou mais gatos do grupo',
+          })
+        }
+
+        if (input.applicationId) {
+          const [application] = await db
+            .select({ id: applications.id, status: applications.status })
+            .from(applications)
+            .where(
+              and(
+                eq(applications.id, input.applicationId),
+                eq(applications.orgId, orgId),
+                eq(applications.groupId, input.groupId),
+                sql`${applications.confirmedAt} is not null`
+              )
+            )
+
+          if (!application) {
+            throw new TRPCError({
+              code: 'BAD_REQUEST',
+              message:
+                'Candidatura não encontrada ou não pertence a este grupo',
+            })
+          }
+
+          if (
+            application.status === 'rejected' ||
+            application.status === 'permanently_rejected'
+          ) {
+            throw new TRPCError({
+              code: 'BAD_REQUEST',
+              message: 'Candidatura rejeitada não pode ser selecionada',
+            })
+          }
+        }
+
+        const adoptionIds: string[] = []
+
+        await db.transaction(async (tx) => {
+          for (const catId of catIds) {
+            const adoptionId = nanoid()
+            adoptionIds.push(adoptionId)
+
+            await tx.insert(adoptions).values({
+              id: adoptionId,
+              orgId,
+              catId,
+              groupId: input.groupId,
+              applicationId: input.applicationId ?? null,
+              adopterName: input.adopterName,
+              adopterNameNormalized: normalizedAdopterName,
+              adopterPhone: input.adopterPhone,
+              adopterEmail: input.adopterEmail || null,
+              adoptionDate: input.adoptionDate,
+              adoptionTermUrl: input.adoptionTermUrl ?? null,
+              notes: input.notes ?? null,
+              createdBy: userId,
+            })
+          }
+
+          await tx
+            .update(cats)
+            .set({ status: 'adopted' })
+            .where(inArray(cats.id, catIds))
+        })
+
+        return { ids: adoptionIds }
+      }
+
+      const singleCatId = input.catId
+      if (!singleCatId) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'catId ou groupId é obrigatório',
+        })
+      }
+
       const [cat] = await db
         .select({ id: cats.id, status: cats.status })
         .from(cats)
-        .where(and(eq(cats.id, input.catId), eq(cats.orgId, orgId)))
+        .where(and(eq(cats.id, singleCatId), eq(cats.orgId, orgId)))
 
       if (!cat) {
         throw new TRPCError({
@@ -329,11 +530,10 @@ export const adoptionsRouter = router({
         })
       }
 
-      // Check if cat already has an adoption record
       const [existingAdoption] = await db
         .select({ id: adoptions.id })
         .from(adoptions)
-        .where(eq(adoptions.catId, input.catId))
+        .where(eq(adoptions.catId, singleCatId))
 
       if (existingAdoption) {
         throw new TRPCError({
@@ -342,7 +542,6 @@ export const adoptionsRouter = router({
         })
       }
 
-      // If applicationId provided, verify it belongs to the cat and is not rejected
       if (input.applicationId) {
         const [application] = await db
           .select({ id: applications.id, status: applications.status })
@@ -351,7 +550,7 @@ export const adoptionsRouter = router({
             and(
               eq(applications.id, input.applicationId),
               eq(applications.orgId, orgId),
-              eq(applications.catId, input.catId),
+              eq(applications.catId, singleCatId),
               sql`${applications.confirmedAt} is not null`
             )
           )
@@ -375,14 +574,12 @@ export const adoptionsRouter = router({
       }
 
       const adoptionId = nanoid()
-      const normalizedAdopterName = normalizeSearchText(input.adopterName)
 
       await db.transaction(async (tx) => {
-        // Create adoption record
         await tx.insert(adoptions).values({
           id: adoptionId,
           orgId,
-          catId: input.catId,
+          catId: singleCatId,
           applicationId: input.applicationId ?? null,
           adopterName: input.adopterName,
           adopterNameNormalized: normalizedAdopterName,
@@ -394,11 +591,10 @@ export const adoptionsRouter = router({
           createdBy: userId,
         })
 
-        // Update cat status to adopted
         await tx
           .update(cats)
           .set({ status: 'adopted' })
-          .where(eq(cats.id, input.catId))
+          .where(eq(cats.id, singleCatId))
       })
 
       return { id: adoptionId }
@@ -489,6 +685,7 @@ export const adoptionsRouter = router({
         .select({
           id: adoptions.id,
           catId: adoptions.catId,
+          groupId: adoptions.groupId,
           adoptionTermUrl: adoptions.adoptionTermUrl,
         })
         .from(adoptions)
@@ -501,7 +698,54 @@ export const adoptionsRouter = router({
         })
       }
 
-      // Storage first: DeleteObject is idempotent, so a retry is safe.
+      if (existingAdoption.groupId) {
+        const groupAdoptions = await db
+          .select({
+            id: adoptions.id,
+            catId: adoptions.catId,
+            adoptionTermUrl: adoptions.adoptionTermUrl,
+          })
+          .from(adoptions)
+          .where(eq(adoptions.groupId, existingAdoption.groupId))
+
+        const termUrls = groupAdoptions
+          .map((a) => a.adoptionTermUrl)
+          .filter((url): url is string => Boolean(url))
+        const uniqueTermUrls = [...new Set(termUrls)]
+
+        for (const termUrl of uniqueTermUrls) {
+          const key = getKeyFromUrl(termUrl)
+          if (key) {
+            try {
+              await deleteFile(key)
+            } catch (error) {
+              console.error('Erro ao deletar PDF da adoção:', error)
+              throw new TRPCError({
+                code: 'INTERNAL_SERVER_ERROR',
+                message:
+                  'Não foi possível remover os termos. Nenhum registro foi alterado; tente novamente.',
+              })
+            }
+          }
+        }
+
+        const catIds = groupAdoptions.map((a) => a.catId)
+        const adoptionIds = groupAdoptions.map((a) => a.id)
+
+        await db.transaction(async (tx) => {
+          await tx
+            .delete(adoptions)
+            .where(inArray(adoptions.id, adoptionIds))
+
+          await tx
+            .update(cats)
+            .set({ status: 'available' })
+            .where(inArray(cats.id, catIds))
+        })
+
+        return { success: true, returnedCount: catIds.length }
+      }
+
       if (existingAdoption.adoptionTermUrl) {
         const key = getKeyFromUrl(existingAdoption.adoptionTermUrl)
         if (key) {
@@ -519,10 +763,8 @@ export const adoptionsRouter = router({
       }
 
       await db.transaction(async (tx) => {
-        // Delete adoption record
         await tx.delete(adoptions).where(eq(adoptions.id, input.id))
 
-        // Return the cat to the public list
         await tx
           .update(cats)
           .set({ status: 'available' })

@@ -27,7 +27,8 @@ export interface Applicant {
 }
 
 interface AdopterSelectProps {
-  catId: string
+  catId?: string
+  groupId?: string
   value: string | null
   onChange: (applicant: Applicant | null) => void
   disabled?: boolean
@@ -45,12 +46,15 @@ function getApplicantStatusLabel(status: Applicant['status']): string {
 
 export function AdopterSelect({
   catId,
+  groupId,
   value,
   onChange,
   disabled,
 }: AdopterSelectProps) {
   const { data, isLoading } = useQuery({
-    ...trpc.adoptions.getEligibleApplicants.queryOptions({ catId }),
+    ...trpc.adoptions.getEligibleApplicants.queryOptions(
+      groupId ? { groupId } : { catId: catId! }
+    ),
     staleTime: 30000,
   })
 

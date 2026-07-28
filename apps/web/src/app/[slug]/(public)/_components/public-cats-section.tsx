@@ -7,6 +7,9 @@ import { useCallback, useMemo, useTransition } from 'react'
 
 import { PublicCatCard } from './public-cat-card'
 import { PublicCatsPagination } from './public-cats-pagination'
+import { PublicGroupCard, type PublicGroupCardData } from './public-group-card'
+
+import type { PublicCatCardData } from './public-cat-card'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -40,6 +43,10 @@ const SEX_OPTIONS: Array<{ value: SexFilter; label: string; emoji: string }> = [
   { value: 'male', label: 'Macho', emoji: '♂️' },
   { value: 'female', label: 'Fêmea', emoji: '♀️' },
 ]
+
+type GridItem =
+  | { type: 'cat'; data: PublicCatCardData; sortKey: number }
+  | { type: 'group'; data: PublicGroupCardData; sortKey: number }
 
 function parsePage(pageParam: string | null): number {
   const parsed = Number(pageParam ?? '1')
@@ -112,6 +119,8 @@ function EmptyState({ onClearFilters }: { onClearFilters: () => void }) {
   )
 }
 
+const PAGE_SIZE = 9
+
 export function PublicCatsSection() {
   const slug = useOrgSlug()
   const router = useRouter()
@@ -127,16 +136,75 @@ export function PublicCatsSection() {
     [searchParams]
   )
 
-  const { data, isLoading, isFetching, isError, refetch } = useQuery({
-    ...trpc.cats.listPublic.queryOptions({
+  const queryFilters = useMemo(
+    () => ({
       slug,
       sex: filters.sex,
       ageRange: filters.ageRange,
-      page: filters.page,
-      limit: 9,
+    }),
+    [slug, filters.sex, filters.ageRange]
+  )
+
+  const catsQuery = useQuery({
+    ...trpc.cats.listPublic.queryOptions({
+      ...queryFilters,
+      page: 1,
+      limit: 200,
     }),
     placeholderData: keepPreviousData,
   })
+
+  const groupsQuery = useQuery({
+    ...trpc.catGroups.listPublic.queryOptions({
+      ...queryFilters,
+      page: 1,
+      limit: 200,
+    }),
+    placeholderData: keepPreviousData,
+  })
+
+  const isLoading = catsQuery.isLoading || groupsQuery.isLoading
+  const isFetching = catsQuery.isFetching || groupsQuery.isFetching
+  const isError = catsQuery.isError || groupsQuery.isError
+
+  const refetch = useCallback(() => {
+    void catsQuery.refetch()
+    void groupsQuery.refetch()
+  }, [catsQuery, groupsQuery])
+
+  const mergedItems = useMemo<GridItem[]>(() => {
+    const items: GridItem[] = []
+
+    if (catsQuery.data) {
+      for (const cat of catsQuery.data.cats) {
+        items.push({
+          type: 'cat',
+          data: cat as PublicCatCardData,
+          sortKey: new Date(cat.createdAt).getTime(),
+        })
+      }
+    }
+
+    if (groupsQuery.data) {
+      for (const group of groupsQuery.data.groups) {
+        items.push({
+          type: 'group',
+          data: group as PublicGroupCardData,
+          sortKey: new Date(group.createdAt).getTime(),
+        })
+      }
+    }
+
+    items.sort((a, b) => b.sortKey - a.sortKey)
+    return items
+  }, [catsQuery.data, groupsQuery.data])
+
+  const total = mergedItems.length
+  const totalPages = Math.ceil(total / PAGE_SIZE)
+  const pageItems = useMemo(() => {
+    const start = (filters.page - 1) * PAGE_SIZE
+    return mergedItems.slice(start, start + PAGE_SIZE)
+  }, [mergedItems, filters.page])
 
   const updateFilters = useCallback(
     (newFilters: Partial<PublicCatsFilters>, resetPage = true) => {
@@ -179,9 +247,7 @@ export function PublicCatsSection() {
 
   const hasActiveFilters = Boolean(filters.sex || filters.ageRange)
   const totalLabel =
-    data && data.pagination.total === 1
-      ? '1 gatinho disponível'
-      : `${data?.pagination.total ?? 0} gatinhos disponíveis`
+    total === 1 ? '1 gatinho disponível' : `${total} gatinhos disponíveis`
 
   return (
     <section
@@ -349,7 +415,7 @@ export function PublicCatsSection() {
         </div>
 
         {/* Results */}
-        {isLoading && !data ? (
+        {isLoading ? (
           <LoadingGrid />
         ) : isError ? (
           <div
@@ -366,14 +432,14 @@ export function PublicCatsSection() {
               Erro ao carregar os gatinhos disponíveis.
             </p>
             <Button
-              onClick={() => refetch()}
+              onClick={refetch}
               variant="outline"
               className="rounded-xl border-red-200 text-red-700 hover:bg-red-50"
             >
               Tentar novamente
             </Button>
           </div>
-        ) : !data?.cats.length ? (
+        ) : pageItems.length === 0 ? (
           <EmptyState onClearFilters={clearFilters} />
         ) : (
           <>
@@ -399,21 +465,29 @@ export function PublicCatsSection() {
 
             {/* Grid */}
             <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
-              {data.cats.map((cat, index) => (
+              {pageItems.map((item, index) => (
                 <div
-                  key={cat.id}
+                  key={
+                    item.type === 'cat'
+                      ? item.data.id
+                      : `group-${item.data.id}`
+                  }
                   className="animate-fade-in"
                   style={{ animationDelay: `${index * 50}ms` }}
                 >
-                  <PublicCatCard cat={cat} />
+                  {item.type === 'cat' ? (
+                    <PublicCatCard cat={item.data} />
+                  ) : (
+                    <PublicGroupCard group={item.data} />
+                  )}
                 </div>
               ))}
             </div>
 
             {/* Pagination */}
             <PublicCatsPagination
-              page={data.pagination.page}
-              totalPages={data.pagination.totalPages}
+              page={filters.page}
+              totalPages={totalPages}
               onPageChange={(newPage) =>
                 updateFilters({ page: newPage }, false)
               }

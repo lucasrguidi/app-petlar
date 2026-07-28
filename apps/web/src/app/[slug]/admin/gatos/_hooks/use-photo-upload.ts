@@ -2,7 +2,7 @@
 
 import { useMutation } from '@tanstack/react-query'
 import { nanoid } from 'nanoid'
-import { useCallback, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import { toast } from 'sonner'
 
 import { trpc } from '@/utils/trpc'
@@ -232,11 +232,17 @@ export function usePhotoUpload({
     })
   }, [])
 
+  const photosRef = useRef(photos)
+  photosRef.current = photos
+
+  const isUploadingRef = useRef(isUploading)
+  isUploadingRef.current = isUploading
+
   const getPhotosForSubmit = useCallback(() => {
-    return photos
+    return photosRef.current
       .filter((p) => p.status === 'uploaded')
       .map((p) => ({ url: p.url, order: p.order }))
-  }, [photos])
+  }, [])
 
   const resetPhotos = useCallback(() => {
     // Revoke all blob URLs
@@ -252,6 +258,7 @@ export function usePhotoUpload({
   return {
     photos,
     isUploading,
+    isUploadingRef,
     handleFilesSelected,
     handleRemove,
     handleReorder,
