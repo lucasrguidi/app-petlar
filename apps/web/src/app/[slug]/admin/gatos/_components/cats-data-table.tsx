@@ -9,6 +9,7 @@ import {
   Image as ImageIcon,
   Mars,
   MessageCircle,
+  Pencil,
   Users,
   Venus,
   X,
@@ -304,9 +305,11 @@ function ExpandedContent({ cat }: { cat: Cat }) {
 function GroupExpandedContent({
   cats,
   onOpenPhotoPreview,
+  orgHref,
 }: {
   cats: Cat[]
   onOpenPhotoPreview: (cat: Cat) => void
+  orgHref: (path: string) => Route
 }) {
   const donor = cats[0]
 
@@ -390,6 +393,13 @@ function GroupExpandedContent({
                   <span className="text-muted-foreground text-xs tabular-nums">
                     {formatAge(cat.ageYears, cat.ageMonths)}
                   </span>
+                  <Link
+                    href={orgHref(`/admin/gatos/${cat.id}/editar`)}
+                    className="text-muted-foreground hover:text-primary ml-auto inline-flex items-center gap-1 text-xs transition-colors"
+                  >
+                    <Pencil className="h-3 w-3" />
+                    Editar
+                  </Link>
                 </div>
                 <div className="flex flex-wrap gap-1.5">
                   <HealthBadge label="FIV" value={cat.fiv} />
@@ -893,6 +903,7 @@ export function CatsDataTable({ cats }: CatsDataTableProps) {
               <GroupExpandedContent
                 cats={row.original.groupCats}
                 onOpenPhotoPreview={openPhotoPreview}
+                orgHref={orgHref}
               />
             )
           }

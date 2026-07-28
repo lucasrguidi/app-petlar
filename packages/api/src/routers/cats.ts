@@ -480,6 +480,7 @@ export const catsRouter = router({
           description: cats.description,
           donorName: cats.donorName,
           donorWhatsapp: cats.donorWhatsapp,
+          groupId: cats.groupId,
           status: cats.status,
           createdBy: cats.createdBy,
           createdAt: cats.createdAt,

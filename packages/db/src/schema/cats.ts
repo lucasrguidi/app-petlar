@@ -2,7 +2,7 @@ import { relations, sql } from 'drizzle-orm'
 import { index, integer, sqliteTable, text } from 'drizzle-orm/sqlite-core'
 
 import { user } from './auth'
-import { catGroups } from './cat-groups'
+import { catGroupPhotos, catGroups } from './cat-groups'
 import { forms } from './forms'
 import { orgs } from './orgs'
 
@@ -129,6 +129,7 @@ export const catGroupsRelations = relations(catGroups, ({ one, many }) => ({
     references: [user.id],
   }),
   cats: many(cats),
+  photos: many(catGroupPhotos),
 }))
 
 export const catPhotosRelations = relations(catPhotos, ({ one }) => ({

@@ -6,6 +6,7 @@ import {
   Cat as CatIcon,
   ChevronDown,
   HandHeart,
+  ImageIcon,
   Loader2,
   Mars,
   PawPrint,
@@ -79,6 +80,12 @@ interface ExistingCatEntry {
   photoUrl: string | null
 }
 
+interface GroupPhoto {
+  id: string
+  url: string
+  order: number
+}
+
 interface GroupFormProps {
   mode: 'create' | 'edit'
   groupId?: string
@@ -86,6 +93,7 @@ interface GroupFormProps {
   initialExistingCats?: ExistingCatEntry[]
   initialDonorName?: string | null
   initialDonorWhatsapp?: string | null
+  initialPhotos?: GroupPhoto[]
 }
 
 function createEmptyCat(): NewCatEntry {
@@ -422,6 +430,7 @@ export function GroupForm({
   initialExistingCats,
   initialDonorName,
   initialDonorWhatsapp,
+  initialPhotos,
 }: GroupFormProps) {
   const router = useRouter()
   const queryClient = useQueryClient()
@@ -440,6 +449,11 @@ export function GroupForm({
     initialExistingCats ?? []
   )
   const [removedCatIds, setRemovedCatIds] = useState<string[]>([])
+
+  const groupPhotoUpload = usePhotoUpload({
+    initialPhotos: initialPhotos,
+    maxPhotos: 5,
+  })
 
   const [catPhotoUploads, setCatPhotoUploads] = useState<
     Map<string, ReturnType<typeof usePhotoUpload>>
@@ -491,9 +505,11 @@ export function GroupForm({
   )
 
   const isPending = createMutation.isPending || updateMutation.isPending
-  const isAnyUploading = Array.from(catPhotoUploads.values()).some(
-    (u) => u.isUploadingRef.current
-  )
+  const isAnyUploading =
+    groupPhotoUpload.isUploadingRef.current ||
+    Array.from(catPhotoUploads.values()).some(
+      (u) => u.isUploadingRef.current
+    )
 
   const totalCats = newCats.length + existingCats.length
 
@@ -593,11 +609,16 @@ export function GroupForm({
       }
     })
 
+    const groupPhotosForSubmit = groupPhotoUpload.getPhotosForSubmit()
+
     if (mode === 'create') {
       createMutation.mutate({
         formId,
         donorName: groupDonorName,
         donorWhatsapp: groupDonorWhatsapp,
+        photos: groupPhotosForSubmit.length > 0
+          ? groupPhotosForSubmit
+          : undefined,
         newCats: newCatsData,
         existingCatIds: existingCats.map((c) => c.id),
       })
@@ -613,6 +634,7 @@ export function GroupForm({
         formId: formId !== initialFormId ? formId : undefined,
         donorName: groupDonorName,
         donorWhatsapp: groupDonorWhatsapp,
+        photos: groupPhotosForSubmit,
         addCatIds: addCatIds.length > 0 ? addCatIds : undefined,
         removeCatIds:
           removedCatIds.length > 0 ? removedCatIds : undefined,
@@ -676,6 +698,35 @@ export function GroupForm({
                   : 'Esse formulário será usado quando alguém clicar em "Quero adotar" para este grupo.'}
               </p>
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Group photos */}
+        <Card className="border-border/60 bg-card/95 shadow-warm-sm rounded-xl">
+          <CardHeader className="space-y-1 p-4 pb-2 sm:p-5 sm:pb-3">
+            <CardTitle className="text-display flex items-center gap-2 text-base font-semibold">
+              <ImageIcon className="text-primary h-4 w-4" />
+              Fotos do grupo
+              <Badge
+                variant="secondary"
+                className="text-[10px] font-normal"
+              >
+                Opcional
+              </Badge>
+            </CardTitle>
+            <p className="text-muted-foreground text-xs">
+              Fotos dos gatos juntos (máximo 5). Aparecem primeiro no
+              carrossel público.
+            </p>
+          </CardHeader>
+          <CardContent className="p-4 pt-0 sm:p-5 sm:pt-0">
+            <PhotoSection
+              photos={groupPhotoUpload.photos}
+              isUploading={groupPhotoUpload.isUploading}
+              onFilesSelected={groupPhotoUpload.handleFilesSelected}
+              onRemove={groupPhotoUpload.handleRemove}
+              onReorder={groupPhotoUpload.handleReorder}
+            />
           </CardContent>
         </Card>
 

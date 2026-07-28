@@ -57,6 +57,7 @@ export function CatFormLoader({ catId }: CatFormLoaderProps) {
     <CatForm
       mode="edit"
       catId={catId}
+      groupId={data.groupId}
       initialData={{
         name: data.name,
         ageYears: data.ageYears,

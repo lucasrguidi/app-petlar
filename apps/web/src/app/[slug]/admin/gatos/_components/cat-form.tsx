@@ -8,6 +8,7 @@ import {
   FileText,
   HandHeart,
   HeartPulse,
+  Info,
   Loader2,
   PawPrint,
   Phone,
@@ -73,9 +74,10 @@ interface CatFormProps {
   mode: 'create' | 'edit'
   initialData?: Partial<CatFormData> & { photos?: Photo[] }
   catId?: string
+  groupId?: string | null
 }
 
-export function CatForm({ mode, initialData, catId }: CatFormProps) {
+export function CatForm({ mode, initialData, catId, groupId }: CatFormProps) {
   const [isDonorOpen, setIsDonorOpen] = useState(false)
   const catListHref = useOrgHref('/admin/gatos')
   const router = useRouter()
@@ -146,6 +148,11 @@ export function CatForm({ mode, initialData, catId }: CatFormProps) {
       donorWhatsapp: data.donorWhatsapp
         ? data.donorWhatsapp.replace(/\D/g, '')
         : null,
+    }
+
+    if (groupId) {
+      delete (cat as Record<string, unknown>).donorName
+      delete (cat as Record<string, unknown>).donorWhatsapp
     }
 
     if (mode === 'create') {
@@ -359,6 +366,17 @@ export function CatForm({ mode, initialData, catId }: CatFormProps) {
                 </CardContent>
               </Card>
 
+              {groupId ? (
+                <Card className="border-border/60 bg-card/95 shadow-warm-sm rounded-xl">
+                  <CardContent className="flex items-center gap-3 p-4 sm:p-5">
+                    <Info className="text-primary h-4 w-4 shrink-0" />
+                    <p className="text-muted-foreground text-sm">
+                      As informações do doador são gerenciadas pelo grupo.
+                      Edite o grupo para alterar o doador.
+                    </p>
+                  </CardContent>
+                </Card>
+              ) : (
               <Collapsible open={isDonorOpen} onOpenChange={setIsDonorOpen}>
                 <Card className="border-border/60 bg-card/95 shadow-warm-sm rounded-xl">
                   <CollapsibleTrigger asChild>
@@ -438,6 +456,7 @@ export function CatForm({ mode, initialData, catId }: CatFormProps) {
                   </CollapsibleContent>
                 </Card>
               </Collapsible>
+              )}
             </div>
 
             <Card className="border-border/60 bg-card/95 shadow-warm-sm rounded-xl">

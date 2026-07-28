@@ -1,6 +1,7 @@
 import { db } from '@app-petlar/db'
 import {
   applications,
+  catGroupPhotos,
   catGroups,
   catPhotos,
   cats,
@@ -15,6 +16,7 @@ import { nanoid } from 'nanoid'
 import { z } from 'zod'
 
 import { protectedProcedure, publicProcedure, router } from '../index'
+import { deleteFile, getKeyFromUrl } from '../lib/r2'
 
 const catInputSchema = z.object({
   name: z.string().min(1).max(100),
@@ -43,10 +45,16 @@ const catInputSchema = z.object({
     .optional(),
 })
 
+const groupPhotoSchema = z.object({
+  url: z.string().url(),
+  order: z.number().int().min(1).max(5),
+})
+
 const createGroupSchema = z.object({
   formId: z.string().min(1),
   donorName: z.string().nullable().optional(),
   donorWhatsapp: z.string().nullable().optional(),
+  photos: z.array(groupPhotoSchema).max(5).optional(),
   newCats: z
     .array(
       catInputSchema.omit({ formId: true }).extend({
@@ -71,6 +79,7 @@ const updateGroupSchema = z.object({
   formId: z.string().min(1).optional(),
   donorName: z.string().nullable().optional(),
   donorWhatsapp: z.string().nullable().optional(),
+  photos: z.array(groupPhotoSchema).max(5).optional(),
   addCatIds: z.array(z.string().min(1)).optional(),
   removeCatIds: z.array(z.string().min(1)).optional(),
   newCats: z
@@ -262,6 +271,17 @@ export const catGroupsRouter = router({
             )
           }
         }
+
+        if (input.photos && input.photos.length > 0) {
+          await tx.insert(catGroupPhotos).values(
+            input.photos.map((photo) => ({
+              id: nanoid(),
+              groupId,
+              url: photo.url,
+              order: photo.order,
+            }))
+          )
+        }
       })
 
       return { id: groupId }
@@ -344,8 +364,19 @@ export const catGroupsRouter = router({
         return acc
       }, {})
 
+      const groupPhotos = await db
+        .select({
+          id: catGroupPhotos.id,
+          url: catGroupPhotos.url,
+          order: catGroupPhotos.order,
+        })
+        .from(catGroupPhotos)
+        .where(eq(catGroupPhotos.groupId, input.id))
+        .orderBy(catGroupPhotos.order)
+
       return {
         ...group,
+        photos: groupPhotos,
         cats: groupCats.map((cat) => ({
           ...cat,
           photos: photosByCatId[cat.id] ?? [],
@@ -511,6 +542,41 @@ export const catGroupsRouter = router({
             }
           }
         }
+
+        if (input.photos) {
+          const oldPhotos = await tx
+            .select({ url: catGroupPhotos.url })
+            .from(catGroupPhotos)
+            .where(eq(catGroupPhotos.groupId, input.id))
+
+          await tx
+            .delete(catGroupPhotos)
+            .where(eq(catGroupPhotos.groupId, input.id))
+
+          if (input.photos.length > 0) {
+            await tx.insert(catGroupPhotos).values(
+              input.photos.map((photo) => ({
+                id: nanoid(),
+                groupId: input.id,
+                url: photo.url,
+                order: photo.order,
+              }))
+            )
+          }
+
+          const newUrls = new Set(input.photos.map((p) => p.url))
+          const removedUrls = oldPhotos
+            .map((p) => p.url)
+            .filter((url) => !newUrls.has(url))
+          if (removedUrls.length > 0) {
+            const keys = removedUrls
+              .map((url) => getKeyFromUrl(url))
+              .filter((key): key is string => Boolean(key))
+            Promise.all(keys.map((key) => deleteFile(key))).catch((err) =>
+              console.error('Erro ao limpar fotos do grupo:', err)
+            )
+          }
+        }
       })
 
       return { success: true }
@@ -544,6 +610,11 @@ export const catGroupsRouter = router({
           )
         )
 
+      const groupPhotos = await db
+        .select({ url: catGroupPhotos.url })
+        .from(catGroupPhotos)
+        .where(eq(catGroupPhotos.groupId, input.id))
+
       await db.transaction(async (tx) => {
         await tx
           .update(cats)
@@ -552,6 +623,15 @@ export const catGroupsRouter = router({
 
         await tx.delete(catGroups).where(eq(catGroups.id, input.id))
       })
+
+      if (groupPhotos.length > 0) {
+        const keys = groupPhotos
+          .map((p) => getKeyFromUrl(p.url))
+          .filter((key): key is string => Boolean(key))
+        Promise.all(keys.map((key) => deleteFile(key))).catch((err) =>
+          console.error('Erro ao limpar fotos do grupo desmembrado:', err)
+        )
+      }
 
       return {
         success: true,
@@ -594,8 +674,39 @@ export const catGroupsRouter = router({
         })
       }
 
+      const groupPhotos = await db
+        .select({ url: catGroupPhotos.url })
+        .from(catGroupPhotos)
+        .where(eq(catGroupPhotos.groupId, input.id))
+
+      const catIds = groupCats.map((c) => c.id)
+      const catPhotoRows =
+        catIds.length > 0
+          ? await db
+              .select({ url: catPhotos.url })
+              .from(catPhotos)
+              .where(inArray(catPhotos.catId, catIds))
+          : []
+
+      const allUrls = [
+        ...groupPhotos.map((p) => p.url),
+        ...catPhotoRows.map((p) => p.url),
+      ]
+      const storageKeys = [
+        ...new Set(
+          allUrls
+            .map((url) => getKeyFromUrl(url))
+            .filter((key): key is string => Boolean(key))
+        ),
+      ]
+
+      if (storageKeys.length > 0) {
+        Promise.all(storageKeys.map((key) => deleteFile(key))).catch((err) =>
+          console.error('Erro ao limpar arquivos do grupo excluído:', err)
+        )
+      }
+
       await db.transaction(async (tx) => {
-        const catIds = groupCats.map((c) => c.id)
         if (catIds.length > 0) {
           await tx.delete(cats).where(inArray(cats.id, catIds))
         }
@@ -762,12 +873,36 @@ export const catGroupsRouter = router({
         return acc
       }, {})
 
+      const groupPhotoRows =
+        paginatedGroupIds.length > 0
+          ? await db
+              .select({
+                groupId: catGroupPhotos.groupId,
+                url: catGroupPhotos.url,
+                order: catGroupPhotos.order,
+              })
+              .from(catGroupPhotos)
+              .where(inArray(catGroupPhotos.groupId, paginatedGroupIds))
+              .orderBy(catGroupPhotos.order)
+          : []
+
+      const groupPhotosByGroupId = groupPhotoRows.reduce<
+        Record<string, Array<{ url: string; order: number }>>
+      >((acc, photo) => {
+        if (!acc[photo.groupId]) {
+          acc[photo.groupId] = []
+        }
+        acc[photo.groupId]?.push({ url: photo.url, order: photo.order })
+        return acc
+      }, {})
+
       return {
         groups: paginatedGroupIds.map((gId) => {
           const groupCatsList = catsByGroup.get(gId) ?? []
           return {
             id: gId,
             createdAt: groupCreatedAtMap.get(gId) ?? new Date(),
+            photos: groupPhotosByGroupId[gId] ?? [],
             cats: groupCatsList.map((cat) => ({
               id: cat.id,
               name: cat.name,

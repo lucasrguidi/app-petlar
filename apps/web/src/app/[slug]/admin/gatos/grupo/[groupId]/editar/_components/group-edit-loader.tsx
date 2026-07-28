@@ -49,6 +49,7 @@ export function GroupEditLoader({ groupId }: GroupEditLoaderProps) {
       initialExistingCats={existingCats}
       initialDonorName={firstCat?.donorName}
       initialDonorWhatsapp={firstCat?.donorWhatsapp}
+      initialPhotos={data.photos}
     />
   )
 }

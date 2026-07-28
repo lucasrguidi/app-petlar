@@ -43,6 +43,7 @@ interface GroupCatData {
 export interface PublicGroupCardData {
   id: string
   createdAt: Date | string
+  photos?: Array<{ url: string; order: number }>
   cats: GroupCatData[]
 }
 
@@ -172,7 +173,13 @@ export function PublicGroupCard({ group }: PublicGroupCardProps) {
   const [expandedDescriptions, setExpandedDescriptions] = useState(false)
 
   const allPhotos = useMemo(() => {
-    const photos: Array<{ url: string; catName: string }> = []
+    const photos: Array<{ url: string; catName: string | null }> = []
+    if (group.photos) {
+      const sorted = [...group.photos].sort((a, b) => a.order - b.order)
+      for (const photo of sorted) {
+        photos.push({ url: photo.url, catName: null })
+      }
+    }
     for (const cat of group.cats) {
       const sorted = [...cat.photos].sort((a, b) => a.order - b.order)
       for (const photo of sorted) {
@@ -180,7 +187,7 @@ export function PublicGroupCard({ group }: PublicGroupCardProps) {
       }
     }
     return photos
-  }, [group.cats])
+  }, [group.cats, group.photos])
 
   const currentPhoto = allPhotos[currentPhotoIndex] ?? null
   const hasPhotoCarousel = allPhotos.length > 1
@@ -231,7 +238,7 @@ export function PublicGroupCard({ group }: PublicGroupCardProps) {
             />
             <img
               src={currentPhoto.url}
-              alt={`Foto de ${currentPhoto.catName}`}
+              alt={currentPhoto.catName ? `Foto de ${currentPhoto.catName}` : `Foto do grupo ${names}`}
               className={cn(
                 'relative z-0 h-full w-full object-contain object-center',
                 'transition-transform duration-500',
@@ -265,7 +272,7 @@ export function PublicGroupCard({ group }: PublicGroupCardProps) {
         </div>
 
         {/* Cat name indicator on photo */}
-        {currentPhoto && (
+        {currentPhoto?.catName && (
           <div
             className={cn(
               'absolute top-3 right-3 z-20',

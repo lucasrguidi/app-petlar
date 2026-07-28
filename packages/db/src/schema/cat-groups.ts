@@ -1,4 +1,4 @@
-import { sql } from 'drizzle-orm'
+import { relations, sql } from 'drizzle-orm'
 import { index, integer, sqliteTable, text } from 'drizzle-orm/sqlite-core'
 
 import { user } from './auth'
@@ -34,3 +34,26 @@ export const catGroups = sqliteTable(
   },
   (table) => [index('cat_groups_orgId_idx').on(table.orgId)]
 )
+
+export const catGroupPhotos = sqliteTable(
+  'cat_group_photos',
+  {
+    id: text('id').primaryKey(),
+    groupId: text('group_id')
+      .notNull()
+      .references(() => catGroups.id, { onDelete: 'cascade' }),
+    url: text('url').notNull(),
+    order: integer('order').notNull(),
+    createdAt: integer('created_at', { mode: 'timestamp_ms' })
+      .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+      .notNull(),
+  },
+  (table) => [index('catGroupPhotos_groupId_idx').on(table.groupId)]
+)
+
+export const catGroupPhotosRelations = relations(catGroupPhotos, ({ one }) => ({
+  group: one(catGroups, {
+    fields: [catGroupPhotos.groupId],
+    references: [catGroups.id],
+  }),
+}))
