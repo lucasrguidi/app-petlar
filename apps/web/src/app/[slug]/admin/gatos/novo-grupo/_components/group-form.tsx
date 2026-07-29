@@ -90,6 +90,7 @@ interface GroupFormProps {
   mode: 'create' | 'edit'
   groupId?: string
   initialFormId?: string
+  initialDescription?: string | null
   initialExistingCats?: ExistingCatEntry[]
   initialDonorName?: string | null
   initialDonorWhatsapp?: string | null
@@ -427,6 +428,7 @@ export function GroupForm({
   mode,
   groupId,
   initialFormId,
+  initialDescription,
   initialExistingCats,
   initialDonorName,
   initialDonorWhatsapp,
@@ -437,6 +439,9 @@ export function GroupForm({
   const catListHref = useOrgHref('/admin/gatos')
 
   const [formId, setFormId] = useState(initialFormId ?? '')
+  const [groupDescription, setGroupDescription] = useState(
+    initialDescription ?? ''
+  )
   const [donorName, setDonorName] = useState(initialDonorName ?? '')
   const [donorWhatsapp, setDonorWhatsapp] = useState(
     initialDonorWhatsapp ? formatPhoneInput(initialDonorWhatsapp) : ''
@@ -611,9 +616,12 @@ export function GroupForm({
 
     const groupPhotosForSubmit = groupPhotoUpload.getPhotosForSubmit()
 
+    const groupDesc = groupDescription.trim() || null
+
     if (mode === 'create') {
       createMutation.mutate({
         formId,
+        description: groupDesc,
         donorName: groupDonorName,
         donorWhatsapp: groupDonorWhatsapp,
         photos: groupPhotosForSubmit.length > 0
@@ -631,6 +639,7 @@ export function GroupForm({
 
       updateMutation.mutate({
         id: groupId,
+        description: groupDesc,
         formId: formId !== initialFormId ? formId : undefined,
         donorName: groupDonorName,
         donorWhatsapp: groupDonorWhatsapp,
@@ -726,6 +735,34 @@ export function GroupForm({
               onFilesSelected={groupPhotoUpload.handleFilesSelected}
               onRemove={groupPhotoUpload.handleRemove}
               onReorder={groupPhotoUpload.handleReorder}
+            />
+          </CardContent>
+        </Card>
+
+        {/* Group description */}
+        <Card className="border-border/60 bg-card/95 shadow-warm-sm rounded-xl">
+          <CardHeader className="space-y-1 p-4 pb-2 sm:p-5 sm:pb-3">
+            <CardTitle className="text-display flex items-center gap-2 text-base font-semibold">
+              <PawPrint className="text-primary h-4 w-4" />
+              Descrição do grupo
+              <Badge
+                variant="secondary"
+                className="text-[10px] font-normal"
+              >
+                Opcional
+              </Badge>
+            </CardTitle>
+            <p className="text-muted-foreground text-xs">
+              Uma descrição geral do grupo, como a história deles juntos ou
+              por que devem ser adotados em conjunto.
+            </p>
+          </CardHeader>
+          <CardContent className="p-4 pt-0 sm:p-5 sm:pt-0">
+            <Textarea
+              value={groupDescription}
+              onChange={(e) => setGroupDescription(e.target.value)}
+              placeholder="Conte sobre eles juntos... Por que devem ser adotados em conjunto?"
+              className="min-h-20 resize-y text-sm"
             />
           </CardContent>
         </Card>

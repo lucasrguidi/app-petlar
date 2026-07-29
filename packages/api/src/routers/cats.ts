@@ -410,6 +410,21 @@ export const catsRouter = router({
               .groupBy(applications.groupId)
           : []
 
+      const groupDescriptions =
+        groupIds.length > 0
+          ? await db
+              .select({
+                id: catGroups.id,
+                description: catGroups.description,
+              })
+              .from(catGroups)
+              .where(inArray(catGroups.id, groupIds))
+          : []
+
+      const groupDescriptionById = new Map(
+        groupDescriptions.map((g) => [g.id, g.description])
+      )
+
       const interestedCountByGroupId = new Map(
         groupInterestedCounts.map((item) => [
           item.groupId,
@@ -436,6 +451,9 @@ export const catsRouter = router({
             ...cat,
             photoUrl: catPhotosList[0]?.url ?? null,
             photos: catPhotosList,
+            groupDescription: cat.groupId
+              ? groupDescriptionById.get(cat.groupId) ?? null
+              : null,
             interestedCount:
               (individualCounts?.count ?? 0) + (groupCounts?.count ?? 0),
             pendingApplicationsCount:

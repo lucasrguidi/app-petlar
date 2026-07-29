@@ -20,6 +20,7 @@ export const catGroups = sqliteTable(
     formSnapshot: text('form_snapshot', { mode: 'json' }).$type<
       CatFormFieldSnapshot[] | null
     >(),
+    description: text('description'),
 
     createdBy: text('created_by')
       .notNull()

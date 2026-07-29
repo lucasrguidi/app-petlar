@@ -1,0 +1,1 @@
+ALTER TABLE `cat_groups` ADD `description` text;

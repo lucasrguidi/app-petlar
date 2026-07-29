@@ -72,6 +72,7 @@ interface Cat {
   interestedCount?: number
   pendingApplicationsCount?: number
   groupId?: string | null
+  groupDescription?: string | null
 }
 
 interface DisplayRow extends Cat {
@@ -304,10 +305,12 @@ function ExpandedContent({ cat }: { cat: Cat }) {
 
 function GroupExpandedContent({
   cats,
+  groupDescription,
   onOpenPhotoPreview,
   orgHref,
 }: {
   cats: Cat[]
+  groupDescription?: string | null
   onOpenPhotoPreview: (cat: Cat) => void
   orgHref: (path: string) => Route
 }) {
@@ -315,6 +318,16 @@ function GroupExpandedContent({
 
   return (
     <div className="border-border/40 from-muted/30 to-muted/10 animate-in fade-in-0 slide-in-from-top-1 border-t bg-gradient-to-b px-4 py-3 duration-200">
+      {groupDescription && (
+        <div className="border-border/30 mb-3 border-b pb-3">
+          <p className="text-muted-foreground/80 mb-1 text-[10px] font-semibold tracking-wider uppercase">
+            Descrição do grupo
+          </p>
+          <p className="text-foreground/80 text-xs leading-relaxed">
+            {groupDescription}
+          </p>
+        </div>
+      )}
       {(donor?.donorName ?? donor?.donorWhatsapp) && (
         <div className="border-border/30 mb-3 flex items-center gap-3 border-b pb-3">
           <p className="text-muted-foreground/80 text-[10px] font-semibold tracking-wider uppercase">
@@ -902,6 +915,7 @@ export function CatsDataTable({ cats }: CatsDataTableProps) {
             return (
               <GroupExpandedContent
                 cats={row.original.groupCats}
+                groupDescription={row.original.groupDescription}
                 onOpenPhotoPreview={openPhotoPreview}
                 orgHref={orgHref}
               />

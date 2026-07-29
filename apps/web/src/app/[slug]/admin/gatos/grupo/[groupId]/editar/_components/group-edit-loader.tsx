@@ -46,6 +46,7 @@ export function GroupEditLoader({ groupId }: GroupEditLoaderProps) {
       mode="edit"
       groupId={groupId}
       initialFormId={data.formId}
+      initialDescription={data.description}
       initialExistingCats={existingCats}
       initialDonorName={firstCat?.donorName}
       initialDonorWhatsapp={firstCat?.donorWhatsapp}

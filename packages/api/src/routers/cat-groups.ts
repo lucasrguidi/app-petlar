@@ -52,6 +52,7 @@ const groupPhotoSchema = z.object({
 
 const createGroupSchema = z.object({
   formId: z.string().min(1),
+  description: z.string().nullish(),
   donorName: z.string().nullable().optional(),
   donorWhatsapp: z.string().nullable().optional(),
   photos: z.array(groupPhotoSchema).max(5).optional(),
@@ -76,6 +77,7 @@ const createGroupSchema = z.object({
 
 const updateGroupSchema = z.object({
   id: z.string().min(1),
+  description: z.string().nullish(),
   formId: z.string().min(1).optional(),
   donorName: z.string().nullable().optional(),
   donorWhatsapp: z.string().nullable().optional(),
@@ -231,6 +233,7 @@ export const catGroupsRouter = router({
           orgId,
           formId: input.formId,
           formSnapshot,
+          description: input.description ?? null,
           createdBy: userId,
         })
 
@@ -295,6 +298,7 @@ export const catGroupsRouter = router({
       const [group] = await db
         .select({
           id: catGroups.id,
+          description: catGroups.description,
           formId: catGroups.formId,
           formName: forms.name,
           createdAt: catGroups.createdAt,
@@ -467,6 +471,10 @@ export const catGroupsRouter = router({
           const formSnapshot = await buildFormSnapshot(input.formId)
           updateData.formId = input.formId
           updateData.formSnapshot = formSnapshot
+        }
+
+        if (input.description !== undefined) {
+          updateData.description = input.description ?? null
         }
 
         if (Object.keys(updateData).length > 0) {
@@ -738,6 +746,7 @@ export const catGroupsRouter = router({
       const allGroups = await db
         .select({
           id: catGroups.id,
+          description: catGroups.description,
           createdAt: catGroups.createdAt,
         })
         .from(catGroups)
@@ -826,6 +835,9 @@ export const catGroupsRouter = router({
       const total = eligibleGroupIds.length
 
       // Sort by group createdAt desc, then paginate
+      const groupDataMap = new Map(
+        allGroups.map((g) => [g.id, { createdAt: g.createdAt, description: g.description }])
+      )
       const groupCreatedAtMap = new Map(
         allGroups.map((g) => [g.id, g.createdAt])
       )
@@ -901,6 +913,7 @@ export const catGroupsRouter = router({
           const groupCatsList = catsByGroup.get(gId) ?? []
           return {
             id: gId,
+            description: groupDataMap.get(gId)?.description ?? null,
             createdAt: groupCreatedAtMap.get(gId) ?? new Date(),
             photos: groupPhotosByGroupId[gId] ?? [],
             cats: groupCatsList.map((cat) => ({

@@ -42,6 +42,7 @@ interface GroupCatData {
 
 export interface PublicGroupCardData {
   id: string
+  description?: string | null
   createdAt: Date | string
   photos?: Array<{ url: string; order: number }>
   cats: GroupCatData[]
@@ -208,10 +209,11 @@ export function PublicGroupCard({ group }: PublicGroupCardProps) {
 
   const names = group.cats.map((c) => c.name).join(' & ')
 
-  const descriptions = group.cats
+  const groupDescription = group.description?.trim()
+  const catDescriptions = group.cats
     .map((c) => c.description?.trim())
     .filter(Boolean)
-  const hasDescriptions = descriptions.length > 0
+  const hasDescriptions = Boolean(groupDescription) || catDescriptions.length > 0
 
   return (
     <div
@@ -364,6 +366,7 @@ export function PublicGroupCard({ group }: PublicGroupCardProps) {
                 !expandedDescriptions && 'line-clamp-3'
               )}
             >
+              {groupDescription && <p>{groupDescription}</p>}
               {group.cats.map(
                 (cat) =>
                   cat.description?.trim() && (
