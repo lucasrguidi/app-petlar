@@ -1,9 +1,12 @@
 import { db } from '@app-petlar/db'
 import {
+  applications,
+  catGroups,
   cats,
   formFields,
   forms,
   formFieldTypes,
+  type CatFormFieldSnapshot,
   type FormFieldCondition,
   type FormFieldMediaConfig,
   type FormFieldType,
@@ -243,8 +246,10 @@ function normalizeAndValidateFields(fields: FieldInput[]): NormalizedField[] {
   return normalized
 }
 
-function mapDbFieldToInput(field: typeof formFields.$inferSelect): FieldInput {
-  return {
+function buildFormSnapshot(
+  normalizedFields: NormalizedField[]
+): CatFormFieldSnapshot[] {
+  return normalizedFields.map((field) => ({
     id: field.id,
     type: field.type,
     label: field.label,
@@ -254,7 +259,50 @@ function mapDbFieldToInput(field: typeof formFields.$inferSelect): FieldInput {
     condition: field.condition,
     mediaConfig: field.mediaConfig,
     order: field.order,
-  }
+  }))
+}
+
+async function syncFormSnapshots(formId: string): Promise<void> {
+  const fields = await db
+    .select({
+      id: formFields.id,
+      type: formFields.type,
+      label: formFields.label,
+      required: formFields.required,
+      helpText: formFields.helpText,
+      options: formFields.options,
+      condition: formFields.condition,
+      mediaConfig: formFields.mediaConfig,
+      order: formFields.order,
+    })
+    .from(formFields)
+    .where(eq(formFields.formId, formId))
+    .orderBy(asc(formFields.order))
+
+  const snapshot = buildFormSnapshot(
+    fields.map((f) => ({ ...f, condition: f.condition ?? null, mediaConfig: f.mediaConfig ?? null }))
+  )
+
+  await Promise.all([
+    db
+      .update(cats)
+      .set({ formSnapshot: snapshot })
+      .where(
+        and(
+          eq(cats.formId, formId),
+          sql`NOT EXISTS (SELECT 1 FROM ${applications} WHERE ${applications.catId} = ${cats.id})`
+        )
+      ),
+    db
+      .update(catGroups)
+      .set({ formSnapshot: snapshot })
+      .where(
+        and(
+          eq(catGroups.formId, formId),
+          sql`NOT EXISTS (SELECT 1 FROM ${applications} WHERE ${applications.groupId} = ${catGroups.id})`
+        )
+      ),
+  ])
 }
 
 export const formsRouter = router({
@@ -504,6 +552,10 @@ export const formsRouter = router({
         }
       })
 
+      if (normalizedFields !== null) {
+        await syncFormSnapshots(input.id)
+      }
+
       return { success: true }
     }),
 
@@ -615,287 +667,4 @@ export const formsRouter = router({
       return { id: duplicatedFormId }
     }),
 
-  addField: adminProcedure
-    .input(
-      z.object({
-        formId: z.string().min(1),
-        field: formFieldInputSchema,
-      })
-    )
-    .mutation(async ({ ctx, input }) => {
-      const orgId = requireOrgId(ctx.session.user)
-
-      const [existingForm] = await db
-        .select({ id: forms.id })
-        .from(forms)
-        .where(and(eq(forms.id, input.formId), eq(forms.orgId, orgId)))
-
-      if (!existingForm) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'Formulário não encontrado',
-        })
-      }
-
-      const existingFields = await db
-        .select()
-        .from(formFields)
-        .where(eq(formFields.formId, input.formId))
-        .orderBy(asc(formFields.order))
-
-      const normalized = normalizeAndValidateFields([
-        ...existingFields.map(mapDbFieldToInput),
-        {
-          ...input.field,
-          order: existingFields.length + 1,
-        },
-      ])
-
-      const fieldToInsert = normalized[normalized.length - 1]
-      if (!fieldToInsert) {
-        throw new TRPCError({
-          code: 'BAD_REQUEST',
-          message: 'Não foi possível adicionar a pergunta',
-        })
-      }
-
-      await db.insert(formFields).values({
-        id: fieldToInsert.id,
-        formId: input.formId,
-        order: fieldToInsert.order,
-        type: fieldToInsert.type,
-        label: fieldToInsert.label,
-        required: fieldToInsert.required,
-        helpText: fieldToInsert.helpText,
-        options: fieldToInsert.options,
-        condition: fieldToInsert.condition,
-        mediaConfig: fieldToInsert.mediaConfig,
-      })
-
-      return { id: fieldToInsert.id }
-    }),
-
-  updateField: adminProcedure
-    .input(
-      z.object({
-        formId: z.string().min(1),
-        fieldId: z.string().min(1),
-        field: formFieldInputSchema.partial(),
-      })
-    )
-    .mutation(async ({ ctx, input }) => {
-      const orgId = requireOrgId(ctx.session.user)
-
-      const [existingForm] = await db
-        .select({ id: forms.id })
-        .from(forms)
-        .where(and(eq(forms.id, input.formId), eq(forms.orgId, orgId)))
-
-      if (!existingForm) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'Formulário não encontrado',
-        })
-      }
-
-      const existingFields = await db
-        .select()
-        .from(formFields)
-        .where(eq(formFields.formId, input.formId))
-        .orderBy(asc(formFields.order))
-
-      const target = existingFields.find((field) => field.id === input.fieldId)
-      if (!target) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'Pergunta não encontrada',
-        })
-      }
-
-      const mergedFields = existingFields.map((field) =>
-        field.id === input.fieldId
-          ? { ...mapDbFieldToInput(field), ...input.field }
-          : mapDbFieldToInput(field)
-      )
-
-      const normalized = normalizeAndValidateFields(mergedFields)
-
-      await db.transaction(async (tx) => {
-        await tx.delete(formFields).where(eq(formFields.formId, input.formId))
-        if (normalized.length > 0) {
-          await tx.insert(formFields).values(
-            normalized.map((field) => ({
-              id: field.id,
-              formId: input.formId,
-              order: field.order,
-              type: field.type,
-              label: field.label,
-              required: field.required,
-              helpText: field.helpText,
-              options: field.options,
-              condition: field.condition,
-              mediaConfig: field.mediaConfig,
-            }))
-          )
-        }
-      })
-
-      return { success: true }
-    }),
-
-  deleteField: adminProcedure
-    .input(
-      z.object({
-        formId: z.string().min(1),
-        fieldId: z.string().min(1),
-      })
-    )
-    .mutation(async ({ ctx, input }) => {
-      const orgId = requireOrgId(ctx.session.user)
-
-      const [existingForm] = await db
-        .select({ id: forms.id })
-        .from(forms)
-        .where(and(eq(forms.id, input.formId), eq(forms.orgId, orgId)))
-
-      if (!existingForm) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'Formulário não encontrado',
-        })
-      }
-
-      const existingFields = await db
-        .select()
-        .from(formFields)
-        .where(eq(formFields.formId, input.formId))
-        .orderBy(asc(formFields.order))
-
-      const targetExists = existingFields.some(
-        (field) => field.id === input.fieldId
-      )
-      if (!targetExists) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'Pergunta não encontrada',
-        })
-      }
-
-      const remaining = existingFields
-        .filter((field) => field.id !== input.fieldId)
-        .map((field) => {
-          const draft = mapDbFieldToInput(field)
-          if (draft.condition?.fieldId === input.fieldId) {
-            draft.condition = null
-          }
-          return draft
-        })
-
-      const normalized = normalizeAndValidateFields(remaining)
-
-      await db.transaction(async (tx) => {
-        await tx.delete(formFields).where(eq(formFields.formId, input.formId))
-        if (normalized.length > 0) {
-          await tx.insert(formFields).values(
-            normalized.map((field) => ({
-              id: field.id,
-              formId: input.formId,
-              order: field.order,
-              type: field.type,
-              label: field.label,
-              required: field.required,
-              helpText: field.helpText,
-              options: field.options,
-              condition: field.condition,
-              mediaConfig: field.mediaConfig,
-            }))
-          )
-        }
-      })
-
-      return { success: true }
-    }),
-
-  reorderFields: adminProcedure
-    .input(
-      z.object({
-        formId: z.string().min(1),
-        fieldIds: z.array(z.string().min(1)).min(1),
-      })
-    )
-    .mutation(async ({ ctx, input }) => {
-      const orgId = requireOrgId(ctx.session.user)
-
-      const [existingForm] = await db
-        .select({ id: forms.id })
-        .from(forms)
-        .where(and(eq(forms.id, input.formId), eq(forms.orgId, orgId)))
-
-      if (!existingForm) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'Formulário não encontrado',
-        })
-      }
-
-      const existingFields = await db
-        .select()
-        .from(formFields)
-        .where(eq(formFields.formId, input.formId))
-        .orderBy(asc(formFields.order))
-
-      if (existingFields.length !== input.fieldIds.length) {
-        throw new TRPCError({
-          code: 'BAD_REQUEST',
-          message: 'A reordenação não corresponde ao número de perguntas',
-        })
-      }
-
-      const existingIds = new Set(existingFields.map((field) => field.id))
-      const incomingIds = new Set(input.fieldIds)
-      if (existingIds.size !== incomingIds.size) {
-        throw new TRPCError({
-          code: 'BAD_REQUEST',
-          message: 'Reordenação inválida',
-        })
-      }
-      for (const id of incomingIds) {
-        if (!existingIds.has(id)) {
-          throw new TRPCError({
-            code: 'BAD_REQUEST',
-            message: 'Reordenação inválida',
-          })
-        }
-      }
-
-      const orderMap = new Map(
-        input.fieldIds.map((id, index) => [id, index + 1])
-      )
-      const reorderedDraft = existingFields
-        .map((field) => ({
-          ...mapDbFieldToInput(field),
-          order: orderMap.get(field.id) ?? field.order,
-        }))
-        .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
-
-      normalizeAndValidateFields(reorderedDraft)
-
-      await db.transaction(async (tx) => {
-        await Promise.all(
-          input.fieldIds.map((fieldId, index) =>
-            tx
-              .update(formFields)
-              .set({ order: index + 1 })
-              .where(
-                and(
-                  eq(formFields.formId, input.formId),
-                  eq(formFields.id, fieldId)
-                )
-              )
-          )
-        )
-      })
-
-      return { success: true }
-    }),
 })
