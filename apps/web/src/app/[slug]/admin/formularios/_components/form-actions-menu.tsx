@@ -1,12 +1,13 @@
 'use client'
 
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { Copy, MoreVertical, Pencil, Power, Trash2 } from 'lucide-react'
+import { Copy, MoreVertical, Pencil, Power, Trash2, TriangleAlert } from 'lucide-react'
 import Link from 'next/link'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,6 +33,7 @@ export function FormActionsMenu({ form }: FormActionsMenuProps) {
   const editHref = useOrgHref(`/admin/formularios/${form.id}`)
   const queryClient = useQueryClient()
   const [isOpen, setIsOpen] = useState(false)
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false)
 
   const invalidateQueries = () => {
     queryClient.invalidateQueries({ queryKey: [['forms']] })
@@ -96,16 +98,16 @@ export function FormActionsMenu({ form }: FormActionsMenuProps) {
 
   const handleDelete = () => {
     setIsOpen(false)
-    if (
-      !confirm(
-        `Tem certeza que deseja excluir "${form.name}"?\n\nEssa ação não pode ser desfeita.`
-      )
-    )
-      return
+    setIsDeleteOpen(true)
+  }
+
+  const confirmDelete = () => {
     deleteMutation.mutate({ id: form.id })
+    setIsDeleteOpen(false)
   }
 
   return (
+    <>
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenuTrigger asChild>
         <Button
@@ -168,5 +170,20 @@ export function FormActionsMenu({ form }: FormActionsMenuProps) {
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
+
+      <ConfirmDialog
+        open={isDeleteOpen}
+        onOpenChange={setIsDeleteOpen}
+        variant="destructive"
+        icon={TriangleAlert}
+        title="Excluir formulário"
+        description={`Tem certeza que deseja excluir "${form.name}"? Esta ação não pode ser desfeita.`}
+        cancelLabel="Cancelar"
+        actionLabel="Excluir"
+        actionLoadingLabel="Excluindo..."
+        isLoading={deleteMutation.isPending}
+        onAction={confirmDelete}
+      />
+    </>
   )
 }

@@ -11,6 +11,7 @@ import {
   Loader2,
   Plus,
   Trash2,
+  TriangleAlert,
 } from 'lucide-react'
 import { nanoid } from 'nanoid'
 import { type Route } from 'next'
@@ -20,6 +21,7 @@ import { toast } from 'sonner'
 
 import { useIsCustomDomain } from '@/components/custom-domain-provider'
 import { Badge } from '@/components/ui/badge'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -283,6 +285,7 @@ export function FormBuilder({ mode, formId, initialData }: FormBuilderProps) {
     initialData?.fields?.[0]?.id ?? null
   )
   const [isAddQuestionOpen, setIsAddQuestionOpen] = useState(false)
+  const [removingField, setRemovingField] = useState<BuilderField | null>(null)
   const [previewValues, setPreviewValues] = useState<
     Record<string, string | boolean>
   >({})
@@ -374,9 +377,13 @@ export function FormBuilder({ mode, formId, initialData }: FormBuilderProps) {
   const removeField = (fieldId: string) => {
     const target = fields.find((field) => field.id === fieldId)
     if (!target) return
+    setRemovingField(target)
+  }
 
-    if (!confirm(`Deseja remover a pergunta "${target.label}"?`)) return
+  const confirmRemoveField = () => {
+    if (!removingField) return
 
+    const fieldId = removingField.id
     const next = normalizeFieldsOrder(
       fields
         .filter((field) => field.id !== fieldId)
@@ -391,6 +398,7 @@ export function FormBuilder({ mode, formId, initialData }: FormBuilderProps) {
     if (selectedFieldId === fieldId) {
       setSelectedFieldId(next[0]?.id ?? null)
     }
+    setRemovingField(null)
   }
 
   const moveField = (fieldId: string, direction: 'up' | 'down') => {
@@ -516,8 +524,9 @@ export function FormBuilder({ mode, formId, initialData }: FormBuilderProps) {
             <div className="border-warning/30 bg-warning/10 flex items-start gap-2 rounded-lg border px-3 py-2.5">
               <AlertTriangle className="text-warning mt-0.5 h-4 w-4 shrink-0" />
               <p className="text-xs text-[#783201]">
-                Este formulário funciona como template. Alterações feitas aqui
-                valem apenas para novos gatos cadastrados depois da edição.
+                Alterações feitas aqui serão aplicadas a todos os gatos
+                vinculados que ainda não possuem candidaturas, além de valer
+                para novos cadastros.
               </p>
             </div>
           )}
@@ -1217,6 +1226,20 @@ export function FormBuilder({ mode, formId, initialData }: FormBuilderProps) {
           </div>
         </SheetContent>
       </Sheet>
+
+      <ConfirmDialog
+        open={!!removingField}
+        onOpenChange={(open) => {
+          if (!open) setRemovingField(null)
+        }}
+        variant="destructive"
+        icon={TriangleAlert}
+        title="Remover pergunta"
+        description={`Tem certeza que deseja remover a pergunta "${removingField?.label}"? Perguntas condicionadas a esta também perderão a condição.`}
+        cancelLabel="Cancelar"
+        actionLabel="Remover"
+        onAction={confirmRemoveField}
+      />
     </div>
   )
 }
