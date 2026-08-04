@@ -102,11 +102,16 @@ function getColumns(
       ),
       cell: ({ row }) => {
         const r = row.original
+        const displayCatName = r.catName ?? 'Desconhecido'
 
         return (
           <div className="space-y-0.5">
             <p className="text-foreground truncate text-sm leading-tight font-semibold">
               {r.applicantName}
+            </p>
+            <p className="text-muted-foreground truncate text-xs sm:hidden">
+              <PawPrint className="mr-1 inline h-3 w-3" />
+              {displayCatName}
             </p>
             <a
               href={toWhatsappLink(r.applicantWhatsapp)}
