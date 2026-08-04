@@ -5,7 +5,9 @@ import { useEffect, useState } from 'react'
 
 import type { ApplicationStatus } from '../../gatos/[id]/interessados/_components/types'
 
+import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import {
   Select,
   SelectContent,
@@ -17,6 +19,7 @@ import {
 export interface CandidaturasFilters {
   status?: ApplicationStatus
   search?: string
+  includeAdopted?: boolean
   page: number
 }
 
@@ -90,6 +93,23 @@ export function CandidaturasFilterBar({
             onChange={(event) => setSearchValue(event.target.value)}
             className="h-10 rounded-xl pl-10"
           />
+        </div>
+
+        <div className="col-span-2 flex items-center gap-2 sm:order-3">
+          <Checkbox
+            id="include-adopted"
+            checked={filters.includeAdopted ?? false}
+            onCheckedChange={(checked) =>
+              onFilterChange({ includeAdopted: checked === true || undefined })
+            }
+            disabled={isPending}
+          />
+          <Label
+            htmlFor="include-adopted"
+            className="text-muted-foreground cursor-pointer text-xs"
+          >
+            Incluir adotados
+          </Label>
         </div>
       </div>
     </div>

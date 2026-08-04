@@ -8,7 +8,11 @@ import { toast } from 'sonner'
 
 import { ApplicantDetailsSheet } from '../../gatos/[id]/interessados/_components/applicant-details-sheet'
 
-import { CandidaturasDataTable, type CandidaturaRow } from './candidaturas-data-table'
+import {
+  CandidaturasDataTable,
+  type CandidaturaRow,
+  type CatStatus,
+} from './candidaturas-data-table'
 import { CandidaturasEmptyState } from './candidaturas-empty-state'
 import {
   CandidaturasFilterBar,
@@ -38,6 +42,7 @@ function isValidStatus(value: unknown): value is ApplicationStatus {
 function parseFilters(searchParams: {
   status?: string
   search?: string
+  includeAdopted?: string
   page?: string
 }): CandidaturasFilters {
   const pageRaw = Number.parseInt(searchParams.page ?? '1', 10)
@@ -47,6 +52,7 @@ function parseFilters(searchParams: {
       ? searchParams.status
       : undefined,
     search: searchParams.search?.trim() || undefined,
+    includeAdopted: searchParams.includeAdopted === 'true' || undefined,
     page: Number.isFinite(pageRaw) && pageRaw > 0 ? pageRaw : 1,
   }
 }
@@ -55,6 +61,7 @@ interface CandidaturasPageContentProps {
   searchParams: {
     status?: string
     search?: string
+    includeAdopted?: string
     page?: string
   }
 }
@@ -78,6 +85,7 @@ export function CandidaturasPageContent({
     ...trpc.applications.listAll.queryOptions({
       status: filters.status,
       search: filters.search,
+      includeAdopted: filters.includeAdopted ?? false,
       page: filters.page,
       limit: 15,
     }),
@@ -128,6 +136,10 @@ export function CandidaturasPageContent({
           params.set('search', merged.search.trim())
         }
 
+        if (merged.includeAdopted) {
+          params.set('includeAdopted', 'true')
+        }
+
         if (merged.page > 1) {
           params.set('page', String(merged.page))
         }
@@ -150,10 +162,13 @@ export function CandidaturasPageContent({
     updateFilters({
       status: undefined,
       search: undefined,
+      includeAdopted: undefined,
     })
   }, [updateFilters])
 
-  const hasActiveFilters = Boolean(filters.status || filters.search)
+  const hasActiveFilters = Boolean(
+    filters.status || filters.search || filters.includeAdopted
+  )
 
   if (listQuery.isLoading && !listQuery.data) {
     return <CandidaturasLoadingSkeleton />
@@ -209,6 +224,7 @@ export function CandidaturasPageContent({
     groupId: app.groupId,
     catName: app.catName,
     catPhotoUrl: app.catPhotoUrl,
+    catStatus: (app.catStatus as CatStatus) ?? null,
     groupCatNames: app.groupCatNames,
   }))
 

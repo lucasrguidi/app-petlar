@@ -14,6 +14,7 @@ interface CandidaturasPageProps {
   searchParams: Promise<{
     status?: string
     search?: string
+    includeAdopted?: string
     page?: string
   }>
 }

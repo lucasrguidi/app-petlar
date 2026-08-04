@@ -2300,6 +2300,7 @@ export const applicationsRouter = router({
       z.object({
         status: z.enum(applicationStatuses).optional(),
         search: z.string().trim().max(200).optional(),
+        includeAdopted: z.boolean().default(false),
         page: z.number().int().min(1).default(1),
         limit: z.number().int().min(1).max(50).default(15),
       })
@@ -2311,7 +2312,22 @@ export const applicationsRouter = router({
       const whereConditions: SQL[] = [
         eq(applications.orgId, orgId),
         sql`${applications.confirmedAt} is not null`,
+        sql`(${applications.catId} is not null or ${applications.groupId} is not null)`,
       ]
+
+      if (!input.includeAdopted) {
+        whereConditions.push(
+          sql`(
+            (${applications.catId} is not null and exists (
+              select 1 from ${cats} where ${cats.id} = ${applications.catId} and ${cats.status} != 'adopted'
+            ))
+            or
+            (${applications.groupId} is not null and not exists (
+              select 1 from ${cats} where ${cats.groupId} = ${applications.groupId} and ${cats.status} = 'adopted'
+            ))
+          )`
+        )
+      }
 
       if (input.status) {
         whereConditions.push(eq(applications.status, input.status))
@@ -2365,14 +2381,17 @@ export const applicationsRouter = router({
 
       const catInfoMap = new Map<
         string,
-        { name: string; photoUrl: string | null }
+        { name: string; status: string; photoUrl: string | null }
       >()
-      const groupInfoMap = new Map<string, { catNames: string[] }>()
+      const groupInfoMap = new Map<
+        string,
+        { catNames: string[]; status: string }
+      >()
 
       if (catIds.length > 0) {
         const uniqueCatIds = [...new Set(catIds)]
         const catRows = await db
-          .select({ id: cats.id, name: cats.name })
+          .select({ id: cats.id, name: cats.name, status: cats.status })
           .from(cats)
           .where(sql`${cats.id} IN ${uniqueCatIds}`)
 
@@ -2392,6 +2411,7 @@ export const applicationsRouter = router({
         for (const cat of catRows) {
           catInfoMap.set(cat.id, {
             name: cat.name,
+            status: cat.status,
             photoUrl: firstPhotoByCatId.get(cat.id) ?? null,
           })
         }
@@ -2399,18 +2419,28 @@ export const applicationsRouter = router({
 
       if (groupIds.length > 0) {
         const uniqueGroupIds = [...new Set(groupIds)]
-        const groupCats = await db
-          .select({ groupId: cats.groupId, name: cats.name })
+        const groupCatsRows = await db
+          .select({
+            groupId: cats.groupId,
+            name: cats.name,
+            status: cats.status,
+          })
           .from(cats)
           .where(sql`${cats.groupId} IN ${uniqueGroupIds}`)
 
-        for (const gc of groupCats) {
+        for (const gc of groupCatsRows) {
           if (!gc.groupId) continue
           const existing = groupInfoMap.get(gc.groupId)
           if (existing) {
             existing.catNames.push(gc.name)
+            if (gc.status === 'adopted') existing.status = 'adopted'
+            else if (gc.status === 'in_progress' && existing.status === 'available')
+              existing.status = 'in_progress'
           } else {
-            groupInfoMap.set(gc.groupId, { catNames: [gc.name] })
+            groupInfoMap.set(gc.groupId, {
+              catNames: [gc.name],
+              status: gc.status,
+            })
           }
         }
       }
@@ -2422,6 +2452,7 @@ export const applicationsRouter = router({
           ({ activePermanentRejectionId, catId, groupId, ...row }) => {
             let catName: string | null = null
             let catPhotoUrl: string | null = null
+            let catStatus: string | null = null
             let groupCatNames: string[] | null = null
 
             if (groupId) {
@@ -2429,12 +2460,14 @@ export const applicationsRouter = router({
               if (group) {
                 groupCatNames = group.catNames
                 catName = group.catNames.join(' e ')
+                catStatus = group.status
               }
             } else if (catId) {
               const cat = catInfoMap.get(catId)
               if (cat) {
                 catName = cat.name
                 catPhotoUrl = cat.photoUrl
+                catStatus = cat.status
               }
             }
 
@@ -2444,6 +2477,7 @@ export const applicationsRouter = router({
               groupId,
               catName,
               catPhotoUrl,
+              catStatus,
               groupCatNames,
               isPermanentRejectionActive: Boolean(activePermanentRejectionId),
             }

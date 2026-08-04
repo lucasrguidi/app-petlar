@@ -38,6 +38,8 @@ import { useOrgSlug } from '@/hooks/use-org-slug'
 import { buildOrgHref } from '@/lib/org-href'
 import { cn } from '@/lib/utils'
 
+export type CatStatus = 'available' | 'in_progress' | 'adopted'
+
 export interface CandidaturaRow {
   id: string
   applicantName: string
@@ -49,6 +51,7 @@ export interface CandidaturaRow {
   groupId: string | null
   catName: string | null
   catPhotoUrl: string | null
+  catStatus: CatStatus | null
   groupCatNames: string[] | null
 }
 
@@ -86,6 +89,28 @@ function getStatusConfig(status: ApplicationStatus) {
       label: getStatusLabel(status),
       variant: 'destructive' as const,
       dotClass: 'bg-destructive',
+    },
+  }
+
+  return config[status]
+}
+
+function getCatStatusConfig(status: CatStatus) {
+  const config = {
+    available: {
+      label: 'Disponível',
+      dotClass: 'bg-emerald-500',
+      textClass: 'text-emerald-600',
+    },
+    in_progress: {
+      label: 'Em processo',
+      dotClass: 'bg-amber-500',
+      textClass: 'text-amber-600',
+    },
+    adopted: {
+      label: 'Adotado',
+      dotClass: 'bg-muted-foreground/50',
+      textClass: 'text-muted-foreground',
     },
   }
 
@@ -152,27 +177,50 @@ function getColumns(
       cell: ({ row }) => {
         const r = row.original
         const displayName = r.catName ?? 'Desconhecido'
+        const catStatusConfig = r.catStatus
+          ? getCatStatusConfig(r.catStatus)
+          : null
 
         return (
-          <div className="hidden items-center gap-2 sm:flex">
-            {r.catPhotoUrl ? (
-              <img
-                src={r.catPhotoUrl}
-                alt={displayName}
-                className="border-border/40 h-8 w-8 shrink-0 rounded-lg border object-cover"
-              />
-            ) : (
-              <div className="bg-muted text-muted-foreground border-border/40 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border">
-                <PawPrint className="h-3.5 w-3.5" />
+          <div className="hidden sm:block">
+            <div className="flex items-center gap-2">
+              {r.catPhotoUrl ? (
+                <img
+                  src={r.catPhotoUrl}
+                  alt={displayName}
+                  className="border-border/40 h-8 w-8 shrink-0 rounded-lg border object-cover"
+                />
+              ) : (
+                <div className="bg-muted text-muted-foreground border-border/40 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border">
+                  <PawPrint className="h-3.5 w-3.5" />
+                </div>
+              )}
+              <div className="min-w-0">
+                <span className="text-foreground block truncate text-sm">
+                  {displayName}
+                </span>
+                {catStatusConfig && (
+                  <span
+                    className={cn(
+                      'mt-0.5 inline-flex items-center gap-1 text-[10px] font-medium',
+                      catStatusConfig.textClass
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        'h-1.5 w-1.5 rounded-full',
+                        catStatusConfig.dotClass
+                      )}
+                    />
+                    {catStatusConfig.label}
+                  </span>
+                )}
               </div>
-            )}
-            <span className="text-foreground truncate text-sm">
-              {displayName}
-            </span>
+            </div>
           </div>
         )
       },
-      meta: { className: 'hidden sm:table-cell w-40' },
+      meta: { className: 'hidden sm:table-cell w-44' },
     },
     {
       id: 'whatsapp',
