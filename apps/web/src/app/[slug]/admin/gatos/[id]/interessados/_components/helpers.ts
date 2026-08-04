@@ -140,6 +140,33 @@ export function formatDate(value: string): string {
   }).format(date)
 }
 
+export function formatRelativeTime(value: Date | string): string {
+  const date = value instanceof Date ? value : new Date(value)
+  const now = new Date()
+  const diffMs = now.getTime() - date.getTime()
+
+  if (diffMs < 0) return 'agora'
+
+  const minutes = Math.floor(diffMs / 60000)
+  if (minutes < 1) return 'agora'
+  if (minutes < 60) return `há ${minutes}min`
+
+  const hours = Math.floor(minutes / 60)
+  if (hours < 24) return `há ${hours}h`
+
+  const days = Math.floor(hours / 24)
+  if (days === 1) return 'há 1 dia'
+  if (days < 30) return `há ${days} dias`
+
+  const months = Math.floor(days / 30)
+  if (months === 1) return 'há 1 mês'
+  if (months < 12) return `há ${months} meses`
+
+  const years = Math.floor(months / 12)
+  if (years === 1) return 'há 1 ano'
+  return `há ${years} anos`
+}
+
 export function toWhatsappLink(value: string): string {
   const digits = value.replace(/\D/g, '')
   return `https://wa.me/${digits}`

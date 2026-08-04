@@ -15,7 +15,7 @@ import Link from 'next/link'
 import { useMemo } from 'react'
 
 import {
-  formatDateTime,
+  formatRelativeTime,
   getStatusLabel,
   toWhatsappLink,
 } from '../../gatos/[id]/interessados/_components/helpers'
@@ -150,7 +150,7 @@ function getColumns(
             </p>
             <p className="text-muted-foreground truncate text-xs sm:hidden">
               <CalendarClock className="mr-1 inline h-3 w-3" />
-              {formatDateTime(r.createdAt)}
+              {formatRelativeTime(r.createdAt)}
             </p>
             <a
               href={toWhatsappLink(r.applicantWhatsapp)}
@@ -359,7 +359,7 @@ function getColumns(
       ),
       cell: ({ row }) => (
         <span className="text-muted-foreground hidden text-xs sm:inline">
-          {formatDateTime(row.original.createdAt)}
+          {formatRelativeTime(row.original.createdAt)}
         </span>
       ),
       meta: { className: 'hidden sm:table-cell w-40' },

@@ -2368,7 +2368,14 @@ export const applicationsRouter = router({
           )
         )
         .where(and(...whereConditions))
-        .orderBy(desc(applications.createdAt))
+        .orderBy(
+          sql`case ${applications.status}
+            when 'pending' then 0
+            when 'reviewing' then 1
+            else 2
+          end`,
+          desc(applications.createdAt)
+        )
         .limit(input.limit)
         .offset(offset)
 
@@ -2510,4 +2517,57 @@ export const applicationsRouter = router({
 
     return { count: result?.count ?? 0 }
   }),
+
+  statusCounts: protectedProcedure
+    .input(
+      z.object({
+        includeAdopted: z.boolean().default(false),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const orgId = requireOrgId(ctx.session.user)
+
+      const whereConditions: SQL[] = [
+        eq(applications.orgId, orgId),
+        sql`${applications.confirmedAt} is not null`,
+        sql`(${applications.catId} is not null or ${applications.groupId} is not null)`,
+      ]
+
+      if (!input.includeAdopted) {
+        whereConditions.push(
+          sql`(
+            (${applications.catId} is not null and exists (
+              select 1 from ${cats} where ${cats.id} = ${applications.catId} and ${cats.status} != 'adopted'
+            ))
+            or
+            (${applications.groupId} is not null and not exists (
+              select 1 from ${cats} where ${cats.groupId} = ${applications.groupId} and ${cats.status} = 'adopted'
+            ))
+          )`
+        )
+      }
+
+      const rows = await db
+        .select({
+          status: applications.status,
+          count: sql<number>`count(*)`,
+        })
+        .from(applications)
+        .where(and(...whereConditions))
+        .groupBy(applications.status)
+
+      const counts: Record<string, number> = {
+        pending: 0,
+        reviewing: 0,
+        approved: 0,
+        rejected: 0,
+        permanently_rejected: 0,
+      }
+
+      for (const row of rows) {
+        counts[row.status] = row.count
+      }
+
+      return counts
+    }),
 })

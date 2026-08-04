@@ -19,6 +19,7 @@ import {
   type CandidaturasFilters,
 } from './candidaturas-filter-bar'
 import { CandidaturasLoadingSkeleton } from './candidaturas-loading-skeleton'
+import { StatusCountCards } from './status-count-cards'
 
 import type { ApplicationStatus } from '../../gatos/[id]/interessados/_components/types'
 
@@ -46,11 +47,19 @@ function parseFilters(searchParams: {
   page?: string
 }): CandidaturasFilters {
   const pageRaw = Number.parseInt(searchParams.page ?? '1', 10)
+  const hasAnyParam = Boolean(
+    searchParams.status ||
+      searchParams.search ||
+      searchParams.includeAdopted ||
+      searchParams.page
+  )
 
   return {
     status: isValidStatus(searchParams.status)
       ? searchParams.status
-      : undefined,
+      : hasAnyParam
+        ? undefined
+        : 'pending',
     search: searchParams.search?.trim() || undefined,
     includeAdopted: searchParams.includeAdopted === 'true' || undefined,
     page: Number.isFinite(pageRaw) && pageRaw > 0 ? pageRaw : 1,
@@ -91,6 +100,12 @@ export function CandidaturasPageContent({
     }),
     placeholderData: keepPreviousData,
   })
+
+  const countsQuery = useQuery(
+    trpc.applications.statusCounts.queryOptions({
+      includeAdopted: filters.includeAdopted ?? false,
+    })
+  )
 
   const updateStatusMutation = useMutation(
     trpc.applications.updateStatus.mutationOptions({
@@ -151,6 +166,13 @@ export function CandidaturasPageContent({
     [filters, router]
   )
 
+  const handleStatusCardClick = useCallback(
+    (status: ApplicationStatus | undefined) => {
+      updateFilters({ status })
+    },
+    [updateFilters]
+  )
+
   const handlePageChange = useCallback(
     (page: number) => {
       updateFilters({ page }, false)
@@ -198,6 +220,11 @@ export function CandidaturasPageContent({
   if (!data || data.applications.length === 0) {
     return (
       <div className="flex min-h-0 flex-1 flex-col gap-3">
+        <StatusCountCards
+          counts={countsQuery.data}
+          activeStatus={filters.status}
+          onStatusClick={handleStatusCardClick}
+        />
         <div className="shrink-0">
           <CandidaturasFilterBar
             filters={filters}
@@ -230,6 +257,12 @@ export function CandidaturasPageContent({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-3">
+      <StatusCountCards
+        counts={countsQuery.data}
+        activeStatus={filters.status}
+        onStatusClick={handleStatusCardClick}
+      />
+
       <div className="shrink-0">
         <CandidaturasFilterBar
           filters={filters}
@@ -241,8 +274,8 @@ export function CandidaturasPageContent({
       <div className="border-border/60 bg-card/95 shadow-warm-sm flex shrink-0 items-center justify-between rounded-xl border px-3 py-2">
         <p className="text-muted-foreground text-sm">
           {data.pagination.total} candidatura
-          {data.pagination.total === 1 ? '' : 's'} confirmada
           {data.pagination.total === 1 ? '' : 's'}
+          {filters.status ? '' : ' no total'}
         </p>
         {listQuery.isFetching && (
           <span className="text-muted-foreground inline-flex items-center gap-1.5 text-xs">
