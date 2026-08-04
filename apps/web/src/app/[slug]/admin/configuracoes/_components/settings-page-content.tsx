@@ -6,6 +6,7 @@ import {
   Check,
   Globe,
   Loader2,
+  MapPin,
   MessageCircle,
   Palette,
   RotateCcw,
@@ -27,6 +28,8 @@ import { ColorPicker } from './color-picker'
 import { SettingsLoadingSkeleton } from './settings-loading-skeleton'
 import { ThemePreview } from './theme-preview'
 
+import { BRAZILIAN_STATES } from '@app-petlar/db/constants/brazilian-states'
+
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -35,7 +38,15 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { useOrgSlug } from '@/hooks/use-org-slug'
 import { cn } from '@/lib/utils'
 import { trpc } from '@/utils/trpc'
@@ -105,9 +116,15 @@ export function SettingsPageContent() {
 
   const [hasChanges, setHasChanges] = useState(false)
 
+  const [localCity, setLocalCity] = useState<string | null>(null)
+  const [localState, setLocalState] = useState<string | null>(null)
+  const [hasLocationChanges, setHasLocationChanges] = useState(false)
+
   // Initialize local state from org settings
   useEffect(() => {
     if (orgSettings) {
+      setLocalCity(orgSettings.city ?? null)
+      setLocalState(orgSettings.state ?? null)
       setLocalColors({
         primaryColor: orgSettings.primaryColor,
         primaryForegroundColor: orgSettings.primaryForegroundColor,
@@ -138,6 +155,36 @@ export function SettingsPageContent() {
       },
     })
   )
+
+  const updateLocationMutation = useMutation(
+    trpc.orgs.updateLocation.mutationOptions({
+      onSuccess: async () => {
+        toast.success('Localização atualizada com sucesso!')
+        queryClient.invalidateQueries({ queryKey: [['orgs', 'getSettings']] })
+        setHasLocationChanges(false)
+        await revalidateTheme(slug)
+        router.refresh()
+      },
+      onError: (error) => {
+        toast.error(error.message)
+      },
+    })
+  )
+
+  const handleSaveLocation = () => {
+    updateLocationMutation.mutate({
+      city: localCity,
+      state: localState,
+    })
+  }
+
+  const handleResetLocation = () => {
+    if (orgSettings) {
+      setLocalCity(orgSettings.city ?? null)
+      setLocalState(orgSettings.state ?? null)
+      setHasLocationChanges(false)
+    }
+  }
 
   const handlePresetSelect = (presetKey: PresetThemeKey) => {
     const preset = PRESET_THEMES[presetKey]
@@ -248,6 +295,86 @@ export function SettingsPageContent() {
                 </a>
               </Button>
             )}
+          </CardContent>
+        </Card>
+
+        {/* Location Card */}
+        <Card className="border-border/60 bg-card/95 shadow-warm-sm rounded-xl">
+          <CardHeader>
+            <CardTitle className="text-display flex items-center gap-2">
+              <MapPin className="text-primary h-5 w-5" />
+              Localização
+            </CardTitle>
+            <CardDescription>
+              Cidade e estado da sua ONG, exibidos no site público e usados para
+              SEO local
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="city" className="text-sm font-medium">
+                  Cidade
+                </Label>
+                <Input
+                  id="city"
+                  placeholder="Ex: Criciúma"
+                  value={localCity ?? ''}
+                  onChange={(e) => {
+                    setLocalCity(e.target.value || null)
+                    setHasLocationChanges(true)
+                  }}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="state" className="text-sm font-medium">
+                  Estado
+                </Label>
+                <Select
+                  value={localState ?? ''}
+                  onValueChange={(value) => {
+                    setLocalState(value || null)
+                    setHasLocationChanges(true)
+                  }}
+                >
+                  <SelectTrigger id="state">
+                    <SelectValue placeholder="Selecione o estado" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {BRAZILIAN_STATES.map((state) => (
+                      <SelectItem key={state.value} value={state.value}>
+                        {state.label} ({state.value})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 border-t pt-4">
+              <Button
+                variant="outline"
+                onClick={handleResetLocation}
+                disabled={!hasLocationChanges}
+                className="gap-2"
+              >
+                <RotateCcw className="h-4 w-4" />
+                Desfazer
+              </Button>
+              <Button
+                onClick={handleSaveLocation}
+                disabled={
+                  !hasLocationChanges || updateLocationMutation.isPending
+                }
+                className="gap-2"
+              >
+                {updateLocationMutation.isPending ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Save className="h-4 w-4" />
+                )}
+                Salvar Localização
+              </Button>
+            </div>
           </CardContent>
         </Card>
 

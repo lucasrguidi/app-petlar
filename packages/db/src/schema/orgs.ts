@@ -17,6 +17,10 @@ export const orgs = sqliteTable(
     // Custom domain (nullable) - e.g., "queroadotar.com.br"
     customDomain: text('custom_domain'),
 
+    // Location (nullable)
+    city: text('city'),
+    state: text('state'),
+
     // Theme colors (nullable, fallback to defaults in code)
     primaryColor: text('primary_color'),
     primaryForegroundColor: text('primary_foreground_color'),

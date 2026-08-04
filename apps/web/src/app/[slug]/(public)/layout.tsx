@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation'
 
 import { getOrgBySlug } from '../_lib/get-org-by-slug'
 
+import { OrgJsonLd } from './_components/org-json-ld'
 import { PublicFooter } from './_components/public-footer'
 import { PublicHeader } from './_components/public-header'
 
@@ -50,8 +51,13 @@ export async function generateMetadata({
     : new URL(env.BETTER_AUTH_URL)
   const canonicalPath = buildOrgHref('/', slug, isCustomDomain)
   const canonicalUrl = new URL(canonicalPath, metadataBase).toString()
-  const title = `${org.name} | Adoção de Gatos`
-  const description = `Conheça os gatinhos disponíveis para adoção na ${org.name}. Processo simples, acolhedor e responsável.`
+  const locationSuffix = org.city
+    ? ` em ${org.city}${org.state ? `, ${org.state}` : ''}`
+    : ''
+  const title = org.city
+    ? `${org.name} | Adoção de Gatos${locationSuffix}`
+    : `${org.name} | Adoção de Gatos`
+  const description = `Conheça os gatinhos disponíveis para adoção na ${org.name}${locationSuffix}. Processo simples, acolhedor e responsável.`
   const images = org.logoUrl
     ? [{ url: org.logoUrl, alt: `Logo ${org.name}` }]
     : undefined
@@ -82,6 +88,12 @@ export async function generateMetadata({
       index: true,
       follow: true,
     },
+    ...(org.city && {
+      other: {
+        'geo.placename': `${org.city}${org.state ? `, ${org.state}` : ''}`,
+        ...(org.state && { 'geo.region': `BR-${org.state}` }),
+      },
+    }),
   }
 }
 
@@ -90,17 +102,32 @@ export default async function PublicLayout({
   params,
 }: PublicLayoutProps) {
   const { slug } = await params
-  const [org, isCustomDomain] = await Promise.all([
+  const [org, isCustomDomain, headersList] = await Promise.all([
     getOrgBySlug(slug),
     getIsCustomDomain(),
+    headers(),
   ])
 
   if (!org) {
     notFound()
   }
 
+  const host = headersList.get('host') ?? ''
+  const isCustomDomainHost = !isMainDomain(host)
+  const metadataBase = isCustomDomainHost
+    ? `https://${host}`
+    : env.BETTER_AUTH_URL
+  const canonicalUrl = `${metadataBase}${buildOrgHref('/', slug, isCustomDomain)}`
+
   return (
     <div className="bg-background relative min-h-screen">
+      <OrgJsonLd
+        orgName={org.name}
+        orgLogo={org.logoUrl}
+        city={org.city}
+        state={org.state}
+        canonicalUrl={canonicalUrl}
+      />
       {/* Gradient overlays for depth - uses theme colors */}
       <div className="pointer-events-none fixed inset-0">
         {/* Warm accent top-left */}
@@ -141,7 +168,7 @@ export default async function PublicLayout({
       <div className="relative z-10 flex min-h-screen flex-col">
         <PublicHeader orgName={org.name} orgLogo={org.logoUrl} />
         <main className="flex-1">{children}</main>
-        <PublicFooter orgName={org.name} slug={slug} isCustomDomain={isCustomDomain} />
+        <PublicFooter orgName={org.name} slug={slug} isCustomDomain={isCustomDomain} city={org.city} state={org.state} />
       </div>
     </div>
   )

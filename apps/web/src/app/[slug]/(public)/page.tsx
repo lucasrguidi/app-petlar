@@ -21,7 +21,7 @@ export default async function PublicHomePage({ params }: PublicHomePageProps) {
 
   return (
     <>
-      <HomeHero slug={slug} isCustomDomain={isCustomDomain} />
+      <HomeHero slug={slug} isCustomDomain={isCustomDomain} city={org?.city} state={org?.state} />
       <HomeHowItWorks />
       <PublicCatsSection />
       {org && <AdoptionTermSection orgName={org.name} />}

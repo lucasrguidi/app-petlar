@@ -1,4 +1,4 @@
-import { Heart, PawPrint } from 'lucide-react'
+import { Heart, MapPin, PawPrint } from 'lucide-react'
 import { type Route } from 'next'
 import Link from 'next/link'
 
@@ -10,6 +10,8 @@ interface PublicFooterProps {
   orgName: string
   slug: string
   isCustomDomain: boolean
+  city: string | null
+  state: string | null
 }
 
 const links = [
@@ -23,6 +25,8 @@ export function PublicFooter({
   orgName,
   slug,
   isCustomDomain,
+  city,
+  state,
 }: PublicFooterProps) {
   const orgHref = (path: string) =>
     buildOrgHref(path, slug, isCustomDomain) as Route
@@ -58,6 +62,13 @@ export function PublicFooter({
                   <p className="text-muted-foreground/60 text-xs font-medium">
                     Adoção responsável
                   </p>
+                  {city && (
+                    <p className="text-muted-foreground/50 flex items-center gap-1 text-xs">
+                      <MapPin className="h-3 w-3" />
+                      {city}
+                      {state ? `, ${state}` : ''}
+                    </p>
+                  )}
                 </div>
               </div>
               <p className="text-foreground/80 max-w-sm text-sm leading-relaxed">

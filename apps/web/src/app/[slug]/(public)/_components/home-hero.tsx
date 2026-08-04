@@ -1,4 +1,4 @@
-import { ArrowDown, Heart, PawPrint } from 'lucide-react'
+import { ArrowDown, Heart, MapPin, PawPrint } from 'lucide-react'
 import { type Route } from 'next'
 import Link from 'next/link'
 
@@ -9,6 +9,8 @@ import { cn } from '@/lib/utils'
 interface HomeHeroProps {
   slug: string
   isCustomDomain: boolean
+  city?: string | null
+  state?: string | null
 }
 
 const trustItems = [
@@ -17,7 +19,7 @@ const trustItems = [
   { icon: '🛡️', text: 'Adoção segura e responsável' },
 ] as const
 
-export function HomeHero({ slug, isCustomDomain }: HomeHeroProps) {
+export function HomeHero({ slug, isCustomDomain, city, state }: HomeHeroProps) {
   const orgHref = (path: string) =>
     buildOrgHref(path, slug, isCustomDomain) as Route
   return (
@@ -46,6 +48,21 @@ export function HomeHero({ slug, isCustomDomain }: HomeHeroProps) {
                 Adoção com carinho e responsabilidade
               </span>
             </div>
+
+            {city && (
+              <div
+                className={cn(
+                  'inline-flex items-center gap-1.5 rounded-full px-3 py-1.5',
+                  'bg-white/60 backdrop-blur-sm',
+                  'border border-white/50',
+                  'text-xs font-medium text-foreground/70'
+                )}
+              >
+                <MapPin className="text-primary h-3 w-3" />
+                {city}
+                {state ? `, ${state}` : ''}
+              </div>
+            )}
 
             {/* Headline */}
             <div className="space-y-4">

@@ -25,6 +25,33 @@ export function SettingsLoadingSkeleton() {
           </CardContent>
         </Card>
 
+        {/* Location Card Skeleton */}
+        <Card className="border-border/60 bg-card/95 shadow-warm-sm rounded-xl">
+          <CardHeader className="space-y-1.5">
+            <div className="flex items-center gap-2">
+              <Skeleton className="h-5 w-5 rounded" />
+              <Skeleton className="h-6 w-28" />
+            </div>
+            <Skeleton className="h-4 w-72" />
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-14" />
+                <Skeleton className="h-10 w-full rounded-lg" />
+              </div>
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-14" />
+                <Skeleton className="h-10 w-full rounded-lg" />
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 border-t pt-4">
+              <Skeleton className="h-10 w-28 rounded-lg" />
+              <Skeleton className="h-10 w-40 rounded-lg" />
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Theme Card Skeleton */}
         <Card className="border-border/60 bg-card/95 shadow-warm-sm rounded-xl">
           <CardHeader className="space-y-1.5">

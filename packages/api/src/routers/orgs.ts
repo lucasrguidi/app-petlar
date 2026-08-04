@@ -1,4 +1,5 @@
 import { db } from '@app-petlar/db'
+import { BRAZILIAN_STATE_CODES } from '@app-petlar/db/constants/brazilian-states'
 import { orgs } from '@app-petlar/db/schema'
 import { TRPCError } from '@trpc/server'
 import { and, eq, ne } from 'drizzle-orm'
@@ -27,6 +28,21 @@ const updateThemeSchema = z.object({
   accentColor: hexColorSchema,
   mutedColor: hexColorSchema,
   mutedForegroundColor: hexColorSchema,
+})
+
+/**
+ * Schema for updating org location.
+ */
+const updateLocationSchema = z.object({
+  city: z.string().trim().min(1).max(100).nullable(),
+  state: z
+    .string()
+    .refine(
+      (val) =>
+        BRAZILIAN_STATE_CODES.includes(val as (typeof BRAZILIAN_STATE_CODES)[number]),
+      'Estado inválido'
+    )
+    .nullable(),
 })
 
 /**
@@ -67,6 +83,8 @@ export const orgsRouter = router({
           name: orgs.name,
           slug: orgs.slug,
           logoUrl: orgs.logoUrl,
+          city: orgs.city,
+          state: orgs.state,
         })
         .from(orgs)
         .where(eq(orgs.slug, input.slug))
@@ -87,6 +105,8 @@ export const orgsRouter = router({
         slug: orgs.slug,
         logoUrl: orgs.logoUrl,
         customDomain: orgs.customDomain,
+        city: orgs.city,
+        state: orgs.state,
         primaryColor: orgs.primaryColor,
         primaryForegroundColor: orgs.primaryForegroundColor,
         secondaryColor: orgs.secondaryColor,
@@ -170,6 +190,25 @@ export const orgsRouter = router({
         .update(orgs)
         .set({
           customDomain: input.customDomain,
+        })
+        .where(eq(orgs.id, orgId))
+
+      return { success: true }
+    }),
+
+  /**
+   * Update org location (city and state).
+   */
+  updateLocation: adminProcedure
+    .input(updateLocationSchema)
+    .mutation(async ({ ctx, input }) => {
+      const orgId = requireOrgId(ctx.session.user)
+
+      await db
+        .update(orgs)
+        .set({
+          city: input.city,
+          state: input.state,
         })
         .where(eq(orgs.id, orgId))
 

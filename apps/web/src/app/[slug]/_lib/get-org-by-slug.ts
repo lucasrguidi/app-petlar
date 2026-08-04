@@ -21,6 +21,8 @@ export interface OrgBySlug extends OrgTheme {
   slug: string
   logoUrl: string | null
   customDomain: string | null
+  city: string | null
+  state: string | null
 }
 
 /**
@@ -36,6 +38,8 @@ export const getOrgBySlug = cache(
         slug: orgs.slug,
         logoUrl: orgs.logoUrl,
         customDomain: orgs.customDomain,
+        city: orgs.city,
+        state: orgs.state,
         primaryColor: orgs.primaryColor,
         primaryForegroundColor: orgs.primaryForegroundColor,
         secondaryColor: orgs.secondaryColor,
