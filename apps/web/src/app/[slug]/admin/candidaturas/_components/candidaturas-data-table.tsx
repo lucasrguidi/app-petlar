@@ -10,6 +10,7 @@ import {
   PawPrint,
   UserRound,
 } from 'lucide-react'
+import { type Route } from 'next'
 import Link from 'next/link'
 import { useMemo } from 'react'
 
@@ -333,11 +334,13 @@ function getColumns(
                 className="h-8 rounded-lg px-2 text-xs"
               >
                 <Link
-                  href={buildOrgHref(
-                    `/admin/gatos/${catPageId}/interessados`,
-                    slug,
-                    isCustomDomain
-                  )}
+                  href={
+                    buildOrgHref(
+                      `/admin/gatos/${catPageId}/interessados`,
+                      slug,
+                      isCustomDomain
+                    ) as Route
+                  }
                 >
                   <ExternalLink className="h-3.5 w-3.5 sm:mr-1" />
                   <span className="hidden sm:inline">Interessados</span>
