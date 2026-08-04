@@ -205,6 +205,8 @@ export function CandidaturasPageContent({
     status: app.status as ApplicationStatus,
     isPermanentRejectionActive: app.isPermanentRejectionActive,
     createdAt: app.createdAt,
+    catId: app.catId,
+    groupId: app.groupId,
     catName: app.catName,
     catPhotoUrl: app.catPhotoUrl,
     groupCatNames: app.groupCatNames,

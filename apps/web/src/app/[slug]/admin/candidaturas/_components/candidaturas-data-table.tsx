@@ -3,12 +3,14 @@
 import {
   CalendarClock,
   Cat,
+  ExternalLink,
   Eye,
   Loader2,
   MessageCircle,
   PawPrint,
   UserRound,
 } from 'lucide-react'
+import Link from 'next/link'
 import { useMemo } from 'react'
 
 import {
@@ -20,6 +22,7 @@ import {
 import type { ApplicationStatus } from '../../gatos/[id]/interessados/_components/types'
 import type { ColumnDef } from '@tanstack/react-table'
 
+import { useIsCustomDomain } from '@/components/custom-domain-provider'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { DataTable } from '@/components/ui/data-table'
@@ -30,6 +33,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { useOrgSlug } from '@/hooks/use-org-slug'
+import { buildOrgHref } from '@/lib/org-href'
 import { cn } from '@/lib/utils'
 
 export interface CandidaturaRow {
@@ -39,6 +44,8 @@ export interface CandidaturaRow {
   status: ApplicationStatus
   isPermanentRejectionActive: boolean
   createdAt: string | Date
+  catId: string | null
+  groupId: string | null
   catName: string | null
   catPhotoUrl: string | null
   groupCatNames: string[] | null
@@ -86,6 +93,8 @@ function getStatusConfig(status: ApplicationStatus) {
 
 function getColumns(
   onOpenDetails: (applicationId: string) => void,
+  slug: string,
+  isCustomDomain: boolean,
   onUpdateStatus?: (applicationId: string, status: ApplicationStatus) => void,
   isUpdatingStatus?: boolean,
   updatingApplicationId?: string | null
@@ -112,6 +121,10 @@ function getColumns(
             <p className="text-muted-foreground truncate text-xs sm:hidden">
               <PawPrint className="mr-1 inline h-3 w-3" />
               {displayCatName}
+            </p>
+            <p className="text-muted-foreground truncate text-xs sm:hidden">
+              <CalendarClock className="mr-1 inline h-3 w-3" />
+              {formatDateTime(r.createdAt)}
             </p>
             <a
               href={toWhatsappLink(r.applicantWhatsapp)}
@@ -290,39 +303,64 @@ function getColumns(
       id: 'createdAt',
       accessorKey: 'createdAt',
       header: () => (
-        <span className="text-muted-foreground hidden items-center gap-1.5 text-xs font-medium lg:inline-flex">
+        <span className="text-muted-foreground hidden items-center gap-1.5 text-xs font-medium sm:inline-flex">
           <CalendarClock className="h-3.5 w-3.5 opacity-70" />
           Candidatura em
         </span>
       ),
       cell: ({ row }) => (
-        <span className="text-muted-foreground hidden text-xs lg:inline">
+        <span className="text-muted-foreground hidden text-xs sm:inline">
           {formatDateTime(row.original.createdAt)}
         </span>
       ),
-      meta: { className: 'hidden lg:table-cell w-40' },
+      meta: { className: 'hidden sm:table-cell w-40' },
     },
     {
       id: 'actions',
       header: () => null,
-      cell: ({ row }) => (
-        <div className="flex justify-end">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => onOpenDetails(row.original.id)}
-            className="h-8 rounded-lg px-2 text-xs sm:px-3"
-          >
-            <Eye className="h-3.5 w-3.5 sm:mr-1.5" />
-            <span className="ml-1 sm:hidden">Ver</span>
-            <span className="hidden sm:inline">Detalhes</span>
-          </Button>
-        </div>
-      ),
+      cell: ({ row }) => {
+        const r = row.original
+        const catPageId = r.catId ?? r.groupId
+
+        return (
+          <div className="flex items-center justify-end gap-1.5">
+            {catPageId && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                asChild
+                className="h-8 rounded-lg px-2 text-xs"
+              >
+                <Link
+                  href={buildOrgHref(
+                    `/admin/gatos/${catPageId}/interessados`,
+                    slug,
+                    isCustomDomain
+                  )}
+                >
+                  <ExternalLink className="h-3.5 w-3.5 sm:mr-1" />
+                  <span className="hidden sm:inline">Interessados</span>
+                </Link>
+              </Button>
+            )}
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => onOpenDetails(r.id)}
+              className="h-8 rounded-lg px-2 text-xs sm:px-3"
+            >
+              <Eye className="h-3.5 w-3.5 sm:mr-1.5" />
+              <span className="ml-1 sm:hidden">Ver</span>
+              <span className="hidden sm:inline">Detalhes</span>
+            </Button>
+          </div>
+        )
+      },
       meta: {
-        className: 'w-20 sm:w-28',
-        headerClassName: 'w-20 sm:w-28',
+        className: 'w-20 sm:w-52',
+        headerClassName: 'w-20 sm:w-52',
       },
     },
   ]
@@ -335,15 +373,27 @@ export function CandidaturasDataTable({
   isUpdatingStatus,
   updatingApplicationId,
 }: CandidaturasDataTableProps) {
+  const slug = useOrgSlug()
+  const isCustomDomain = useIsCustomDomain()
+
   const columns = useMemo(
     () =>
       getColumns(
         onOpenDetails,
+        slug,
+        isCustomDomain,
         onUpdateStatus,
         isUpdatingStatus,
         updatingApplicationId
       ),
-    [onOpenDetails, onUpdateStatus, isUpdatingStatus, updatingApplicationId]
+    [
+      onOpenDetails,
+      slug,
+      isCustomDomain,
+      onUpdateStatus,
+      isUpdatingStatus,
+      updatingApplicationId,
+    ]
   )
 
   return (

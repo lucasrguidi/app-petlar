@@ -2440,6 +2440,8 @@ export const applicationsRouter = router({
 
             return {
               ...row,
+              catId,
+              groupId,
               catName,
               catPhotoUrl,
               groupCatNames,
