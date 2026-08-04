@@ -7,12 +7,14 @@ import { Card, CardContent } from '@/components/ui/card'
 interface DashboardStatsGridProps {
   availableCatsCount: number
   pendingApplicationsCount: number
+  totalApplicationsCount: number
   totalAdoptions: number
 }
 
 export function DashboardStatsGrid({
   availableCatsCount,
   pendingApplicationsCount,
+  totalApplicationsCount,
   totalAdoptions,
 }: DashboardStatsGridProps) {
   const stats = [
@@ -30,6 +32,7 @@ export function DashboardStatsGrid({
       iconBg: 'bg-warning/15 text-warning',
       subtitle: 'candidaturas',
       attention: pendingApplicationsCount > 0,
+      extra: `${totalApplicationsCount} no total`,
     },
     {
       title: 'Adoções',
@@ -69,6 +72,11 @@ export function DashboardStatsGrid({
                     {stat.subtitle}
                   </span>
                 </div>
+                {stat.extra && (
+                  <p className="text-muted-foreground/70 text-xs">
+                    {stat.extra}
+                  </p>
+                )}
               </div>
             </CardContent>
           </Card>

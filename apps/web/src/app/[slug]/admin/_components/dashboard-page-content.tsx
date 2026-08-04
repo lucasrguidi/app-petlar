@@ -39,6 +39,7 @@ export function DashboardPageContent() {
         <DashboardStatsGrid
           availableCatsCount={data.availableCatsCount}
           pendingApplicationsCount={data.pendingApplicationsCount}
+          totalApplicationsCount={data.totalApplicationsCount}
           totalAdoptions={data.totalAdoptions}
         />
 

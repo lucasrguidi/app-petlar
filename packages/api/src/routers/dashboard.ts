@@ -73,19 +73,34 @@ export const dashboardRouter = router({
 
       const availableCatsCount = availableCatsResult?.count ?? 0
 
-      // 2. Pending applications count (confirmed but not processed)
+      // 2. Pending applications count (confirmed, pending, for available cats only)
       const [pendingApplicationsResult] = await db
+        .select({ count: count() })
+        .from(applications)
+        .innerJoin(cats, eq(applications.catId, cats.id))
+        .where(
+          and(
+            eq(applications.orgId, orgId),
+            isNotNull(applications.confirmedAt),
+            eq(applications.status, 'pending'),
+            eq(cats.status, 'available')
+          )
+        )
+
+      const pendingApplicationsCount = pendingApplicationsResult?.count ?? 0
+
+      // 2b. Total confirmed applications (all-time, any status)
+      const [totalApplicationsResult] = await db
         .select({ count: count() })
         .from(applications)
         .where(
           and(
             eq(applications.orgId, orgId),
-            isNotNull(applications.confirmedAt),
-            eq(applications.status, 'pending')
+            isNotNull(applications.confirmedAt)
           )
         )
 
-      const pendingApplicationsCount = pendingApplicationsResult?.count ?? 0
+      const totalApplicationsCount = totalApplicationsResult?.count ?? 0
 
       // 3. Total adoptions
       const [totalAdoptionsResult] = await db
@@ -155,6 +170,7 @@ export const dashboardRouter = router({
       return {
         availableCatsCount,
         pendingApplicationsCount,
+        totalApplicationsCount,
         totalAdoptions,
         topCats,
         timeline,
