@@ -1,8 +1,8 @@
 import { auth } from '@app-petlar/auth'
 import { db } from '@app-petlar/db'
-import { orgs, user as authUser } from '@app-petlar/db/schema'
+import { applications, cats, orgs, user as authUser } from '@app-petlar/db/schema'
 import { touchUserLastSeen } from '@app-petlar/db/user-activity'
-import { eq } from 'drizzle-orm'
+import { and, eq, sql } from 'drizzle-orm'
 import { type Metadata, type Route } from 'next'
 import { headers } from 'next/headers'
 import { notFound, redirect } from 'next/navigation'
@@ -38,6 +38,23 @@ async function getOrg(slug: string) {
     .where(eq(orgs.slug, slug))
 
   return org ?? null
+}
+
+async function getPendingApplicationsCount(orgId: string): Promise<number> {
+  const [result] = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(applications)
+    .innerJoin(cats, eq(cats.id, applications.catId))
+    .where(
+      and(
+        eq(applications.orgId, orgId),
+        eq(applications.status, 'pending'),
+        sql`${applications.confirmedAt} is not null`,
+        eq(cats.status, 'available')
+      )
+    )
+
+  return result?.count ?? 0
 }
 
 export default async function AdminLayout({
@@ -92,8 +109,12 @@ export default async function AdminLayout({
     redirect(loginHref)
   }
 
+  let pendingApplicationsCount = 0
   try {
-    await touchUserLastSeen(user.id)
+    ;[pendingApplicationsCount] = await Promise.all([
+      getPendingApplicationsCount(org.id),
+      touchUserLastSeen(user.id),
+    ])
   } catch {
     // Best effort only.
   }
@@ -113,6 +134,7 @@ export default async function AdminLayout({
         orgName={org.name}
         orgLogo={org.logoUrl}
         userRole={user.role}
+        pendingApplicationsCount={pendingApplicationsCount}
       />
 
       {/* Main content area - flex column with fixed header */}

@@ -2294,4 +2294,184 @@ export const applicationsRouter = router({
         },
       }
     }),
+
+  listAll: protectedProcedure
+    .input(
+      z.object({
+        status: z.enum(applicationStatuses).optional(),
+        search: z.string().trim().max(200).optional(),
+        page: z.number().int().min(1).default(1),
+        limit: z.number().int().min(1).max(50).default(15),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const orgId = requireOrgId(ctx.session.user)
+      const offset = (input.page - 1) * input.limit
+
+      const whereConditions: SQL[] = [
+        eq(applications.orgId, orgId),
+        sql`${applications.confirmedAt} is not null`,
+      ]
+
+      if (input.status) {
+        whereConditions.push(eq(applications.status, input.status))
+      }
+
+      if (input.search) {
+        const normalizedSearch = normalizeSearchText(input.search)
+        if (normalizedSearch.length > 0) {
+          whereConditions.push(
+            sql`coalesce(${applications.applicantNameNormalized}, '') like ${`%${normalizedSearch}%`}`
+          )
+        }
+      }
+
+      const [countResult] = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(applications)
+        .where(and(...whereConditions))
+
+      const rows = await db
+        .select({
+          id: applications.id,
+          applicantName: applications.applicantName,
+          applicantWhatsapp: applications.applicantWhatsapp,
+          status: applications.status,
+          createdAt: applications.createdAt,
+          catId: applications.catId,
+          groupId: applications.groupId,
+          activePermanentRejectionId: permanentRejections.id,
+        })
+        .from(applications)
+        .leftJoin(
+          permanentRejections,
+          and(
+            eq(permanentRejections.orgId, applications.orgId),
+            sql`lower(trim(${applications.applicantEmail})) = ${permanentRejections.applicantEmail}`,
+            eq(permanentRejections.active, true)
+          )
+        )
+        .where(and(...whereConditions))
+        .orderBy(desc(applications.createdAt))
+        .limit(input.limit)
+        .offset(offset)
+
+      const catIds = rows
+        .map((r) => r.catId)
+        .filter((id): id is string => id !== null)
+      const groupIds = rows
+        .map((r) => r.groupId)
+        .filter((id): id is string => id !== null)
+
+      const catInfoMap = new Map<
+        string,
+        { name: string; photoUrl: string | null }
+      >()
+      const groupInfoMap = new Map<string, { catNames: string[] }>()
+
+      if (catIds.length > 0) {
+        const uniqueCatIds = [...new Set(catIds)]
+        const catRows = await db
+          .select({ id: cats.id, name: cats.name })
+          .from(cats)
+          .where(sql`${cats.id} IN ${uniqueCatIds}`)
+
+        const photos = await db
+          .select({ catId: catPhotos.catId, url: catPhotos.url })
+          .from(catPhotos)
+          .where(sql`${catPhotos.catId} IN ${uniqueCatIds}`)
+          .orderBy(catPhotos.catId, catPhotos.order)
+
+        const firstPhotoByCatId = new Map<string, string>()
+        for (const photo of photos) {
+          if (!firstPhotoByCatId.has(photo.catId)) {
+            firstPhotoByCatId.set(photo.catId, photo.url)
+          }
+        }
+
+        for (const cat of catRows) {
+          catInfoMap.set(cat.id, {
+            name: cat.name,
+            photoUrl: firstPhotoByCatId.get(cat.id) ?? null,
+          })
+        }
+      }
+
+      if (groupIds.length > 0) {
+        const uniqueGroupIds = [...new Set(groupIds)]
+        const groupCats = await db
+          .select({ groupId: cats.groupId, name: cats.name })
+          .from(cats)
+          .where(sql`${cats.groupId} IN ${uniqueGroupIds}`)
+
+        for (const gc of groupCats) {
+          if (!gc.groupId) continue
+          const existing = groupInfoMap.get(gc.groupId)
+          if (existing) {
+            existing.catNames.push(gc.name)
+          } else {
+            groupInfoMap.set(gc.groupId, { catNames: [gc.name] })
+          }
+        }
+      }
+
+      const total = countResult?.count ?? 0
+
+      return {
+        applications: rows.map(
+          ({ activePermanentRejectionId, catId, groupId, ...row }) => {
+            let catName: string | null = null
+            let catPhotoUrl: string | null = null
+            let groupCatNames: string[] | null = null
+
+            if (groupId) {
+              const group = groupInfoMap.get(groupId)
+              if (group) {
+                groupCatNames = group.catNames
+                catName = group.catNames.join(' e ')
+              }
+            } else if (catId) {
+              const cat = catInfoMap.get(catId)
+              if (cat) {
+                catName = cat.name
+                catPhotoUrl = cat.photoUrl
+              }
+            }
+
+            return {
+              ...row,
+              catName,
+              catPhotoUrl,
+              groupCatNames,
+              isPermanentRejectionActive: Boolean(activePermanentRejectionId),
+            }
+          }
+        ),
+        pagination: {
+          page: input.page,
+          limit: input.limit,
+          total,
+          totalPages: Math.ceil(total / input.limit),
+        },
+      }
+    }),
+
+  pendingCount: protectedProcedure.query(async ({ ctx }) => {
+    const orgId = requireOrgId(ctx.session.user)
+
+    const [result] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(applications)
+      .innerJoin(cats, eq(cats.id, applications.catId))
+      .where(
+        and(
+          eq(applications.orgId, orgId),
+          eq(applications.status, 'pending'),
+          sql`${applications.confirmedAt} is not null`,
+          eq(cats.status, 'available')
+        )
+      )
+
+    return { count: result?.count ?? 0 }
+  }),
 })

@@ -3,6 +3,7 @@
 import {
   Cat,
   ChevronRight,
+  ClipboardList,
   FileText,
   Handshake,
   Heart,
@@ -32,6 +33,7 @@ interface NavItem {
   icon: React.ElementType
   adminOnly?: boolean
   description: string
+  badge?: number
 }
 
 interface NavSection {
@@ -44,12 +46,14 @@ interface AdminSidebarProps {
   orgName: string
   orgLogo: string | null
   userRole: UserRole
+  pendingApplicationsCount?: number
 }
 
 export function AdminSidebar({
   orgName,
   orgLogo,
   userRole,
+  pendingApplicationsCount,
 }: AdminSidebarProps) {
   const pathname = usePathname()
   const slug = useOrgSlug()
@@ -80,6 +84,13 @@ export function AdminSidebar({
           href: orgHref('/admin/adotados'),
           icon: Heart,
           description: 'Histórico de adoções',
+        },
+        {
+          title: 'Candidaturas',
+          href: orgHref('/admin/candidaturas'),
+          icon: ClipboardList,
+          description: 'Todas as candidaturas',
+          badge: pendingApplicationsCount,
         },
         {
           title: 'Formulários',
@@ -219,8 +230,20 @@ export function AdminSidebar({
                     <Icon className="h-4 w-4" />
                   </div>
 
-                  <div className="flex-1">
+                  <div className="flex flex-1 items-center gap-2">
                     <span>{item.title}</span>
+                    {item.badge != null && item.badge > 0 && (
+                      <span
+                        className={cn(
+                          'flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[10px] font-bold leading-none',
+                          isActive
+                            ? 'bg-primary-foreground/25 text-primary-foreground'
+                            : 'bg-primary/15 text-primary'
+                        )}
+                      >
+                        {item.badge > 99 ? '99+' : item.badge}
+                      </span>
+                    )}
                   </div>
 
                   {/* Arrow on hover */}
