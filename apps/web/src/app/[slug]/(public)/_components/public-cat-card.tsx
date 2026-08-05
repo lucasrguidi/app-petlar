@@ -6,6 +6,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Heart,
+  CircleHelp,
   Mars,
   Scissors,
   Sparkles,
@@ -25,7 +26,7 @@ export interface PublicCatCardData {
   name: string
   ageYears: number | null
   ageMonths: number | null
-  sex: 'male' | 'female'
+  sex: 'male' | 'female' | 'unknown'
   fiv: 'positive' | 'negative' | 'not_tested'
   felv: 'positive' | 'negative' | 'not_tested'
   castrated: boolean
@@ -213,16 +214,20 @@ export function PublicCatCard({ cat }: PublicCatCardProps) {
             'shadow-sm backdrop-blur-sm',
             cat.sex === 'male'
               ? 'bg-blue-500/90 text-white'
-              : 'bg-pink-500/90 text-white'
+              : cat.sex === 'female'
+                ? 'bg-pink-500/90 text-white'
+                : 'bg-gray-500/90 text-white'
           )}
         >
           {cat.sex === 'male' ? (
             <Mars className="h-3.5 w-3.5" />
-          ) : (
+          ) : cat.sex === 'female' ? (
             <Venus className="h-3.5 w-3.5" />
+          ) : (
+            <CircleHelp className="h-3.5 w-3.5" />
           )}
           <span className="text-xs font-medium">
-            {cat.sex === 'male' ? 'Macho' : 'Fêmea'}
+            {cat.sex === 'male' ? 'Macho' : cat.sex === 'female' ? 'Fêmea' : 'Desconhecido'}
           </span>
         </div>
 

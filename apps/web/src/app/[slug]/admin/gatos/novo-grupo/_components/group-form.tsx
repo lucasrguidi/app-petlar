@@ -5,6 +5,7 @@ import {
   ArrowLeft,
   Cat as CatIcon,
   ChevronDown,
+  CircleHelp,
   HandHeart,
   ImageIcon,
   Loader2,
@@ -60,7 +61,7 @@ interface NewCatEntry {
   name: string
   ageYears: number | null
   ageMonths: number | null
-  sex: 'male' | 'female'
+  sex: 'male' | 'female' | 'unknown'
   fiv: TestResult
   felv: TestResult
   castrated: boolean
@@ -76,7 +77,7 @@ interface NewCatEntry {
 interface ExistingCatEntry {
   id: string
   name: string
-  sex: 'male' | 'female'
+  sex: 'male' | 'female' | 'unknown'
   photoUrl: string | null
 }
 
@@ -163,8 +164,8 @@ function SexButtons({
   value,
   onChange,
 }: {
-  value: 'male' | 'female'
-  onChange: (v: 'male' | 'female') => void
+  value: 'male' | 'female' | 'unknown'
+  onChange: (v: 'male' | 'female' | 'unknown') => void
 }) {
   return (
     <div className="space-y-1">
@@ -195,6 +196,18 @@ function SexButtons({
         >
           <Venus className="h-3 w-3" />
           F
+        </button>
+        <button
+          type="button"
+          onClick={() => onChange('unknown')}
+          className={cn(
+            'flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium transition-colors',
+            value === 'unknown'
+              ? 'bg-muted text-foreground'
+              : 'bg-muted/50 text-muted-foreground hover:bg-muted'
+          )}
+        >
+          ?
         </button>
       </div>
     </div>
@@ -408,7 +421,7 @@ function ExistingCatBadge({
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-medium">{cat.name}</p>
         <p className="text-muted-foreground text-xs">
-          {cat.sex === 'male' ? 'Macho' : 'Fêmea'}
+          {cat.sex === 'male' ? 'Macho' : cat.sex === 'female' ? 'Fêmea' : 'Desconhecido'}
         </p>
       </div>
       <Button
@@ -550,7 +563,7 @@ export function GroupForm({
         {
           id: cat.id,
           name: cat.name,
-          sex: cat.sex as 'male' | 'female',
+          sex: cat.sex as 'male' | 'female' | 'unknown',
           photoUrl: cat.photoUrl,
         },
       ])
@@ -873,8 +886,10 @@ export function GroupForm({
                         <div className="flex items-center gap-2">
                           {cat.sex === 'male' ? (
                             <Mars className="h-3 w-3 text-blue-500" />
-                          ) : (
+                          ) : cat.sex === 'female' ? (
                             <Venus className="h-3 w-3 text-pink-500" />
+                          ) : (
+                            <CircleHelp className="text-muted-foreground h-3 w-3" />
                           )}
                           <span>{cat.name}</span>
                         </div>

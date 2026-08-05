@@ -6,6 +6,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Heart,
+  CircleHelp,
   Mars,
   Scissors,
   Syringe,
@@ -24,7 +25,7 @@ interface GroupCatData {
   name: string
   ageYears: number | null
   ageMonths: number | null
-  sex: 'male' | 'female'
+  sex: 'male' | 'female' | 'unknown'
   fiv: 'positive' | 'negative' | 'not_tested'
   felv: 'positive' | 'negative' | 'not_tested'
   castrated: boolean
@@ -128,13 +129,17 @@ function CatHealthBlock({ cat }: { cat: GroupCatData }) {
             'text-[10px] font-medium',
             cat.sex === 'male'
               ? 'bg-blue-500/15 text-blue-700'
-              : 'bg-pink-500/15 text-pink-700'
+              : cat.sex === 'female'
+                ? 'bg-pink-500/15 text-pink-700'
+                : 'bg-muted text-muted-foreground'
           )}
         >
           {cat.sex === 'male' ? (
             <Mars className="h-2.5 w-2.5" />
-          ) : (
+          ) : cat.sex === 'female' ? (
             <Venus className="h-2.5 w-2.5" />
+          ) : (
+            <CircleHelp className="h-2.5 w-2.5" />
           )}
         </span>
         <span className="text-xs text-muted-foreground/60">

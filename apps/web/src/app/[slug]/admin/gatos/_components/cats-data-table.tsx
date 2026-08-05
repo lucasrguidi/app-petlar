@@ -5,6 +5,7 @@ import {
   Check,
   ChevronLeft,
   ChevronRight,
+  CircleHelp,
   ExternalLink,
   Image as ImageIcon,
   Mars,
@@ -57,7 +58,7 @@ interface Cat {
   name: string
   ageYears: number | null
   ageMonths: number | null
-  sex: 'male' | 'female'
+  sex: 'male' | 'female' | 'unknown'
   fiv: 'positive' | 'negative' | 'not_tested'
   felv: 'positive' | 'negative' | 'not_tested'
   castrated: boolean
@@ -400,8 +401,10 @@ function GroupExpandedContent({
                   </span>
                   {cat.sex === 'male' ? (
                     <Mars className="h-3.5 w-3.5 text-blue-500" />
-                  ) : (
+                  ) : cat.sex === 'female' ? (
                     <Venus className="h-3.5 w-3.5 text-pink-500" />
+                  ) : (
+                    <CircleHelp className="text-muted-foreground h-3.5 w-3.5" />
                   )}
                   <span className="text-muted-foreground text-xs tabular-nums">
                     {formatAge(cat.ageYears, cat.ageMonths)}
@@ -529,8 +532,10 @@ function getColumns(
                     <span key={cat.id}>
                       {cat.sex === 'male' ? (
                         <Mars className="h-3 w-3 text-blue-500" />
-                      ) : (
+                      ) : cat.sex === 'female' ? (
                         <Venus className="h-3 w-3 text-pink-500" />
+                      ) : (
+                        <CircleHelp className="text-muted-foreground h-3 w-3" />
                       )}
                     </span>
                   ))}
@@ -618,8 +623,10 @@ function getColumns(
                 <span className="text-border">•</span>
                 {cat.sex === 'male' ? (
                   <Mars className="h-3 w-3 text-blue-500" />
-                ) : (
+                ) : cat.sex === 'female' ? (
                   <Venus className="h-3 w-3 text-pink-500" />
+                ) : (
+                  <CircleHelp className="text-muted-foreground h-3 w-3" />
                 )}
               </p>
 
@@ -684,8 +691,10 @@ function getColumns(
                 <span key={cat.id}>
                   {cat.sex === 'male' ? (
                     <Mars className="h-3.5 w-3.5 text-blue-600" />
-                  ) : (
+                  ) : cat.sex === 'female' ? (
                     <Venus className="h-3.5 w-3.5 text-pink-500" />
+                  ) : (
+                    <CircleHelp className="text-muted-foreground h-3.5 w-3.5" />
                   )}
                 </span>
               ))}
@@ -693,23 +702,28 @@ function getColumns(
           )
         }
 
-        const isMale = row.original.sex === 'male'
+        const sex = row.original.sex
         return (
           <span
             className={cn(
               'hidden items-center gap-1.5 text-sm md:inline-flex',
-              isMale ? 'text-blue-600' : 'text-pink-500'
+              sex === 'male' ? 'text-blue-600' : sex === 'female' ? 'text-pink-500' : 'text-muted-foreground'
             )}
           >
-            {isMale ? (
+            {sex === 'male' ? (
               <>
                 <Mars className="h-3.5 w-3.5" />
                 <span className="text-foreground/70 text-xs">Macho</span>
               </>
-            ) : (
+            ) : sex === 'female' ? (
               <>
                 <Venus className="h-3.5 w-3.5" />
                 <span className="text-foreground/70 text-xs">Fêmea</span>
+              </>
+            ) : (
+              <>
+                <CircleHelp className="h-3.5 w-3.5" />
+                <span className="text-foreground/70 text-xs">Desc.</span>
               </>
             )}
           </span>

@@ -4,6 +4,7 @@ import {
   Cat,
   Check,
   ChevronRight,
+  CircleHelp,
   Download,
   Mars,
   MessageCircle,
@@ -26,7 +27,7 @@ interface Adoption {
   id: string
   catId: string
   catName: string
-  catSex: 'male' | 'female'
+  catSex: 'male' | 'female' | 'unknown'
   catAgeYears: number | null
   catAgeMonths: number | null
   catFiv: 'positive' | 'negative' | 'not_tested'
@@ -173,15 +174,17 @@ function ExpandedContent({ adoption }: { adoption: Adoption }) {
             <span
               className={cn(
                 'inline-flex items-center gap-1 text-sm',
-                adoption.catSex === 'male' ? 'text-blue-600' : 'text-pink-500'
+                adoption.catSex === 'male' ? 'text-blue-600' : adoption.catSex === 'female' ? 'text-pink-500' : 'text-muted-foreground'
               )}
             >
               {adoption.catSex === 'male' ? (
                 <Mars className="h-3.5 w-3.5" />
-              ) : (
+              ) : adoption.catSex === 'female' ? (
                 <Venus className="h-3.5 w-3.5" />
+              ) : (
+                <CircleHelp className="h-3.5 w-3.5" />
               )}
-              {adoption.catSex === 'male' ? 'Macho' : 'Fêmea'}
+              {adoption.catSex === 'male' ? 'Macho' : adoption.catSex === 'female' ? 'Fêmea' : 'Desconhecido'}
             </span>
             <span className="text-muted-foreground">•</span>
             <span className="text-foreground/80 text-sm">

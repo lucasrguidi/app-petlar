@@ -1,13 +1,13 @@
 'use client'
 
-import { Cat, Heart, Mars, Sparkles, Venus } from 'lucide-react'
+import { Cat, CircleHelp, Heart, Mars, Sparkles, Venus } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
 
 export interface ApplicationSheetCatSummary {
   id: string
   name: string
-  sex: 'male' | 'female'
+  sex: 'male' | 'female' | 'unknown'
   ageYears: number | null
   ageMonths: number | null
   photoUrl: string | null
@@ -134,15 +134,19 @@ export function ApplicationSheetHeader({
                 'text-xs font-medium',
                 cat.sex === 'male'
                   ? 'bg-blue-500/15 text-blue-700'
-                  : 'bg-pink-500/15 text-pink-700'
+                  : cat.sex === 'female'
+                    ? 'bg-pink-500/15 text-pink-700'
+                    : 'bg-muted text-muted-foreground'
               )}
             >
               {cat.sex === 'male' ? (
                 <Mars className="h-3.5 w-3.5" />
-              ) : (
+              ) : cat.sex === 'female' ? (
                 <Venus className="h-3.5 w-3.5" />
+              ) : (
+                <CircleHelp className="h-3.5 w-3.5" />
               )}
-              {cat.sex === 'male' ? 'Macho' : 'Fêmea'}
+              {cat.sex === 'male' ? 'Macho' : cat.sex === 'female' ? 'Fêmea' : 'Desconhecido'}
             </span>
           </div>
 

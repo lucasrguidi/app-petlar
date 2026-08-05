@@ -35,7 +35,7 @@ export function GroupEditLoader({ groupId }: GroupEditLoaderProps) {
   const existingCats = data.cats.map((cat) => ({
     id: cat.id,
     name: cat.name,
-    sex: cat.sex as 'male' | 'female',
+    sex: cat.sex as 'male' | 'female' | 'unknown',
     photoUrl: cat.photos[0]?.url ?? null,
   }))
 

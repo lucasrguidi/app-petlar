@@ -243,7 +243,7 @@ async function sendApplicationConfirmedEmail(params: {
   to: string
   applicantName: string
   catName: string
-  catSex: 'male' | 'female'
+  catSex: 'male' | 'female' | 'unknown'
   orgName: string
 }) {
   if (!env.RESEND_API_KEY || !env.EMAIL_FROM) {
@@ -1956,7 +1956,7 @@ export const applicationsRouter = router({
           .limit(1)
 
         let emailCatName: string | null = null
-        let emailCatSex: 'male' | 'female' = 'male'
+        let emailCatSex: 'male' | 'female' | 'unknown' = 'male'
 
         if (application.groupId) {
           const groupCats = await db

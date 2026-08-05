@@ -12,7 +12,7 @@ interface Cat {
   name: string
   ageYears: number | null
   ageMonths: number | null
-  sex: 'male' | 'female'
+  sex: 'male' | 'female' | 'unknown'
   fiv: 'positive' | 'negative' | 'not_tested'
   felv: 'positive' | 'negative' | 'not_tested'
   castrated: boolean
@@ -110,7 +110,7 @@ export function CatListItem({ cat, index }: CatListItemProps) {
                 </h3>
                 <p className="text-muted-foreground text-sm">
                   {formatAge(cat.ageYears, cat.ageMonths)} •{' '}
-                  {cat.sex === 'male' ? 'Macho' : 'Fêmea'}
+                  {cat.sex === 'male' ? 'Macho' : cat.sex === 'female' ? 'Fêmea' : 'Desconhecido'}
                 </p>
               </div>
 
