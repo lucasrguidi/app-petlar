@@ -30,7 +30,7 @@ export function CatsList({
   const { data, isLoading, isFetching, isError, refetch } = useQuery({
     ...trpc.cats.list.queryOptions({
       status: filters.status,
-      sex: filters.sex as 'male' | 'female' | undefined,
+      sex: filters.sex as 'male' | 'female' | 'unknown' | undefined,
       fiv: filters.fiv as 'positive' | 'negative' | 'not_tested' | undefined,
       felv: filters.felv as 'positive' | 'negative' | 'not_tested' | undefined,
       castrated: filters.castrated === 'true' ? true : undefined,

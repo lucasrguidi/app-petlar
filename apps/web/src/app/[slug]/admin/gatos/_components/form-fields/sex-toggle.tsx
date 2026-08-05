@@ -30,7 +30,7 @@ export function SexToggle({ control }: SexToggleProps) {
               type="single"
               value={field.value}
               onValueChange={(value) => value && field.onChange(value)}
-              className="bg-muted/35 grid grid-cols-2 gap-1 rounded-lg p-1"
+              className="bg-muted/35 grid grid-cols-3 gap-1 rounded-lg p-1"
             >
               <ToggleGroupItem
                 value="male"
@@ -43,6 +43,12 @@ export function SexToggle({ control }: SexToggleProps) {
                 className="data-[state=on]:border-primary/30 data-[state=on]:bg-primary/10 data-[state=on]:text-primary h-8 rounded-md border border-transparent px-3 text-xs"
               >
                 Fêmea
+              </ToggleGroupItem>
+              <ToggleGroupItem
+                value="unknown"
+                className="data-[state=on]:border-primary/30 data-[state=on]:bg-primary/10 data-[state=on]:text-primary h-8 rounded-md border border-transparent px-3 text-xs"
+              >
+                Desconhecido
               </ToggleGroupItem>
             </ToggleGroup>
           </FormControl>

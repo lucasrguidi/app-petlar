@@ -24,7 +24,7 @@ import { cn } from '@/lib/utils'
 import { trpc } from '@/utils/trpc'
 
 type AgeRange = 'kitten' | 'young' | 'adult' | 'senior'
-type SexFilter = 'male' | 'female'
+type SexFilter = 'male' | 'female' | 'unknown'
 
 interface PublicCatsFilters {
   sex?: SexFilter
@@ -42,6 +42,7 @@ const AGE_OPTIONS: Array<{ value: AgeRange; label: string; emoji: string }> = [
 const SEX_OPTIONS: Array<{ value: SexFilter; label: string; emoji: string }> = [
   { value: 'male', label: 'Macho', emoji: '♂️' },
   { value: 'female', label: 'Fêmea', emoji: '♀️' },
+  { value: 'unknown', label: 'Desconhecido', emoji: '❓' },
 ]
 
 type GridItem =
@@ -54,7 +55,7 @@ function parsePage(pageParam: string | null): number {
 }
 
 function parseSexFilter(value: string | null): SexFilter | undefined {
-  return value === 'male' || value === 'female' ? value : undefined
+  return value === 'male' || value === 'female' || value === 'unknown' ? value : undefined
 }
 
 function parseAgeRange(value: string | null): AgeRange | undefined {

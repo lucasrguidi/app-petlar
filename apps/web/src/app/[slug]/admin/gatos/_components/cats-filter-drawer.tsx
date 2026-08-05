@@ -114,6 +114,15 @@ export function CatsFilterDrawer({
               >
                 Fêmea
               </Button>
+              <Button
+                type="button"
+                variant={sex === 'unknown' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setSex(sex === 'unknown' ? undefined : 'unknown')}
+                className="flex-1 rounded-xl"
+              >
+                Desc.
+              </Button>
             </div>
           </div>
 

@@ -29,7 +29,7 @@ const catInputSchema = z.object({
   name: z.string().min(1).max(100),
   ageYears: z.number().int().min(0).max(30).nullable(),
   ageMonths: z.number().int().min(0).max(11).nullable(),
-  sex: z.enum(['male', 'female']),
+  sex: z.enum(['male', 'female', 'unknown']),
   fiv: z.enum(['positive', 'negative', 'not_tested']),
   felv: z.enum(['positive', 'negative', 'not_tested']),
   castrated: z.boolean(),
@@ -52,7 +52,7 @@ const photoSchema = z.object({
 // Schema de filtros para listagem
 const listFiltersSchema = z.object({
   status: z.enum(['available', 'in_progress']).optional(),
-  sex: z.enum(['male', 'female']).optional(),
+  sex: z.enum(['male', 'female', 'unknown']).optional(),
   fiv: z.enum(['positive', 'negative', 'not_tested']).optional(),
   felv: z.enum(['positive', 'negative', 'not_tested']).optional(),
   castrated: z.boolean().optional(),
@@ -63,7 +63,7 @@ const listFiltersSchema = z.object({
 
 const publicListFiltersSchema = z.object({
   slug: z.string().min(1),
-  sex: z.enum(['male', 'female']).optional(),
+  sex: z.enum(['male', 'female', 'unknown']).optional(),
   ageRange: z.enum(['kitten', 'young', 'adult', 'senior']).optional(),
   page: z.number().int().min(1).default(1),
   limit: z.number().int().min(1).max(200).default(9),

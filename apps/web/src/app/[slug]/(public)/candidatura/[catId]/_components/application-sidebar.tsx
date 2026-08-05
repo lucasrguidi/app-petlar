@@ -1,13 +1,13 @@
 'use client'
 
-import { Cat, Heart, Lightbulb, Mars, Sparkles, Venus } from 'lucide-react'
+import { Cat, CircleHelp, Heart, Lightbulb, Mars, Sparkles, Venus } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
 
 interface CatSummary {
   id: string
   name: string
-  sex: 'male' | 'female'
+  sex: 'male' | 'female' | 'unknown'
   ageYears: number | null
   ageMonths: number | null
   photoUrl: string | null
@@ -133,15 +133,19 @@ function CatInfoCard({
               'text-xs font-medium',
               cat.sex === 'male'
                 ? 'bg-blue-500/15 text-blue-700'
-                : 'bg-pink-500/15 text-pink-700'
+                : cat.sex === 'female'
+                  ? 'bg-pink-500/15 text-pink-700'
+                  : 'bg-muted text-muted-foreground'
             )}
           >
             {cat.sex === 'male' ? (
               <Mars className="h-3 w-3" />
-            ) : (
+            ) : cat.sex === 'female' ? (
               <Venus className="h-3 w-3" />
+            ) : (
+              <CircleHelp className="h-3 w-3" />
             )}
-            {cat.sex === 'male' ? 'Macho' : 'Fêmea'}
+            {cat.sex === 'male' ? 'Macho' : cat.sex === 'female' ? 'Fêmea' : 'Desconhecido'}
           </span>
         </div>
 

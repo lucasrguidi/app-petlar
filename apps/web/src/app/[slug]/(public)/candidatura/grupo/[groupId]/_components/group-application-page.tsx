@@ -102,7 +102,7 @@ function parsePendingFromStorage(
 interface GroupCatSummary {
   id: string
   name: string
-  sex: 'male' | 'female'
+  sex: 'male' | 'female' | 'unknown'
   ageYears: number | null
   ageMonths: number | null
   photoUrl: string | null

@@ -47,7 +47,7 @@ export const cats = sqliteTable(
     name: text('name').notNull(),
     ageYears: integer('age_years'),
     ageMonths: integer('age_months'),
-    sex: text('sex', { enum: ['male', 'female'] }).notNull(),
+    sex: text('sex', { enum: ['male', 'female', 'unknown'] }).notNull(),
 
     // Saúde
     fiv: text('fiv', {

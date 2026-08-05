@@ -18,7 +18,7 @@ import { cn } from '@/lib/utils'
 interface CatSummary {
   id: string
   name: string
-  sex: 'male' | 'female'
+  sex: 'male' | 'female' | 'unknown'
   photoUrl: string | null
 }
 
