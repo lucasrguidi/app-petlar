@@ -54,7 +54,11 @@ const ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/quicktime', 'video/webm']
 const ALLOWED_CONTENT_TYPES = [...ALLOWED_IMAGE_TYPES, ...ALLOWED_VIDEO_TYPES]
 
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024 // 5MB
-const MAX_VIDEO_SIZE = 50 * 1024 * 1024 // 50MB
+// Videos are transcoded to 720p in the browser before upload, so this is a
+// ceiling on the *compressed* result, not on what the applicant selected.
+// Duration is not validated server-side (that would require transcoding here);
+// this size cap is what actually bounds R2 cost.
+const MAX_VIDEO_SIZE = 80 * 1024 * 1024 // 80MB
 
 const CONFIRMATION_CODE_LENGTH = 6
 const CONFIRMATION_CODE_EXPIRATION_MINUTES = 30
@@ -93,8 +97,19 @@ const createApplicationSchema = z
       .array(
         z.object({
           fieldId: z.string(),
-          url: z.string().url(),
+          // Must be an object this API issued a presigned URL for, otherwise a
+          // client could persist an arbitrary URL as if it were uploaded media.
+          url: z
+            .string()
+            .url()
+            .refine(
+              (url) => getKeyFromUrl(url)?.startsWith('applications/') ?? false,
+              { message: 'URL de arquivo inválida' }
+            ),
           fileType: z.enum(['image', 'video']),
+          sizeBytes: z.number().int().positive().optional(),
+          mimeType: z.string().max(100).optional(),
+          durationSeconds: z.number().int().nonnegative().optional(),
         })
       )
       .optional(),
@@ -980,7 +995,11 @@ export const applicationsRouter = router({
       }
 
       const key = generateApplicationFileKey(filename)
-      const presignedUrl = await getPresignedUploadUrl(key, contentType)
+      // Signing the length makes the cap above enforceable: R2 rejects a PUT
+      // whose body size differs from what was declared here.
+      const presignedUrl = await getPresignedUploadUrl(key, contentType, {
+        contentLength: fileSize,
+      })
 
       return {
         presignedUrl,
@@ -1174,8 +1193,11 @@ export const applicationsRouter = router({
         })
       }
 
-      let catInfo: { id: string; name: string; photoUrl: string | null } | null =
-        null
+      let catInfo: {
+        id: string
+        name: string
+        photoUrl: string | null
+      } | null = null
       let groupInfo: {
         id: string
         cats: Array<{ id: string; name: string; photoUrl: string | null }>
@@ -1814,6 +1836,9 @@ export const applicationsRouter = router({
               fieldId: file.fieldId,
               url: file.url,
               fileType: file.fileType,
+              sizeBytes: file.sizeBytes ?? null,
+              mimeType: file.mimeType ?? null,
+              durationSeconds: file.durationSeconds ?? null,
             }))
           )
         }
@@ -2178,9 +2203,7 @@ export const applicationsRouter = router({
           formSnapshot: catGroups.formSnapshot,
         })
         .from(catGroups)
-        .where(
-          and(eq(catGroups.id, input.groupId), eq(catGroups.orgId, orgId))
-        )
+        .where(and(eq(catGroups.id, input.groupId), eq(catGroups.orgId, orgId)))
         .limit(1)
 
       if (!group) {

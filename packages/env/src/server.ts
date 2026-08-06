@@ -21,6 +21,15 @@ export const env = createEnv({
     // Email (Resend)
     RESEND_API_KEY: z.string().min(1).optional(),
     EMAIL_FROM: z.string().email().optional(),
+    // Cron (Vercel). Optional so the app still boots without it — the cron
+    // route fails closed (404) when it is unset.
+    CRON_SECRET: z.string().min(32).optional(),
+    // Set to 'true' to let the retention cron actually delete orphaned R2
+    // objects. Defaults to a dry run that only logs what it would remove.
+    RETENTION_DELETE_ORPHANS: z
+      .string()
+      .optional()
+      .transform((v) => v === 'true'),
     // Preview/Development
     SKIP_EMAIL_CONFIRMATION: z
       .string()

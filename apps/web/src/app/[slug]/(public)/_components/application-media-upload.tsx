@@ -4,6 +4,17 @@ import { useMutation } from '@tanstack/react-query'
 import { CheckCircle2, Image, Loader2, Upload, Video, X } from 'lucide-react'
 import { useRef, useState, type ChangeEvent, type DragEvent } from 'react'
 
+import {
+  CompressionCanceledError,
+  isVideoCompressionSupported,
+  useVideoCompression,
+} from '../_hooks/use-video-compression'
+import {
+  VIDEO_INPUT_LIMITS,
+  VIDEO_LEGACY_LIMITS,
+  VIDEO_OUTPUT_LIMITS,
+} from '../_hooks/video-compression-config'
+
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { trpc } from '@/utils/trpc'
@@ -18,25 +29,26 @@ interface ApplicationMediaUploadProps {
     fieldId: string
     url: string
     fileType: 'image' | 'video'
+    sizeBytes?: number
+    mimeType?: string
+    durationSeconds?: number
   }) => void
   onClear: (fieldId: string) => void
 }
 
-const MEDIA_LIMITS = {
-  image: {
-    maxSizeMb: 5,
-    maxSizeBytes: 5 * 1024 * 1024,
-    accept: 'image/jpeg,image/png,image/webp',
-    acceptedTypes: ['image/jpeg', 'image/png', 'image/webp'],
-  },
-  video: {
-    maxSizeMb: 50,
-    maxSizeBytes: 50 * 1024 * 1024,
-    maxDurationSeconds: 30,
-    accept: 'video/mp4,video/quicktime,video/webm',
-    acceptedTypes: ['video/mp4', 'video/quicktime', 'video/webm'],
-  },
-} as const
+const IMAGE_LIMITS = {
+  maxSizeMb: 5,
+  maxSizeBytes: 5 * 1024 * 1024,
+  accept: 'image/jpeg,image/png,image/webp',
+  acceptedTypes: ['image/jpeg', 'image/png', 'image/webp'],
+}
+
+const VIDEO_ACCEPT = {
+  accept: 'video/mp4,video/quicktime,video/webm',
+  acceptedTypes: ['video/mp4', 'video/quicktime', 'video/webm'],
+}
+
+type UploadPhase = 'idle' | 'compressing' | 'uploading'
 
 async function getVideoDurationInSeconds(file: File): Promise<number> {
   const objectUrl = URL.createObjectURL(file)
@@ -71,10 +83,12 @@ export function ApplicationMediaUpload({
   onClear,
 }: ApplicationMediaUploadProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const [isUploading, setIsUploading] = useState(false)
+  const [phase, setPhase] = useState<UploadPhase>('idle')
   const [isDragging, setIsDragging] = useState(false)
   const [progress, setProgress] = useState(0)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+
+  const { compressVideo, cancelCompression } = useVideoCompression()
 
   const getPresignedUrlMutation = useMutation(
     trpc.applications.getPresignedUrl.mutationOptions()
@@ -83,9 +97,19 @@ export function ApplicationMediaUpload({
     trpc.applications.confirmUpload.mutationOptions()
   )
 
-  const limit = MEDIA_LIMITS[kind]
-  const isDisabled = disabled || isUploading
+  const canCompress = kind === 'video' && isVideoCompressionSupported()
+  const videoLimits = canCompress ? VIDEO_INPUT_LIMITS : VIDEO_LEGACY_LIMITS
+
+  const limit =
+    kind === 'image' ? IMAGE_LIMITS : { ...VIDEO_ACCEPT, ...videoLimits }
+
+  const isBusy = phase !== 'idle'
+  const isDisabled = disabled || isBusy
   const MediaIcon = kind === 'image' ? Image : Video
+
+  const videoLimitHint = canCompress
+    ? `até ${VIDEO_INPUT_LIMITS.maxDurationSeconds / 60} minutos`
+    : `até ${VIDEO_LEGACY_LIMITS.maxSizeMb}MB e ${VIDEO_LEGACY_LIMITS.maxDurationSeconds}s`
 
   const validateFile = async (file: File) => {
     if (!(limit.acceptedTypes as readonly string[]).includes(file.type)) {
@@ -97,12 +121,13 @@ export function ApplicationMediaUpload({
     }
 
     if (kind === 'video') {
-      const videoLimit = MEDIA_LIMITS.video
-
       try {
         const duration = await getVideoDurationInSeconds(file)
-        if (duration > videoLimit.maxDurationSeconds) {
-          return `Vídeo muito longo. Máximo: ${videoLimit.maxDurationSeconds} segundos.`
+        if (duration > videoLimits.maxDurationSeconds) {
+          const maxMinutes = Math.round(videoLimits.maxDurationSeconds / 60)
+          return videoLimits.maxDurationSeconds >= 60
+            ? `Vídeo muito longo. Máximo: ${maxMinutes} minuto${maxMinutes > 1 ? 's' : ''}.`
+            : `Vídeo muito longo. Máximo: ${videoLimits.maxDurationSeconds} segundos.`
         }
       } catch (error) {
         if (error instanceof Error) {
@@ -153,16 +178,36 @@ export function ApplicationMediaUpload({
       return
     }
 
-    setIsUploading(true)
-
     try {
+      let upload = file
+      let durationSeconds: number | undefined
+
+      if (kind === 'video') {
+        durationSeconds = Math.round(await getVideoDurationInSeconds(file))
+      }
+
+      if (canCompress) {
+        setPhase('compressing')
+        upload = await compressVideo(file, { onProgress: setProgress })
+
+        if (upload.size > VIDEO_OUTPUT_LIMITS.maxSizeBytes) {
+          setErrorMessage(
+            `Mesmo otimizado, o vídeo ficou acima de ${VIDEO_OUTPUT_LIMITS.maxSizeMb}MB. Tente um vídeo mais curto.`
+          )
+          return
+        }
+      }
+
+      setPhase('uploading')
+      setProgress(0)
+
       const { presignedUrl, key } = await getPresignedUrlMutation.mutateAsync({
-        filename: file.name,
-        contentType: file.type,
-        fileSize: file.size,
+        filename: upload.name,
+        contentType: upload.type,
+        fileSize: upload.size,
       })
 
-      await uploadWithProgress(file, presignedUrl)
+      await uploadWithProgress(upload, presignedUrl)
 
       const { publicUrl } = await confirmUploadMutation.mutateAsync({ key })
 
@@ -170,17 +215,25 @@ export function ApplicationMediaUpload({
         fieldId,
         url: publicUrl,
         fileType: kind,
+        sizeBytes: upload.size,
+        mimeType: upload.type,
+        durationSeconds,
       })
 
       setProgress(100)
     } catch (error) {
+      // Cancelling is a deliberate user action, not an error worth surfacing.
+      if (error instanceof CompressionCanceledError) {
+        return
+      }
       if (error instanceof Error) {
         setErrorMessage(error.message)
       } else {
         setErrorMessage('Não foi possível concluir o upload.')
       }
     } finally {
-      setIsUploading(false)
+      setPhase('idle')
+      setProgress(0)
     }
   }
 
@@ -257,7 +310,7 @@ export function ApplicationMediaUpload({
           className={cn(
             'group relative w-full overflow-hidden rounded-2xl',
             'border-2 border-dashed',
-            'bg-gradient-to-br from-white to-muted/20',
+            'to-muted/20 bg-gradient-to-br from-white',
             'min-h-[140px] p-6',
             'flex flex-col items-center justify-center gap-3',
             'cursor-pointer transition-all duration-300',
@@ -271,8 +324,8 @@ export function ApplicationMediaUpload({
           <div
             className={cn(
               'absolute inset-0 opacity-0 transition-opacity duration-300',
-              'bg-gradient-to-br from-primary/5 via-transparent to-accent/5',
-              (isDragging || isUploading) && 'opacity-100'
+              'from-primary/5 to-accent/5 bg-gradient-to-br via-transparent',
+              (isDragging || isBusy) && 'opacity-100'
             )}
             aria-hidden="true"
           />
@@ -281,43 +334,50 @@ export function ApplicationMediaUpload({
           <div
             className={cn(
               'relative flex h-14 w-14 items-center justify-center rounded-2xl',
-              'bg-gradient-to-br from-primary/15 to-accent/10',
-              'ring-1 ring-primary/20',
+              'from-primary/15 to-accent/10 bg-gradient-to-br',
+              'ring-primary/20 ring-1',
               'transition-all duration-300',
-              'group-hover:scale-110 group-hover:shadow-lg group-hover:shadow-primary/20',
-              isDragging && 'scale-110 shadow-lg shadow-primary/20'
+              'group-hover:shadow-primary/20 group-hover:scale-110 group-hover:shadow-lg',
+              isDragging && 'shadow-primary/20 scale-110 shadow-lg'
             )}
           >
-            {isUploading ? (
-              <Loader2 className="h-7 w-7 animate-spin text-primary" />
+            {isBusy ? (
+              <Loader2 className="text-primary h-7 w-7 animate-spin" />
             ) : (
-              <Upload className="h-7 w-7 text-primary" />
+              <Upload className="text-primary h-7 w-7" />
             )}
           </div>
 
           {/* Text */}
           <div className="relative text-center">
-            <p className="font-medium text-foreground">
-              {isUploading
-                ? `Enviando... ${progress}%`
-                : isDragging
-                  ? 'Solte o arquivo aqui'
-                  : `Arraste ou clique para enviar ${kind === 'image' ? 'imagem' : 'vídeo'}`}
+            <p className="text-foreground font-medium">
+              {phase === 'compressing'
+                ? `Otimizando vídeo... ${progress}%`
+                : phase === 'uploading'
+                  ? `Enviando... ${progress}%`
+                  : isDragging
+                    ? 'Solte o arquivo aqui'
+                    : `Arraste ou clique para enviar ${kind === 'image' ? 'imagem' : 'vídeo'}`}
             </p>
-            <p className="mt-1 flex items-center justify-center gap-2 text-sm text-muted-foreground/70">
+            <p className="text-muted-foreground/70 mt-1 flex items-center justify-center gap-2 text-sm">
               <MediaIcon className="h-4 w-4" />
               {kind === 'image'
                 ? 'JPG, PNG ou WEBP • até 5MB'
-                : 'MP4, MOV ou WEBM • até 50MB e 30s'}
+                : `MP4, MOV ou WEBM • ${videoLimitHint}`}
             </p>
+            {canCompress && phase === 'idle' && (
+              <p className="text-muted-foreground/60 mt-1 text-xs">
+                O vídeo é otimizado automaticamente antes do envio.
+              </p>
+            )}
           </div>
 
-          {/* Progress bar during upload */}
-          {isUploading && (
+          {/* Progress bar during compression/upload */}
+          {isBusy && (
             <div className="relative mt-2 w-full max-w-xs">
-              <div className="h-2 overflow-hidden rounded-full bg-muted/35">
+              <div className="bg-muted/35 h-2 overflow-hidden rounded-full">
                 <div
-                  className="h-full rounded-full bg-gradient-to-r from-primary to-accent transition-all duration-200"
+                  className="from-primary to-accent h-full rounded-full bg-gradient-to-r transition-all duration-200"
                   style={{ width: `${progress}%` }}
                 />
               </div>
@@ -339,7 +399,7 @@ export function ApplicationMediaUpload({
               <img
                 src={value}
                 alt={`Arquivo enviado para ${label}`}
-                className="h-48 w-full bg-muted/10 object-contain"
+                className="bg-muted/10 h-48 w-full object-contain"
                 loading="lazy"
               />
             ) : (
@@ -384,6 +444,20 @@ export function ApplicationMediaUpload({
               Remover
             </Button>
           </div>
+        </div>
+      )}
+
+      {phase === 'compressing' && (
+        <div className="flex justify-center">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={cancelCompression}
+            className="text-muted-foreground hover:text-foreground h-8 rounded-lg px-3 text-xs"
+          >
+            Cancelar otimização
+          </Button>
         </div>
       )}
 

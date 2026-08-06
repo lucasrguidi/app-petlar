@@ -467,7 +467,7 @@ export function ApplicationDynamicFields({
                         typeof responseValue === 'string' ? responseValue : null
                       }
                       disabled={disabled}
-                      onUploaded={({ fieldId, url, fileType }) => {
+                      onUploaded={({ fieldId, url, fileType, ...metadata }) => {
                         setResponseValue(fieldId, url, {
                           shouldValidate: false,
                           shouldTouch: true,
@@ -477,6 +477,7 @@ export function ApplicationDynamicFields({
                             fieldId,
                             url,
                             fileType,
+                            ...metadata,
                           },
                           {
                             shouldValidate: false,

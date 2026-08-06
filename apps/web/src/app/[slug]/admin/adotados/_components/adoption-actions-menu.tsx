@@ -5,6 +5,8 @@ import { Eye, MoreVertical, RotateCcw, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
+import { getReturnDialogCopy } from './return-dialog-copy'
+
 import { useAuth } from '@/components/auth-provider'
 import { Button } from '@/components/ui/button'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
@@ -24,6 +26,8 @@ interface Adoption {
   catId: string
   catName: string
   adopterName: string
+  /** Drives the return dialog copy — see getReturnDialogCopy. */
+  adoptionDate: string
 }
 
 interface AdoptionActionsMenuProps {
@@ -53,6 +57,8 @@ export function AdoptionActionsMenu({
         })
         queryClient.invalidateQueries({ queryKey: [['cats']] })
         queryClient.invalidateQueries({ queryKey: [['dashboard']] })
+        // A late return also clears the candidate list.
+        queryClient.invalidateQueries({ queryKey: [['applications']] })
       },
       onError: (error) => {
         toast.error(error.message || 'Erro ao remover adoção')
@@ -160,12 +166,7 @@ export function AdoptionActionsMenu({
         onOpenChange={(nextOpen) => {
           if (!returnMutation.isPending) setReturnDialogOpen(nextOpen)
         }}
-        variant="warning"
-        icon={RotateCcw}
-        title={`Devolver ${adoption.catName} para disponíveis?`}
-        description="O registro desta adoção e o termo assinado serão apagados. O perfil do gato e todas as candidaturas permanecerão no sistema."
-        note="O gato voltará a aparecer como disponível na página pública."
-        actionLabel="Devolver para disponíveis"
+        {...getReturnDialogCopy(adoption.catName, adoption.adoptionDate)}
         actionLoadingLabel="Devolvendo..."
         isLoading={returnMutation.isPending}
         onAction={() => returnMutation.mutate({ id: adoption.id })}

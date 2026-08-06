@@ -31,6 +31,10 @@ export interface ApplicationFormFileInput {
   fieldId: string
   url: string
   fileType: 'image' | 'video'
+  // Recorded at upload time so storage can be measured and audited later.
+  sizeBytes?: number
+  mimeType?: string
+  durationSeconds?: number
 }
 
 export interface ApplicationFormValues {

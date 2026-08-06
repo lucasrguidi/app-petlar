@@ -25,6 +25,8 @@ import { toast } from 'sonner'
 
 import { PdfUpload } from '../../gatos/_components/mark-adopted-sheet/pdf-upload'
 
+import { getReturnDialogCopy } from './return-dialog-copy'
+
 import { useAuth } from '@/components/auth-provider'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
@@ -164,6 +166,8 @@ export function AdoptionDetailsSheet({
         })
         queryClient.invalidateQueries({ queryKey: [['cats']] })
         queryClient.invalidateQueries({ queryKey: [['dashboard']] })
+        // A late return also clears the candidate list.
+        queryClient.invalidateQueries({ queryKey: [['applications']] })
       },
       onError: (error) => {
         toast.error(error.message || 'Não foi possível devolver o gato')
@@ -817,12 +821,7 @@ export function AdoptionDetailsSheet({
         onOpenChange={(nextOpen) => {
           if (!returnMutation.isPending) setReturnDialogOpen(nextOpen)
         }}
-        variant="warning"
-        icon={RotateCcw}
-        title={`Devolver ${data?.catName ?? 'gato'} para disponíveis?`}
-        description="O registro desta adoção e o termo assinado serão apagados. O perfil do gato e todas as candidaturas permanecerão no sistema."
-        note="O gato voltará a aparecer como disponível na página pública."
-        actionLabel="Devolver para disponíveis"
+        {...getReturnDialogCopy(data?.catName ?? 'gato', data?.adoptionDate)}
         actionLoadingLabel="Devolvendo..."
         isLoading={returnMutation.isPending}
         isActionDisabled={!adoptionId}

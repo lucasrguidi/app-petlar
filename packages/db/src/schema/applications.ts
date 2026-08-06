@@ -180,6 +180,10 @@ export const applicationFiles = sqliteTable(
     fieldId: text('field_id').notNull(), // Reference to form field
     url: text('url').notNull(),
     fileType: text('file_type', { enum: applicationFileTypes }).notNull(),
+    // Metadata reported by the client at upload time (nullable for legacy rows)
+    sizeBytes: integer('size_bytes'),
+    mimeType: text('mime_type'),
+    durationSeconds: integer('duration_seconds'),
     createdAt: integer('created_at', { mode: 'timestamp_ms' })
       .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
       .notNull(),

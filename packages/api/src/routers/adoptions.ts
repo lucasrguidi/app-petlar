@@ -22,6 +22,7 @@ import { nanoid } from 'nanoid'
 import { z } from 'zod'
 
 import { protectedProcedure, router } from '../index'
+import { wipeAllCatApplications } from '../lib/media-retention'
 import {
   deleteFile,
   generateAdoptionTermKey,
@@ -29,9 +30,32 @@ import {
   getPresignedUploadUrl,
   getPublicUrl,
 } from '../lib/r2'
+import { isPastRetentionWindow } from '../lib/retention-window'
 
 const ALLOWED_PDF_TYPES = ['application/pdf']
 const MAX_PDF_SIZE = 10 * 1024 * 1024 // 10MB
+
+/**
+ * Clear the candidate list of a cat returned after the retention window.
+ *
+ * Deliberately runs after the return transaction commits and swallows errors:
+ * a few lingering applications are a benign, fixable state, whereas losing them
+ * because the return itself failed would not be recoverable.
+ */
+async function wipeReturnedCatApplications(
+  catId: string,
+  groupId: string | null
+) {
+  try {
+    await wipeAllCatApplications(catId, groupId)
+  } catch (error) {
+    console.error('Erro ao limpar candidaturas do gato devolvido', {
+      catId,
+      groupId,
+      error,
+    })
+  }
+}
 
 const listFiltersSchema = z.object({
   search: z.string().trim().max(200).optional(),
@@ -686,6 +710,7 @@ export const adoptionsRouter = router({
           id: adoptions.id,
           catId: adoptions.catId,
           groupId: adoptions.groupId,
+          adoptionDate: adoptions.adoptionDate,
           adoptionTermUrl: adoptions.adoptionTermUrl,
         })
         .from(adoptions)
@@ -697,6 +722,12 @@ export const adoptionsRouter = router({
           message: 'Adoção não encontrada',
         })
       }
+
+      // Past the retention window the losing applications are already gone and
+      // the adopter is no longer relevant, so the cat goes back to the public
+      // list with an empty candidate list. This is the source of truth
+      // regardless of whether the cron has run yet.
+      const isLateReturn = isPastRetentionWindow(existingAdoption.adoptionDate)
 
       if (existingAdoption.groupId) {
         const groupAdoptions = await db
@@ -733,15 +764,20 @@ export const adoptionsRouter = router({
         const adoptionIds = groupAdoptions.map((a) => a.id)
 
         await db.transaction(async (tx) => {
-          await tx
-            .delete(adoptions)
-            .where(inArray(adoptions.id, adoptionIds))
+          await tx.delete(adoptions).where(inArray(adoptions.id, adoptionIds))
 
           await tx
             .update(cats)
             .set({ status: 'available' })
             .where(inArray(cats.id, catIds))
         })
+
+        if (isLateReturn) {
+          await wipeReturnedCatApplications(
+            existingAdoption.catId,
+            existingAdoption.groupId
+          )
+        }
 
         return { success: true, returnedCount: catIds.length }
       }
@@ -770,6 +806,10 @@ export const adoptionsRouter = router({
           .set({ status: 'available' })
           .where(eq(cats.id, existingAdoption.catId))
       })
+
+      if (isLateReturn) {
+        await wipeReturnedCatApplications(existingAdoption.catId, null)
+      }
 
       return { success: true }
     }),

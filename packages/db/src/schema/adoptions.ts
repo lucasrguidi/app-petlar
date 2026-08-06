@@ -43,6 +43,12 @@ export const adoptions = sqliteTable(
     adoptionTermUrl: text('adoption_term_url'),
     notes: text('notes'),
 
+    // Retention: set once the losing applications for this cat/group have been
+    // purged (60 days after adoption). Idempotency marker for the cron.
+    applicationsPurgedAt: integer('applications_purged_at', {
+      mode: 'timestamp_ms',
+    }),
+
     // Audit
     createdBy: text('created_by')
       .notNull()

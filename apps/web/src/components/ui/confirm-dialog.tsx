@@ -11,7 +11,7 @@ import { cn } from '@/lib/utils'
 type ConfirmDialogVariant = 'destructive' | 'success' | 'warning' | 'info'
 type ConfirmDialogMode = 'alert' | 'dialog'
 
-interface ConfirmDialogProps {
+export interface ConfirmDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   /** 'alert' = AlertDialog (não fecha ao clicar fora). 'dialog' = Dialog (fecha ao clicar fora). */

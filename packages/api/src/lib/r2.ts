@@ -1,6 +1,8 @@
 import { env } from '@app-petlar/env/server'
 import {
   DeleteObjectCommand,
+  DeleteObjectsCommand,
+  ListObjectsV2Command,
   PutObjectCommand,
   S3Client,
 } from '@aws-sdk/client-s3'
@@ -52,18 +54,28 @@ export function generateSponsorFileKey(filename: string): string {
   return `sponsors/${uniqueId}.${extension}`
 }
 
+interface PresignedUploadOptions {
+  expiresIn?: number
+  contentLength?: number
+}
+
 /**
  * Get a presigned URL for uploading a file directly to R2
+ *
+ * When `contentLength` is provided it becomes part of the signature, so R2
+ * rejects any PUT whose body size differs. Without it the declared size is
+ * merely a claim by the client and the size limit is unenforceable.
  */
 export async function getPresignedUploadUrl(
   key: string,
   contentType: string,
-  expiresIn = 3600
+  { expiresIn = 3600, contentLength }: PresignedUploadOptions = {}
 ): Promise<string> {
   const command = new PutObjectCommand({
     Bucket: env.R2_BUCKET_NAME,
     Key: key,
     ContentType: contentType,
+    ContentLength: contentLength,
   })
 
   return getSignedUrl(r2Client, command, { expiresIn })
@@ -86,6 +98,61 @@ export async function deleteFile(key: string): Promise<void> {
   })
 
   await r2Client.send(command)
+}
+
+/**
+ * Delete many files from R2 in batches of 1000 (the S3 API limit)
+ */
+export async function deleteFiles(keys: string[]): Promise<void> {
+  for (let index = 0; index < keys.length; index += 1000) {
+    const batch = keys.slice(index, index + 1000)
+
+    await r2Client.send(
+      new DeleteObjectsCommand({
+        Bucket: env.R2_BUCKET_NAME,
+        Delete: { Objects: batch.map((key) => ({ Key: key })) },
+      })
+    )
+  }
+}
+
+export interface R2Object {
+  key: string
+  size: number
+  lastModified: Date | null
+}
+
+/**
+ * List every object under a prefix, following pagination to the end
+ */
+export async function listAllObjects(prefix: string): Promise<R2Object[]> {
+  const objects: R2Object[] = []
+  let continuationToken: string | undefined
+
+  do {
+    const response = await r2Client.send(
+      new ListObjectsV2Command({
+        Bucket: env.R2_BUCKET_NAME,
+        Prefix: prefix,
+        ContinuationToken: continuationToken,
+      })
+    )
+
+    for (const item of response.Contents ?? []) {
+      if (!item.Key) continue
+      objects.push({
+        key: item.Key,
+        size: item.Size ?? 0,
+        lastModified: item.LastModified ?? null,
+      })
+    }
+
+    continuationToken = response.IsTruncated
+      ? response.NextContinuationToken
+      : undefined
+  } while (continuationToken)
+
+  return objects
 }
 
 /**

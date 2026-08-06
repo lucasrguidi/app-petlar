@@ -3,5 +3,11 @@
   "framework": "nextjs",
   "buildCommand": "cd ../.. && pnpm --filter @app-petlar/db db:migrate && pnpm turbo build --filter=web",
   "installCommand": "cd ../.. && pnpm install --frozen-lockfile",
-  "ignoreCommand": "cd ../.. && npx turbo-ignore web"
+  "ignoreCommand": "cd ../.. && npx turbo-ignore web",
+  "crons": [
+    {
+      "path": "/api/cron/media-retention",
+      "schedule": "0 4 * * *"
+    }
+  ]
 }
