@@ -141,6 +141,13 @@
       "when": 1785850504294,
       "tag": "0019_add-org-location-fields",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "6",
+      "when": 1785988099694,
+      "tag": "0020_add-media-metadata-and-retention",
+      "breakpoints": true
     }
   ]
 }
