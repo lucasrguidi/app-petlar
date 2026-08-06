@@ -142,6 +142,11 @@ export function createApplicationFormSchema(fields: ApplicationFormField[]) {
           fieldId: z.string().min(1),
           url: z.string().url(),
           fileType: z.enum(['image', 'video']),
+          // Zod strips unknown keys, so these have to be declared here or the
+          // metadata never reaches the submit mutation.
+          sizeBytes: z.number().int().positive().optional(),
+          mimeType: z.string().optional(),
+          durationSeconds: z.number().int().nonnegative().optional(),
         })
       ),
       lgpdConsent: z
