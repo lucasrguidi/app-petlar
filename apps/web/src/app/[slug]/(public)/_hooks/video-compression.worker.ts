@@ -57,14 +57,21 @@ async function compress(file: File) {
         height: Math.round((track.displayHeight * scale) / 2) * 2,
         fit: 'contain',
         codec: 'avc',
-        quality: new Quality(VIDEO_TARGET_BITRATE),
+        // Must be the object form: `new Quality(n)` treats a bare number as a
+        // qualitative level on a 0-1 scale, not as a bitrate. Constant mode
+        // keeps the output size predictable, which is what the 80MB ceiling
+        // depends on.
+        quality: new Quality({
+          bitrate: VIDEO_TARGET_BITRATE,
+          bitrateMode: 'constant',
+        }),
         forceTranscode: true,
       }
     },
     audio: {
       codec: 'aac',
       numberOfChannels: 1,
-      quality: new Quality(VIDEO_TARGET_AUDIO_BITRATE),
+      quality: new Quality({ bitrate: VIDEO_TARGET_AUDIO_BITRATE }),
     },
   })
 
