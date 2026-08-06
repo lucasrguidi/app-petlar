@@ -5,7 +5,9 @@ import {
   applications,
   catGroupPhotos,
   catPhotos,
+  orgs,
   sponsors,
+  user,
 } from '@app-petlar/db/schema'
 import { and, eq, inArray, isNull, lte, ne, type SQL } from 'drizzle-orm'
 
@@ -183,19 +185,38 @@ const MANAGED_PREFIXES = [
   'sponsors/',
 ]
 
-/** Every R2 key currently referenced by a row in the database. */
+/**
+ * Every R2 key currently referenced by a row in the database.
+ *
+ * IMPORTANT: this must cover *every* column that can hold an R2 URL. A column
+ * missing from this list makes its objects look orphaned, and the sweep would
+ * delete live media. Note that `upload.ts` is a generic uploader writing under
+ * the `cats/` prefix — org logos and user avatars live there too, not just cat
+ * photos. When adding a column that stores an uploaded file, add it here.
+ */
 async function collectKeysInUse(): Promise<Set<string>> {
-  const [files, photos, groupPhotos, terms, logos] = await Promise.all([
-    db.select({ url: applicationFiles.url }).from(applicationFiles),
-    db.select({ url: catPhotos.url }).from(catPhotos),
-    db.select({ url: catGroupPhotos.url }).from(catGroupPhotos),
-    db.select({ url: adoptions.adoptionTermUrl }).from(adoptions),
-    db.select({ url: sponsors.logoUrl }).from(sponsors),
-  ])
+  const [files, photos, groupPhotos, terms, sponsorLogos, orgLogos, avatars] =
+    await Promise.all([
+      db.select({ url: applicationFiles.url }).from(applicationFiles),
+      db.select({ url: catPhotos.url }).from(catPhotos),
+      db.select({ url: catGroupPhotos.url }).from(catGroupPhotos),
+      db.select({ url: adoptions.adoptionTermUrl }).from(adoptions),
+      db.select({ url: sponsors.logoUrl }).from(sponsors),
+      db.select({ url: orgs.logoUrl }).from(orgs),
+      db.select({ url: user.image }).from(user),
+    ])
 
   const keys = new Set<string>()
 
-  for (const row of [...files, ...photos, ...groupPhotos, ...terms, ...logos]) {
+  for (const row of [
+    ...files,
+    ...photos,
+    ...groupPhotos,
+    ...terms,
+    ...sponsorLogos,
+    ...orgLogos,
+    ...avatars,
+  ]) {
     if (!row.url) continue
     const key = getKeyFromUrl(row.url)
     if (key) keys.add(key)
