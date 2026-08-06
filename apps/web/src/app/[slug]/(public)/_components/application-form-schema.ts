@@ -35,6 +35,13 @@ export interface ApplicationFormFileInput {
   sizeBytes?: number
   mimeType?: string
   durationSeconds?: number
+  // Compression diagnostics (video only, when the browser can transcode).
+  compressionMs?: number
+  originalSizeBytes?: number
+  originalWidth?: number
+  originalHeight?: number
+  hardwareConcurrency?: number | null
+  platform?: 'ios' | 'android' | 'desktop' | 'other'
 }
 
 export interface ApplicationFormValues {
@@ -147,6 +154,12 @@ export function createApplicationFormSchema(fields: ApplicationFormField[]) {
           sizeBytes: z.number().int().positive().optional(),
           mimeType: z.string().optional(),
           durationSeconds: z.number().int().nonnegative().optional(),
+          compressionMs: z.number().int().nonnegative().optional(),
+          originalSizeBytes: z.number().int().positive().optional(),
+          originalWidth: z.number().int().positive().optional(),
+          originalHeight: z.number().int().positive().optional(),
+          hardwareConcurrency: z.number().int().positive().nullable().optional(),
+          platform: z.enum(['ios', 'android', 'desktop', 'other']).optional(),
         })
       ),
       lgpdConsent: z

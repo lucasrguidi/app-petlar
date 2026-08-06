@@ -26,10 +26,18 @@ type WorkerRequest = CompressRequest | { type: 'cancel' }
 
 export type WorkerResponse =
   | { type: 'progress'; progress: number }
-  | { type: 'done'; buffer: ArrayBuffer }
+  | {
+      type: 'done'
+      buffer: ArrayBuffer
+      sourceWidth: number
+      sourceHeight: number
+    }
   | { type: 'error'; message: string }
 
 let activeConversion: Conversion | null = null
+
+/** Dimensions of the input, captured while configuring the video track. */
+let sourceSize = { width: 0, height: 0 }
 
 async function compress(file: File) {
   const input = new Input({
@@ -51,6 +59,7 @@ async function compress(file: File) {
       // target keep their dimensions.
       const longestEdge = Math.max(track.displayWidth, track.displayHeight)
       const scale = Math.min(1, VIDEO_TARGET_MAX_EDGE / longestEdge)
+      sourceSize = { width: track.displayWidth, height: track.displayHeight }
 
       return {
         width: Math.round((track.displayWidth * scale) / 2) * 2,
@@ -114,7 +123,15 @@ self.onmessage = async (event: MessageEvent<WorkerRequest>) => {
 
   try {
     const buffer = await compress(event.data.file)
-    post({ type: 'done', buffer }, [buffer])
+    post(
+      {
+        type: 'done',
+        buffer,
+        sourceWidth: sourceSize.width,
+        sourceHeight: sourceSize.height,
+      },
+      [buffer]
+    )
   } catch (error) {
     post({
       type: 'error',

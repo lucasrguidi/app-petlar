@@ -22,6 +22,41 @@ interface CompressOptions {
 }
 
 /**
+ * Diagnostics for answering "is transcoding fast enough on weak phones?".
+ *
+ * Deliberately coarse. The device model is not collected: iOS does not expose
+ * it, and storing one alongside an applicant's name and phone would go beyond
+ * what they consented to. Core count plus elapsed time answers the question
+ * without identifying anyone.
+ */
+export interface CompressionDiagnostics {
+  compressionMs: number
+  originalSizeBytes: number
+  originalWidth: number
+  originalHeight: number
+  hardwareConcurrency: number | null
+  platform: 'ios' | 'android' | 'desktop' | 'other'
+}
+
+export interface CompressionResult {
+  file: File
+  diagnostics: CompressionDiagnostics
+}
+
+function detectPlatform(): CompressionDiagnostics['platform'] {
+  if (typeof navigator === 'undefined') return 'other'
+
+  const ua = navigator.userAgent
+  // iPadOS reports a desktop UA; the touch-point check is the usual tell.
+  const isIpad = /Macintosh/.test(ua) && navigator.maxTouchPoints > 1
+
+  if (/iPhone|iPod/.test(ua) || isIpad) return 'ios'
+  if (/Android/.test(ua)) return 'android'
+  if (/Windows|Macintosh|Linux|CrOS/.test(ua)) return 'desktop'
+  return 'other'
+}
+
+/**
  * Transcodes a video to 720p H.264 in a worker before upload, so the file that
  * reaches R2 is a fraction of what the applicant selected. This is what makes
  * long house-tour videos uploadable on mobile networks.
@@ -54,7 +89,10 @@ export function useVideoCompression() {
   useEffect(() => teardown, [teardown])
 
   const compressVideo = useCallback(
-    (file: File, { onProgress }: CompressOptions = {}): Promise<File> => {
+    (
+      file: File,
+      { onProgress }: CompressOptions = {}
+    ): Promise<CompressionResult> => {
       teardown()
 
       const worker = new Worker(
@@ -62,8 +100,9 @@ export function useVideoCompression() {
         { type: 'module' }
       )
       workerRef.current = worker
+      const startedAt = performance.now()
 
-      return new Promise<File>((resolve, reject) => {
+      return new Promise<CompressionResult>((resolve, reject) => {
         rejectRef.current = reject
 
         worker.onmessage = (event: MessageEvent<WorkerResponse>) => {
@@ -87,7 +126,17 @@ export function useVideoCompression() {
             { type: 'video/mp4' }
           )
           teardown()
-          resolve(compressed)
+          resolve({
+            file: compressed,
+            diagnostics: {
+              compressionMs: Math.round(performance.now() - startedAt),
+              originalSizeBytes: file.size,
+              originalWidth: message.sourceWidth,
+              originalHeight: message.sourceHeight,
+              hardwareConcurrency: navigator.hardwareConcurrency ?? null,
+              platform: detectPlatform(),
+            },
+          })
         }
 
         worker.onerror = () => {

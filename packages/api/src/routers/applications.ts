@@ -4,6 +4,7 @@ import { formatEmailFrom } from '@app-petlar/auth/email-from'
 import { db } from '@app-petlar/db'
 import {
   applicationFiles,
+  applicationPlatforms,
   applications,
   applicationStatuses,
   catGroups,
@@ -110,6 +111,14 @@ const createApplicationSchema = z
           sizeBytes: z.number().int().positive().optional(),
           mimeType: z.string().max(100).optional(),
           durationSeconds: z.number().int().nonnegative().optional(),
+          // Compression diagnostics — coarse by design, see the schema comment
+          // on applicationPlatforms.
+          compressionMs: z.number().int().nonnegative().optional(),
+          originalSizeBytes: z.number().int().positive().optional(),
+          originalWidth: z.number().int().positive().optional(),
+          originalHeight: z.number().int().positive().optional(),
+          hardwareConcurrency: z.number().int().positive().nullable().optional(),
+          platform: z.enum(applicationPlatforms).optional(),
         })
       )
       .optional(),
@@ -1839,6 +1848,12 @@ export const applicationsRouter = router({
               sizeBytes: file.sizeBytes ?? null,
               mimeType: file.mimeType ?? null,
               durationSeconds: file.durationSeconds ?? null,
+              compressionMs: file.compressionMs ?? null,
+              originalSizeBytes: file.originalSizeBytes ?? null,
+              originalWidth: file.originalWidth ?? null,
+              originalHeight: file.originalHeight ?? null,
+              hardwareConcurrency: file.hardwareConcurrency ?? null,
+              platform: file.platform ?? null,
             }))
           )
         }

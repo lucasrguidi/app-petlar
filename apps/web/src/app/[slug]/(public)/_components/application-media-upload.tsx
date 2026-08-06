@@ -8,6 +8,7 @@ import {
   CompressionCanceledError,
   isVideoCompressionSupported,
   useVideoCompression,
+  type CompressionDiagnostics,
 } from '../_hooks/use-video-compression'
 import {
   VIDEO_INPUT_LIMITS,
@@ -32,7 +33,7 @@ interface ApplicationMediaUploadProps {
     sizeBytes?: number
     mimeType?: string
     durationSeconds?: number
-  }) => void
+  } & Partial<CompressionDiagnostics>) => void
   onClear: (fieldId: string) => void
 }
 
@@ -181,6 +182,7 @@ export function ApplicationMediaUpload({
     try {
       let upload = file
       let durationSeconds: number | undefined
+      let diagnostics: CompressionDiagnostics | undefined
 
       if (kind === 'video') {
         durationSeconds = Math.round(await getVideoDurationInSeconds(file))
@@ -188,7 +190,9 @@ export function ApplicationMediaUpload({
 
       if (canCompress) {
         setPhase('compressing')
-        upload = await compressVideo(file, { onProgress: setProgress })
+        const result = await compressVideo(file, { onProgress: setProgress })
+        upload = result.file
+        diagnostics = result.diagnostics
 
         if (upload.size > VIDEO_OUTPUT_LIMITS.maxSizeBytes) {
           setErrorMessage(
@@ -218,6 +222,7 @@ export function ApplicationMediaUpload({
         sizeBytes: upload.size,
         mimeType: upload.type,
         durationSeconds,
+        ...diagnostics,
       })
 
       setProgress(100)

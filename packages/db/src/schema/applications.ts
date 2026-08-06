@@ -27,6 +27,15 @@ export const applicationFileTypes = ['image', 'video'] as const
 
 export type ApplicationFileType = (typeof applicationFileTypes)[number]
 
+/**
+ * Coarse platform bucket for compression diagnostics. Deliberately not the
+ * device model: iOS does not expose it anyway, and storing one next to an
+ * applicant's name and phone would go beyond what they consented to.
+ */
+export const applicationPlatforms = ['ios', 'android', 'desktop', 'other'] as const
+
+export type ApplicationPlatform = (typeof applicationPlatforms)[number]
+
 // JSON type for dynamic form responses
 export interface ApplicationResponses {
   [fieldId: string]: string | boolean | null
@@ -184,6 +193,15 @@ export const applicationFiles = sqliteTable(
     sizeBytes: integer('size_bytes'),
     mimeType: text('mime_type'),
     durationSeconds: integer('duration_seconds'),
+
+    // Compression diagnostics: is transcoding fast enough on weak phones?
+    // Deliberately coarse — no device model, nothing that identifies a person.
+    originalSizeBytes: integer('original_size_bytes'),
+    originalWidth: integer('original_width'),
+    originalHeight: integer('original_height'),
+    compressionMs: integer('compression_ms'),
+    hardwareConcurrency: integer('hardware_concurrency'),
+    platform: text('platform', { enum: applicationPlatforms }),
     createdAt: integer('created_at', { mode: 'timestamp_ms' })
       .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
       .notNull(),
