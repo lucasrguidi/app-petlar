@@ -92,7 +92,7 @@ export async function sendCatAdoptedNotificationEmail(
     '',
     `Conheça os gatinhos disponíveis: ${availableCatsUrl}`,
     '',
-    `Se tiver dúvidas ou quiser conversar, é só responder este email.`,
+    `Se tiver dúvidas ou quiser conversar sobre um gatinho específico, é só nos chamar no WhatsApp.`,
     '',
     `Com muito carinho,`,
     `Equipe ${params.org.name}`,
@@ -168,7 +168,7 @@ export async function sendCatAdoptedNotificationEmail(
                     </table>
 
                     <p style="margin:0 0 4px 0;color:${styles.foreground};font-family:'DM Sans',Segoe UI,Arial,sans-serif;font-size:14px;line-height:1.6;opacity:0.9;">
-                      Se tiver dúvidas, quiser conversar sobre um gatinho específico ou precisar de qualquer coisa, é só responder este email. Estamos aqui.
+                      Se tiver dúvidas, quiser conversar sobre um gatinho específico ou precisar de qualquer coisa, é só nos chamar no WhatsApp. Estamos aqui. 💬
                     </p>
                   </td>
                 </tr>
