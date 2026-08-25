@@ -100,6 +100,11 @@ export const applications = sqliteTable(
     }),
     confirmedAt: integer('confirmed_at', { mode: 'timestamp_ms' }),
 
+    // Set when this applicant has been notified that the cat/group they
+    // applied for was adopted by someone else. Prevents double-sends if the
+    // admin undoes and re-creates the adoption.
+    closureNotifiedAt: integer('closure_notified_at', { mode: 'timestamp_ms' }),
+
     // Timestamps
     createdAt: integer('created_at', { mode: 'timestamp_ms' })
       .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)

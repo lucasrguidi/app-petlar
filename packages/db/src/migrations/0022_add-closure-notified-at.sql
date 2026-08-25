@@ -1,0 +1,1 @@
+ALTER TABLE `applications` ADD `closure_notified_at` integer;

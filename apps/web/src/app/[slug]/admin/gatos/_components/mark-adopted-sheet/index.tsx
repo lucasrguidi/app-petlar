@@ -1,6 +1,6 @@
 'use client'
 
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   Calendar,
   Heart,
@@ -17,6 +17,7 @@ import { AdopterSelect, type Applicant } from './adopter-select'
 import { PdfUpload } from './pdf-upload'
 
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
@@ -88,6 +89,7 @@ export function MarkAdoptedSheet({
     string | null
   >(null)
   const [isTermUploading, setIsTermUploading] = useState(false)
+  const [notifyLosingApplicants, setNotifyLosingApplicants] = useState(true)
   const [formData, setFormData] = useState<FormData>({
     adopterName: '',
     adopterPhone: '',
@@ -97,9 +99,18 @@ export function MarkAdoptedSheet({
     notes: '',
   })
 
+  const closureRecipientsQuery = useQuery(
+    trpc.adoptions.countClosureRecipients.queryOptions(
+      groupId ? { groupId } : { catId: cat.id },
+      { enabled: open }
+    )
+  )
+  const closureRecipientCount = closureRecipientsQuery.data?.count ?? 0
+
   // Reset form when modal opens
   useEffect(() => {
     if (open) {
+      setNotifyLosingApplicants(true)
       if (initialApplicant) {
         setSelectedApplicationId(initialApplicant.applicationId)
         setFormData({
@@ -239,6 +250,8 @@ export function MarkAdoptedSheet({
       adoptionDate: formData.adoptionDate,
       adoptionTermUrl: formData.adoptionTermUrl ?? undefined,
       notes: formData.notes.trim() || undefined,
+      notifyLosingApplicants:
+        closureRecipientCount > 0 && notifyLosingApplicants,
     })
   }
 
@@ -434,6 +447,35 @@ export function MarkAdoptedSheet({
               disabled={isPending || isTermUploading}
             />
           </div>
+
+          {closureRecipientCount > 0 && (
+            <div className="border-border/60 bg-muted/20 flex items-start gap-3 rounded-xl border p-3">
+              <Checkbox
+                id="notifyLosingApplicants"
+                checked={notifyLosingApplicants}
+                onCheckedChange={(checked) =>
+                  setNotifyLosingApplicants(checked === true)
+                }
+                disabled={isPending}
+                className="mt-0.5"
+              />
+              <div className="space-y-1">
+                <Label
+                  htmlFor="notifyLosingApplicants"
+                  className="cursor-pointer text-sm font-medium"
+                >
+                  Avisar os outros candidatos por email (
+                  {closureRecipientCount}{' '}
+                  {closureRecipientCount === 1 ? 'pessoa' : 'pessoas'})
+                </Label>
+                <p className="text-muted-foreground text-xs leading-relaxed">
+                  Enviamos um email carinhoso avisando que o
+                  {groupId ? 's gatinhos foram adotados' : ' gatinho foi adotado'}
+                  {' '}e convidando pra conhecer outros disponíveis.
+                </p>
+              </div>
+            </div>
+          )}
 
           {/* Submit Button */}
           <div className="pt-2">

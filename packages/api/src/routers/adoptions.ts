@@ -5,6 +5,7 @@ import {
   catGroups,
   catPhotos,
   cats,
+  orgs,
 } from '@app-petlar/db/schema'
 import { TRPCError } from '@trpc/server'
 import {
@@ -13,6 +14,7 @@ import {
   eq,
   gte,
   inArray,
+  isNull,
   lte,
   notInArray,
   or,
@@ -22,6 +24,7 @@ import { nanoid } from 'nanoid'
 import { z } from 'zod'
 
 import { protectedProcedure, router } from '../index'
+import { sendCatAdoptedNotificationEmail } from '../lib/emails/cat-adopted'
 import { wipeAllCatApplications } from '../lib/media-retention'
 import {
   deleteFile,
@@ -86,6 +89,7 @@ const createAdoptionSchema = z
     adoptionDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Data inválida'),
     adoptionTermUrl: z.string().url().optional(),
     notes: z.string().max(2000).optional(),
+    notifyLosingApplicants: z.boolean().default(true),
   })
   .refine((data) => data.catId || data.groupId, {
     message: 'catId ou groupId é obrigatório',
@@ -120,6 +124,120 @@ function requireOrgId(user: { orgId?: string | null }): string {
     })
   }
   return user.orgId
+}
+
+async function getApplicationEmail(
+  applicationId: string | undefined
+): Promise<string | null> {
+  if (!applicationId) return null
+  const [row] = await db
+    .select({ email: applications.applicantEmail })
+    .from(applications)
+    .where(eq(applications.id, applicationId))
+  return row?.email ?? null
+}
+
+function buildClosureRecipientFilter(
+  orgId: string,
+  catIds: string[],
+  groupId: string | null
+) {
+  return and(
+    eq(applications.orgId, orgId),
+    sql`${applications.confirmedAt} is not null`,
+    isNull(applications.closureNotifiedAt),
+    groupId
+      ? or(
+          inArray(applications.catId, catIds),
+          eq(applications.groupId, groupId)
+        )
+      : inArray(applications.catId, catIds)
+  )
+}
+
+/**
+ * Notifies the losing applicants that the cat (or group) they applied for was
+ * adopted by someone else. Runs after the adoption transaction commits so a
+ * mailer failure never rolls back the adoption itself.
+ */
+async function notifyClosureRecipients(params: {
+  orgId: string
+  catIds: string[]
+  groupId: string | null
+  winnerEmail: string | null
+}) {
+  const { orgId, catIds, groupId } = params
+  const winnerEmail = params.winnerEmail?.trim().toLowerCase() || null
+
+  const [org] = await db
+    .select({
+      name: orgs.name,
+      slug: orgs.slug,
+      logoUrl: orgs.logoUrl,
+      primaryColor: orgs.primaryColor,
+      primaryForegroundColor: orgs.primaryForegroundColor,
+      backgroundColor: orgs.backgroundColor,
+      foregroundColor: orgs.foregroundColor,
+      accentColor: orgs.accentColor,
+      mutedColor: orgs.mutedColor,
+      mutedForegroundColor: orgs.mutedForegroundColor,
+    })
+    .from(orgs)
+    .where(eq(orgs.id, orgId))
+
+  if (!org) return
+
+  const rows = await db
+    .select({
+      id: applications.id,
+      email: applications.applicantEmail,
+      name: applications.applicantName,
+    })
+    .from(applications)
+    .where(buildClosureRecipientFilter(orgId, catIds, groupId))
+
+  if (rows.length === 0) return
+
+  const catRows = await db
+    .select({ name: cats.name })
+    .from(cats)
+    .where(inArray(cats.id, catIds))
+
+  const catNames = catRows.map((c) => c.name)
+  if (catNames.length === 0) return
+
+  const byEmail = new Map<string, { name: string; ids: string[] }>()
+  for (const row of rows) {
+    const key = row.email.trim().toLowerCase()
+    if (winnerEmail && key === winnerEmail) continue
+    const existing = byEmail.get(key)
+    if (existing) {
+      existing.ids.push(row.id)
+    } else {
+      byEmail.set(key, { name: row.name, ids: [row.id] })
+    }
+  }
+
+  const now = new Date()
+  for (const [email, { name, ids }] of byEmail) {
+    try {
+      await sendCatAdoptedNotificationEmail({
+        to: email,
+        applicantName: name,
+        catNames,
+        org,
+      })
+      await db
+        .update(applications)
+        .set({ closureNotifiedAt: now })
+        .where(inArray(applications.id, ids))
+    } catch (error) {
+      console.error(
+        'Erro ao notificar candidato sobre encerramento da adoção',
+        { email, error }
+      )
+    }
+  }
 }
 
 export const adoptionsRouter = router({
@@ -411,6 +529,55 @@ export const adoptionsRouter = router({
     }),
 
   /**
+   * Conta quantos candidatos únicos (por email) receberiam o email de
+   * encerramento se a adoção for criada agora. Usado na UI do mark-adopted
+   * sheet para popular o label do checkbox.
+   */
+  countClosureRecipients: protectedProcedure
+    .input(
+      z.object({
+        catId: z.string().optional(),
+        groupId: z.string().optional(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const orgId = requireOrgId(ctx.session.user)
+
+      let catIds: string[]
+      let groupId: string | null
+
+      if (input.groupId) {
+        const groupCats = await db
+          .select({ id: cats.id })
+          .from(cats)
+          .where(
+            and(eq(cats.groupId, input.groupId), eq(cats.orgId, orgId))
+          )
+        catIds = groupCats.map((c) => c.id)
+        groupId = input.groupId
+      } else if (input.catId) {
+        catIds = [input.catId]
+        groupId = null
+      } else {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'catId ou groupId é obrigatório',
+        })
+      }
+
+      if (catIds.length === 0) return { count: 0 }
+
+      const [row] = await db
+        .select({
+          count: sql<number>`count(distinct lower(${applications.applicantEmail}))`,
+        })
+        .from(applications)
+        .where(buildClosureRecipientFilter(orgId, catIds, groupId))
+
+      return { count: row?.count ?? 0 }
+    }),
+
+  /**
    * Cria uma nova adoção
    */
   create: protectedProcedure
@@ -524,6 +691,19 @@ export const adoptionsRouter = router({
             .where(inArray(cats.id, catIds))
         })
 
+        if (input.notifyLosingApplicants) {
+          const winnerEmail =
+            (await getApplicationEmail(input.applicationId)) ??
+            input.adopterEmail ??
+            null
+          await notifyClosureRecipients({
+            orgId,
+            catIds,
+            groupId: input.groupId,
+            winnerEmail,
+          })
+        }
+
         return { ids: adoptionIds }
       }
 
@@ -620,6 +800,19 @@ export const adoptionsRouter = router({
           .set({ status: 'adopted' })
           .where(eq(cats.id, singleCatId))
       })
+
+      if (input.notifyLosingApplicants) {
+        const winnerEmail =
+          (await getApplicationEmail(input.applicationId)) ??
+          input.adopterEmail ??
+          null
+        await notifyClosureRecipients({
+          orgId,
+          catIds: [singleCatId],
+          groupId: null,
+          winnerEmail,
+        })
+      }
 
       return { id: adoptionId }
     }),
