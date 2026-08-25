@@ -1,3 +1,7 @@
+import {
+  BRAZILIAN_PHONE_ERROR,
+  isValidBrazilianPhone,
+} from '@app-petlar/db/utils/brazilian-phone'
 import { z } from 'zod'
 
 export type ApplicationFieldType =
@@ -58,8 +62,6 @@ const SHARE_DATA_CONSENT_ERROR =
   'Você precisa autorizar o compartilhamento de dados para enviar a candidatura.'
 const WHATSAPP_CONSENT_ERROR =
   'Você precisa autorizar o contato via WhatsApp para enviar a candidatura.'
-
-const phoneDigitsRegex = /\D/g
 
 export const defaultApplicationFormValues: ApplicationFormValues = {
   applicantName: '',
@@ -136,10 +138,7 @@ export function createApplicationFormSchema(fields: ApplicationFormField[]) {
         .string()
         .trim()
         .min(1, 'WhatsApp é obrigatório')
-        .refine((value) => {
-          const digits = value.replace(phoneDigitsRegex, '')
-          return digits.length >= 10 && digits.length <= 11
-        }, 'WhatsApp inválido'),
+        .refine(isValidBrazilianPhone, BRAZILIAN_PHONE_ERROR),
       responses: z.record(
         z.string(),
         z.union([z.string(), z.boolean(), z.null()])

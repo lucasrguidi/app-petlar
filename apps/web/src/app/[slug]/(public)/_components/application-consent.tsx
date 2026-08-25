@@ -1,10 +1,13 @@
 'use client'
 
-import { MessageCircle, Shield, ShieldCheck } from 'lucide-react'
+import { MessageCircle, Phone, Shield, ShieldCheck } from 'lucide-react'
+
+import { usePhoneMask } from '../_hooks/use-phone-mask'
 
 import type { ApplicationFormValues } from './application-form-schema'
 import type { ReactNode } from 'react'
 import type { UseFormReturn } from 'react-hook-form'
+
 
 import {
   FormControl,
@@ -146,10 +149,43 @@ export function ApplicationConsent({
 }: ApplicationConsentProps) {
   const lgpdValue = form.watch('lgpdConsent')
   const whatsappValue = form.watch('whatsappConsent')
+  const applicantWhatsapp = form.watch('applicantWhatsapp')
   const bothChecked = lgpdValue && whatsappValue
+  const { formatPhone } = usePhoneMask()
+  const formattedWhatsapp = formatPhone(applicantWhatsapp)
 
   return (
     <div className="space-y-5">
+      {formattedWhatsapp && (
+        <div
+          className={cn(
+            'rounded-2xl border-2 border-primary/30 p-4',
+            'bg-gradient-to-br from-primary/5 via-accent/5 to-white'
+          )}
+        >
+          <div className="flex items-start gap-4">
+            <div className="shrink-0 rounded-xl bg-primary/10 p-3 text-primary">
+              <Phone className="h-5 w-5" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-semibold text-foreground">
+                Confira seu WhatsApp
+              </p>
+              <p
+                className="mt-1 text-xl font-bold tracking-wide text-primary"
+                style={{ fontFamily: 'var(--font-display)' }}
+              >
+                {formattedWhatsapp}
+              </p>
+              <p className="mt-2 text-xs leading-relaxed text-muted-foreground/80">
+                É por aqui que a ONG vai falar com você. Se estiver errado,
+                toque em <strong>Voltar</strong> e ajuste antes de enviar.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Section Header */}
       <div className="flex items-center gap-3">
         <div

@@ -20,6 +20,10 @@ import {
   type FormFieldCondition,
   user,
 } from '@app-petlar/db/schema'
+import {
+  BRAZILIAN_PHONE_ERROR,
+  isValidBrazilianPhone,
+} from '@app-petlar/db/utils/brazilian-phone'
 import { env } from '@app-petlar/env/server'
 import { TRPCError } from '@trpc/server'
 import {
@@ -89,7 +93,11 @@ const createApplicationSchema = z
     groupId: z.string().min(1).optional(),
     applicantName: z.string().min(1, 'Nome é obrigatório').max(200),
     applicantEmail: z.string().trim().email('Email inválido'),
-    applicantWhatsapp: z.string().min(10, 'WhatsApp inválido').max(20),
+    applicantWhatsapp: z
+      .string()
+      .trim()
+      .max(20)
+      .refine(isValidBrazilianPhone, BRAZILIAN_PHONE_ERROR),
     responses: z.record(
       z.string(),
       z.union([z.string(), z.boolean(), z.null()])
